@@ -48,10 +48,11 @@ QMenu::icon {
 
 
 
-QMenu::item:selected {
+QMenu::item:selected,QToolButton:checked {
     color: #000000;  /* 选中项的字体颜色 */
     background-color: #e0f0ff;  /* 选中项的背景颜色 */
     border: 1px solid #0078d4;  /* 选中项的边框颜色 */
+
 }
 
 QMenu::item:pressed {

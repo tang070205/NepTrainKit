@@ -42,9 +42,9 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_menu(self):
         self.menu = QMenuBar(self)
 
-
+        # self.menu
         file_menu = self.menu.addMenu("文件")
-
+        # self.menu.addSeparator()
         open_dir_action = file_menu.addAction(utils.image_to_qicon('open.svg'),"打开")
         open_dir_action.triggered.connect(self.open_file_dialog)
         file_menu.addAction(utils.image_to_qicon('save.svg'),"导出")

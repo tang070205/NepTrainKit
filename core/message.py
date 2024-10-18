@@ -45,7 +45,7 @@ class MessageManager(QObject):
     @classmethod
     def send_info_message(cls,message,title="提示"):
         cls._createInstance()
-        print(InfoBarIcon.INFORMATION)
+
         cls._instance.show_message.emit(InfoBarIcon.INFORMATION,message,title)
     @classmethod
     def send_success_message(cls,message,title="成功"):

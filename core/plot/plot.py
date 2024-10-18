@@ -1,360 +1,107 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
-# @Time    : 2024/10/17 13:03
+# @Time    : 2024/10/17 21:44
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import traceback
-from collections.abc import Iterable
+from typing import List
 
-import matplotlib
-import matplotlib.backends.backend_pdf
-import matplotlib.backends.backend_pgf
-import matplotlib.backends.backend_ps
-import matplotlib.backends.backend_svg
 import numpy as np
-from PySide6.QtSvg import QSvgRenderer
-from loguru import logger
-from matplotlib import cbook
 from matplotlib.collections import PathCollection
-from matplotlib.transforms import IdentityTransform
-from matplotlib.widgets import SpanSelector
 
-import utils
-from core import MessageManager
-
-matplotlib.use('Qt5Agg')
-
-from PySide6.QtCore import QBuffer, QIODevice
-from PySide6.QtWidgets import QApplication, QVBoxLayout
-
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
-
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-
-from PySide6.QtGui import Qt, QPixmap, QIcon, QAction, QPainter, QResizeEvent, QImage
+from core.data import NepTrainResultData
 
 
 
-
-
-def catch_plot_except(func):
+class NepPlotBase:
+    pass
+    """
+    实现什么效果
+        1.绑定框选函数
+        2.支持选中变色
+        3.delete键删除
+         
     """
 
-    :param func:
-    :return:
-    """
-    def wrapper(self,*args,**kwargs):
-        try:
+    def __init__(self,figure,axes_list,dataset):
+        self.figure = figure
+        self.axes_list = axes_list
+        self.pick_cid = self.figure.canvas.mpl_connect('pick_event', self.on_pick)
 
-            func(self,*args,**kwargs)
-
-        except NoDataError as e:
-            #如果后面不想显示没有数据的消息 可以用pass代替
-            MessageManager.send_message(str(e))
-        except CalculateError as e:
-            MessageManager.send_message(str(e))
-
-        except Exception as e:
-            logger.error(traceback.format_exc())
-            MessageManager.send_message("未处理的异常！")
-
-        finally:
-            # print("draw",func)
-            if hasattr(self,"Canvas"):
-
-
-                self.Canvas.figure.tight_layout()
-
-                self.Canvas.draw_idle()
-
-            if hasattr(self,"Canvas1"):
-                self.Canvas1.figure.tight_layout()
-                self.Canvas1.draw_idle()
-
-            if hasattr(self,"MapCanvas"):
-
-                self.MapCanvas.figure.tight_layout()
-
-                # self.MapCanvas.fig.subplots_adjust(bottom=0.2, top=0.8)  # 调整底部和顶部边距
-                self.MapCanvas.draw()
-
-            MessageManager.wake()
-
-    return wrapper
-
-def init_canvas(plot_widget,tool_bar=True ):
-    layout=plot_widget.layout()
-    layout:QVBoxLayout
-    size=None
-    if layout is not None:
-        while not layout.isEmpty( ):
-            w=layout.takeAt(0)
-            wig=w.widget()
-            if wig:
-                if isinstance(wig,MplCanvas):
-                    size=wig.size()
-                w.widget().deleteLater()
-
-    else:
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
-        plot_widget.setLayout(layout)
-
-    Canvas = MplCanvas(plot_widget, width=5, height=4, dpi=100)
-    if tool_bar:
-        toolbar = MyToolBar(Canvas, plot_widget, )
-        layout.addWidget(toolbar)
-    layout.addWidget(Canvas)
-    if size:
-        Canvas.reshape(size)
-    layout.update()
-    return Canvas
-
-
-def export_image(canvas,file_name):
-
-    filetypes = canvas.get_supported_filetypes_grouped()
-    sorted_filetypes = sorted(filetypes.items())
-    default_filetype = canvas.get_default_filetype()
-
-    filters = []
-    selectedFilter = None
-    for name, exts in sorted_filetypes:
-        exts_list = " ".join(['*.%s' % ext for ext in exts])
-        filter = f'{name} ({exts_list})'
-        if default_filetype in exts:
-            selectedFilter = filter
-        filters.append(filter)
-    filters = ';;'.join(filters)
-    fname = utils.call_path_dialog(canvas.parent(),"选择保存文件",default_filename=file_name,file_filter=filters,selectedFilter=selectedFilter)
-
-    if fname:
-
-        try:
-
-
-            canvas.figure.savefig(fname )
-            MessageManager.send_save_message(fname,success=True)
-
-        except Exception as e:
-            MessageManager.send_save_message("未知错误",success=False)
-
-class MyToolBar(NavigationToolbar):
-    def __init__(self, canvas, parent=None, coordinates=True):
-        super().__init__(canvas, parent, coordinates)
-
-        self.add_action("copy_fig",
-                           utils.image_abs_path("copy_figure.svg"),
-                           "复制图片到剪贴板", "copy_fig_to_clipboard")
+        self.scatter_list:List[PathCollection]=[None for i in range(len(self.axes_list))]
+        self.dataset:NepTrainResultData=dataset
+        # 绑定鼠标点击事件
+        self.figure.canvas.mpl_connect('pick_event', self.on_pick)
+        self.figure.canvas.mpl_connect('key_press_event', self.on_key_press)
 
 
 
 
-    def copy_fig_to_clipboard(self):
-
-        image =self.canvas.get_image()
 
 
-        QApplication.clipboard().setImage(image)
 
-        MessageManager.send_success_message("复制成功！")
+    def on_pick(self, event):
 
+        """处理点击事件，通过 pick_event 获取点击的散点"""
 
-    def save_figure(self,*args):
-        return export_image(self.canvas,"image.png")
+        if event.mouseevent.name=="button_press_event":
+            #直接点击的
 
-
-    def _icon(self, name):
-        """
-        Construct a `.QIcon` from an image file *name*, including the extension
-        and relative to Matplotlib's "images" data directory.
-        """
-        # use a high-resolution icon with suffix '_large' if available
-        # note: user-provided icons may not have '_large' versions
-        path_regular = cbook._get_data_path('images', name)
-        path_large = path_regular.with_name(
-            path_regular.name.replace('.png', '_large.png'))
-        filename = str(path_large if path_large.exists() else path_regular)
-
-        pm = QPixmap(filename)
-        pm.setDevicePixelRatio(
-            self.devicePixelRatioF() or 1)  # rarely, devicePixelRatioF=0
-        # if self.palette().color(self.backgroundRole()).value() < 128:
-        #     icon_color = self.palette().color(self.foregroundRole())
-        #     mask = pm.createMaskFromColor(
-        #         QColor('black'),
-        #         Qt.MaskMode.MaskOutColor)
-        #     pm.fill(icon_color)
-        #     pm.setMask(mask)
-        return QIcon(pm)
-    def add_action(self, action_name, icon_path, tooltip_text, callback):
-
-        if action_name is None:
-            self.addSeparator()
+            self.set_color(event.ind,True)
         else:
+            self.set_color(event.ind,False)
+        self.update_scatter()
+    def set_color(self,ind,reverse):
+        self.dataset.energy.set_colors(ind,"red",reverse)
 
-            # pm = QPixmap(icon_path)
-            # pm.setDevicePixelRatio(
-            #     self.devicePixelRatioF() or 1)  # rarely, devicePixelRatioF=0
-            svg=QSvgRenderer(icon_path)
-
-            icon = QPixmap(100,100)
-
-            icon_color=Qt.transparent
-            icon.fill(icon_color)
-
-
-            painter = QPainter(icon)
-
-            # painter.begin(icon)
-            svg.render(painter)
-            painter.end()
-            icon.setDevicePixelRatio(
-                self.devicePixelRatioF() or 1)  # rarely, devicePixelRatioF=0
-
-
-            a = QAction(icon,
-                        action_name, self)
-
-            a.triggered.connect(getattr(self, callback) if isinstance(callback, str) else callback)
-            self.insertAction(list(self._actions.values())[-1], a)
-            self._actions[callback] = a
-
-            if tooltip_text is not None:
-                a.setToolTip(tooltip_text)
-
-
-class MplCanvas(FigureCanvasQTAgg):
-
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        self.vmax = None
-        self.vmin = None
-
-        self.create_fig()
-
-        super(MplCanvas, self).__init__(self.fig)
-        # self.setStyleSheet("QWidget{border-radius:5px}")
-
-        self.axes = self.fig.add_subplot(111)
-        self.connect_events = {}
-        self._update_pixel_ratio()
-
-        # self.fig.tight_layout()
-    def create_fig(self):
-        if hasattr(self,"fig"):
-
-            self.fig=Figure()
-            self.fig.set_canvas(self)
-            self.figure = self.fig
-        else:
-            self.fig = Figure(  )
-
-        # self.fig.set_canvas(self)
-        # self.figure = self.fig
-    def reshape(self,size):
-        self._update_pixel_ratio()
-
-        event = QResizeEvent(size, size)
-        self.resizeEvent(event)
-        self.update()
-
-    def refresh(self):
-
-        self.reshape(self.size())
-    def get_image(self,*args, **kwargs):
+        self.dataset.force.set_colors(ind,"red",reverse)
+        self.dataset.stress.set_colors(ind,"red",reverse)
+        self.dataset.virial.set_colors(ind,"red",reverse)
 
 
 
-        buff = QBuffer( )
-        buff.open(QIODevice.OpenModeFlag.ReadWrite)
-        self.print_figure(buff ,*args, **kwargs)
+    def on_key_press(self, event):
 
-        buff.seek(0)
-        image = QImage(self.size() ,QImage.Format.Format_ARGB32)
+        if event.key=="delete":
+            #删除选中的点
+            pass
+            for dataset in self.dataset.dataset:
 
-        image.loadFromData(buff.readAll())
+                dataset.remove_selected()
+            self.plot()
 
-        return image
+
+        # 重新绘制图表
+        self.update_scatter()
+    def update_scatter(self):
+
+        for i,dataset in enumerate(self.dataset.dataset):
+            if self.scatter_list[i] is not None:
+                self.scatter_list[i].set_color(dataset.colors)
+        self.figure.canvas.axes.draw_artist(self.scatter_list[0])  # 再绘制线条
+
+                # 只更新该子图区域
+        self.figure.canvas.blit(self.figure.canvas.axes.bbox)
+        # self.figure.canvas.draw_idle()
+
+    def __del__(self):
+        self.figure.canvas.mpl_disconnect(self.pick_cid)
+
+    def plot(self):
+        for i in self.scatter_list:
+            if i is not None:
+                i.remove()
 
 
-    def bind_span(self):
-        span = SpanSelector(self.axes, self.onselect, 'horizontal', useblit=True, minspan=0.01,
-                            interactive=True, )
-        self.connect_events["span"] = self.mpl_connect('key_press_event', span)
+        # 绘制函数
+        for i,axes in enumerate(self.axes_list):
 
-    def onselect(self, vmin, vmax):
+            self.scatter_list[i] = self.plot_axes_by_dataset(self.axes_list[i],self.dataset.dataset[i])
 
-        if vmin != vmax:
+        self.figure.canvas.draw_idle()
+    def plot_axes_by_dataset(self,axes,dataset):
 
-            self.vmin = vmin
-            self.vmax = vmax
-        else:
-            self.vmin = None
-            self.vmax = None
-
-    def add_axes(self, row_num,col_num=1,**kwargs):
-        # print_call_stack()
-        for value in self.connect_events.values():
-            # 每次都清理下事件
-            self.mpl_disconnect(value)
-        self.fig.clf()
-        self.vmin=None
-        self.vmax=None
-        result = []
-        for i in range(1, row_num*col_num + 1):
-            result.append(self.fig.add_subplot(row_num, col_num, i,**kwargs))
-        return result
-
-    def create_collection(self,x, y, marker ,size=500,ax=None,**kwargs):
-        if ax is None:
-            ax=self.axes
-
-        # transformed_paths = [marker(i) for i in angles]
-        transformed_paths=marker
-        offsets = np.array([x, y]).T
-
-        # 将所有路径集合到一个   PathCollection
-        # transformed_paths = [path.transformed(path.ge)  for path in transformed_paths]
-        # collection = CustomPathCollection(transformed_paths,   offsets=offsets,
-        #                             offset_transform= ax.projection or ax.transData,
-        #                             **kwargs )
-
-        if isinstance(size,Iterable):
-            sizes=size
-        else:
-            sizes = [size] * len(transformed_paths)
-        collection = CustomPathCollection(transformed_paths,sizes=sizes , offsets=offsets,
-                                    offset_transform= ax.projection or ax.transData,
-                                    **kwargs )
-        collection.set_transform(IdentityTransform())
-        ax.add_collection(collection)
-        ax.autoscale_view()
-
-        return collection
-
-    def create_PatchCollection(self,x, y, marker ,size=500,ax=None,**kwargs):
-        if ax is None:
-            ax=self.axes
-
-        # transformed_paths = [marker(i) for i in angles]
-        transformed_paths=marker
-        offsets = np.array([x, y]).T
-
-        # 将所有路径集合到一个   PathCollection
-        # transformed_paths = [path.transformed(path.ge)  for path in transformed_paths]
-        # collection = CustomPathCollection(transformed_paths,   offsets=offsets,
-        #                             offset_transform= ax.projection or ax.transData,
-        #                             **kwargs )
-        collection = CustomPatchCollection(transformed_paths,   offsets=offsets,
-                                    offset_transform= ax.projection or ax.transData,
-                                    **kwargs )
-        collection.set_transform(IdentityTransform())
-        ax.add_collection(collection)
-        ax.autoscale_view()
-
-        return collection
-
-    def delaxes(self, ax):
-        self.fig.delaxes(ax)
-
+        index = dataset.now_data.shape[1] // 2
+        axes.set_title(dataset.title)
+        color=np.tile(dataset.colors, index)
+        sc = axes.scatter(dataset.now_data[:, index:], dataset.now_data[:, :index],marker='o',c=color)
+        return sc
