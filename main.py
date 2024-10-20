@@ -4,23 +4,20 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 
-
-# coding:utf-8
 import sys
 
-from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QIcon, QDesktopServices, QAction
-from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout,QMenu,QMenuBar
-from matplotlib.pyplot import winter
-from qfluentwidgets import (NavigationItemPosition, MessageBox, setTheme, Theme, FluentWindow,
-                            NavigationAvatarWidget, qrouter, SubtitleLabel, setFont, InfoBadge,
-                            InfoBadgePosition, FluentBackgroundTheme, HyperlinkLabel, FolderListDialog, RoundMenu,
-                            Action, DWMMenu, qconfig)
-from core.widget import *
-
+import pyqtgraph as pg
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QMenuBar
+from qfluentwidgets import (setTheme, Theme, FluentWindow)
 
 from core import MessageManager, Config
-from version import __version__
+from core.widget import *
+
+pg.setConfigOptions(antialias=False )
+
+pg.setConfigOption('background', 'w')  # 设置背景为白色
+pg.setConfigOption('foreground', 'k')  # 设置前景元素为黑色（如坐标轴）
 import utils
 @utils.loghandle
 class NepTrainKitMainWindow(FluentWindow):
@@ -42,13 +39,13 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_menu(self):
         self.menu = QMenuBar(self)
 
-        # self.menu
         file_menu = self.menu.addMenu("文件")
-        # self.menu.addSeparator()
+
         open_dir_action = file_menu.addAction(utils.image_to_qicon('open.svg'),"打开")
         open_dir_action.triggered.connect(self.open_file_dialog)
-        file_menu.addAction(utils.image_to_qicon('save.svg'),"导出")
+        export_action=file_menu.addAction(utils.image_to_qicon('save.svg'),"导出")
 
+        export_action.triggered.connect(self.export_file_dialog)
 
 
         self.titleBar.hBoxLayout.insertWidget(2, self.menu,0,Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignCenter)
@@ -78,12 +75,16 @@ class NepTrainKitMainWindow(FluentWindow):
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget,"open_file"):
             widget.open_file( )
-
+    def export_file_dialog(self):
+        widget = self.stackedWidget.currentWidget()
+        if hasattr(widget,"export_file"):
+            widget.export_file( )
 
 if __name__ == '__main__':
     setTheme(Theme.LIGHT)
 
     app = QApplication(sys.argv)
+
 
     with open("./src/qss/theme.qss", "r",encoding="utf8") as f:
         app.setStyleSheet(f.read())

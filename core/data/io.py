@@ -4,9 +4,13 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import os
+import threading
 
 import numpy as np
+from PySide6.QtCore import QThread
 from loguru import logger
+from qfluentwidgets import StateToolTip
+
 
 def read_atom_num_from_xyz(path):
     with open(path, 'rb') as file:
@@ -31,7 +35,33 @@ def read_nep_out_file(file_path):
     if os.path.exists(file_path):
 
         data = np.loadtxt(file_path)
-        print(data.shape)
+
         return data
     else:
         return np.array([])
+
+
+class ExportThread(QThread):
+
+    def __init__(self,parent=None,show_tip=True):
+        super(ExportThread,self).__init__(parent)
+        if show_tip:
+            self.tip = StateToolTip('正在导出数据', '请耐心等待哦~~', parent)
+            self.tip.show()
+            self.finished.connect(self.__finished_work)
+            self.tip.closedSignal.connect(self.quit)
+        else:
+            self.tip=None
+
+    def run(self ):
+
+        self.func()
+    def start_work(self,func,*args,**kwargs):
+        self.func=lambda : func(*args,**kwargs)
+        self.start()
+    def __finished_work(self ):
+        if self.tip:
+
+            self.tip.setContent('导出完成啦 😆')
+            self.tip.setState(True)
+

@@ -4,8 +4,8 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 
-
-from PySide6.QtCore import QObject, Signal,  Qt
+ 
+from PySide6.QtCore import QObject, Signal, Qt
 
 
 from qfluentwidgets import   InfoBar, InfoBarIcon, InfoBarPosition
