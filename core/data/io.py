@@ -41,12 +41,12 @@ def read_nep_out_file(file_path):
         return np.array([])
 
 
-class ExportThread(QThread):
+class LoadingThread(QThread):
 
-    def __init__(self,parent=None,show_tip=True):
-        super(ExportThread,self).__init__(parent)
+    def __init__(self,parent=None,show_tip=True,title='运行中'):
+        super(LoadingThread,self).__init__(parent)
         if show_tip:
-            self.tip = StateToolTip('正在导出数据', '请耐心等待哦~~', parent)
+            self.tip = StateToolTip(title, '请耐心等待哦~~', parent)
             self.tip.show()
             self.finished.connect(self.__finished_work)
             self.tip.closedSignal.connect(self.quit)
@@ -62,6 +62,6 @@ class ExportThread(QThread):
     def __finished_work(self ):
         if self.tip:
 
-            self.tip.setContent('导出完成啦 😆')
+            self.tip.setContent('任务完成啦 😆')
             self.tip.setState(True)
 

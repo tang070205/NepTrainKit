@@ -67,7 +67,10 @@ def call_path_dialog(self, title, dialog_type="file", default_filename="", file_
         return None
 
     # 提取目录并保存到配置
-    last_dir = os.path.dirname(path)
+    if os.path.isfile(path):
+        last_dir = os.path.dirname(path)
+    else:
+        last_dir = path
     Config.set("setting", "last_path", last_dir)
     return path
 

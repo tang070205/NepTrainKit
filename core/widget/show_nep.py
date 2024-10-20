@@ -12,7 +12,7 @@ from qfluentwidgets import HyperlinkLabel, MessageBox
 import utils
 from core import MessageManager
 from core.data import NepTrainResultData
-from core.data.io import ExportThread
+from core.data.io import  LoadingThread
 from core.plot.canvas import NepResultGraphicsLayoutWidget
 from core.plot.toolbar import GraphicsToolBar
 
@@ -97,7 +97,7 @@ class ShowNepWidget(QWidget):
             return
         path=utils.call_path_dialog(self,"选择文件保存路径","directory")
         if path:
-            thread=ExportThread(self,show_tip=True)
+            thread=LoadingThread(self,show_tip=True,title="正在导出数据")
             thread.start_work(self.dataset.export_model_xyz,path)
 
 
