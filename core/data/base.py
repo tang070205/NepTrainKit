@@ -77,7 +77,9 @@ class NepData:
     def now_data(self):
         return self.data.now_data
 
-
+    @property
+    def remove_data(self):
+        return self.data.remove_data
 
     def convert_index(self,index_list):
 
@@ -106,7 +108,7 @@ class NepPlotData(NepData):
         super().__init__(data_list,**kwargs )
         self.__color1=QBrush(Qt.GlobalColor.blue)
         self.__selected_color=QBrush(Qt.GlobalColor.red)
-        self._colors=np.full(data_list.shape[0], self.__color1)  # 初始颜色为蓝色
+
 
     @property
     def colors(self):
@@ -117,7 +119,9 @@ class NepPlotData(NepData):
     @property
     def selected_color(self):
         return self.__selected_color
-
+    @property
+    def normal_color(self):
+        return self.__color1
     @property
     def x(self):
 

@@ -7,14 +7,16 @@ import os.path
 
 from PySide6.QtCore import QUrl
 from PySide6.QtWidgets import QWidget, QGridLayout
+
 from qfluentwidgets import HyperlinkLabel, MessageBox
 
 import utils
 from core import MessageManager
 from core.data import NepTrainResultData
 from core.data.io import  LoadingThread
-from core.plot.canvas import NepResultGraphicsLayoutWidget
-from core.plot.toolbar import GraphicsToolBar
+
+from core.plot import NepResultGraphicsLayoutWidget,GraphicsToolBar,StructurePlotWidget
+
 
 
 class ShowNepWidget(QWidget):
@@ -40,6 +42,9 @@ class ShowNepWidget(QWidget):
         self.plot_widget_layout = QGridLayout(self.plot_widget)
 
         self.graph_widget =NepResultGraphicsLayoutWidget(  )
+
+        self.graph_widget.structureIndexChanged.connect(self.show_current_structure)
+
         self.graph_toolbar = GraphicsToolBar(self.graph_widget,self.plot_widget)
 
         self.plot_widget_layout.addWidget(self.graph_toolbar)
@@ -49,7 +54,7 @@ class ShowNepWidget(QWidget):
 
 
 
-        self.show_struct_widget = QWidget(self)
+        self.show_struct_widget = StructurePlotWidget(self )
         # self.Canvas = init_canvas(self.plot_widget)
         # self.plot_switcher = SubplotSwitcher(self.graph_widget)
         # self.plot_switcher.subplot(2,2)
@@ -132,3 +137,6 @@ class ShowNepWidget(QWidget):
             return
         self.graph_widget.set_dataset(self.dataset)
 
+    def show_current_structure(self,current_index):
+        atoms=self.dataset.get_atoms(current_index)
+        self.show_struct_widget.show_atoms(atoms)

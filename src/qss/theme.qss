@@ -1,3 +1,6 @@
+
+
+
 QMenuBar {
     background-color: #f3f3f3;  /* 原样保留 */
     color: #000000;  /* 设置字体颜色 */

@@ -12,6 +12,10 @@ from loguru import logger
 from qfluentwidgets import StateToolTip
 
 
+
+
+
+
 def read_atom_num_from_xyz(path):
     with open(path, 'rb') as file:
         atom_counts = []

@@ -8,9 +8,10 @@ from abc import abstractmethod
 
 import numpy as np
 from PySide6.QtCore import Signal
+
 from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem
 
-from core.data.nep import NepTrainResultData
+
 
 
 class PlotBase:
@@ -122,76 +123,5 @@ class CustomGraphicsLayoutWidget(LayoutPlotBase,GraphicsLayoutWidget):
         super().__init__(self,*args,**kwargs)
 
         GraphicsLayoutWidget.__init__(self,*args,**kwargs)
-
-
-class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
-
-    def __init__(self):
-        super().__init__()
-        self.dataset=None
-
-
-    def set_dataset(self,dataset):
-        self.dataset:NepTrainResultData=dataset
-        self.subplot(2,2)
-        self.plot_all()
-    def plot_all(self):
-
-        for index,_dataset in enumerate(self.dataset.dataset):
-            plot=self.axes_list[index]
-            plot.clear()
-            plot.setTitle(_dataset.title)
-            plot.addLine(angle=45, pos=(0.5, 0.5), pen=mkPen('r', width=2))
-
-            colors=_dataset.colors
-            scatter = ScatterPlotItem(_dataset.x,_dataset.y,data=_dataset.structure_index,brush=colors, pen=None, symbol='o', size=5)
-
-            plot.scatter=scatter
-            plot.addItem(scatter)
-            # sc = axes.scatter(, , marker='o', c=color)
-
-
-    def delete(self):
-        if self.dataset is not None:
-            self.dataset.delete_selected()
-            self.plot_all()
-
-    def select(self,index):
-        self.dataset.select(index)
-    def select_point_from_polygon(self,polygon_xy ):
-        index=self.is_point_in_polygon(np.column_stack([self.current_plot.scatter.data["x"],self.current_plot.scatter.data["y"]]),polygon_xy)
-        index = np.where(index)[0]
-        select_index=self.current_plot.scatter.data[index]["data"].tolist()
-        self.dataset.select(select_index)
-        self.update_axes_color( )
-
-    def select_point(self,pos):
-        items=self.current_plot.scatter.pointsAt(pos)
-        if len(items):
-
-            item=items[0]
-            index=item.index()
-            structure_index =item.data()
-            if   self.dataset.is_select(structure_index):
-
-                self.dataset.uncheck(structure_index)
-            else:
-
-                self.dataset.select(structure_index)
-            self.update_axes_color( )
-
-
-    def update_axes_color(self ):
-        for i,plot in enumerate(self.axes_list):
-
-            if not hasattr(plot,"scatter"):
-                continue
-
-            structure_index_set= self.dataset.select_index
-            index_list = [i for i, val in enumerate(plot.scatter.data["data"]) if val in structure_index_set]
-
-            color=self.dataset.dataset[i].colors
-            color[index_list]=self.dataset.dataset[i].selected_color
-            plot.scatter.setBrush(color)
 
 

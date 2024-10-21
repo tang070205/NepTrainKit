@@ -153,7 +153,7 @@ class GraphicsToolBar(QToolBar):
         """鼠标按下时开始绘制"""
         if self.mode !=_Mode.PEN:
             return ViewBox.mousePressEvent(self.view_box,event)
-        if event.button() == Qt.MouseButton.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton or event.button() == Qt.MouseButton.RightButton:
             self.is_drawing = True
             self.x_data.clear()  # 清空之前的轨迹数据
             self.y_data.clear()  # 清空之前的轨迹数据
@@ -163,14 +163,7 @@ class GraphicsToolBar(QToolBar):
             # 创建一个单独的 QGraphicsItem 用于绘制鼠标轨迹
             # self.curve = PlotCurveItem(pen=QPen(Qt.red,0.05))
             # self.current_plot.addItem(self.curve)
-        elif  event.button() == Qt.MouseButton.RightButton:
-            #右键的话  选中单个点
-            pass
-            pos = event.scenePos()
-            mouse_point = self.view_box.mapSceneToView(pos)
 
-            x =mouse_point.x()
-            self.graph_widget.select_point(mouse_point)
 
 
     def on_mouse_move(self,pos):
@@ -210,15 +203,23 @@ class GraphicsToolBar(QToolBar):
 
 
 
-        if event.button() == Qt.MouseButton.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton  or event.button() == Qt.MouseButton.RightButton:
             self.is_drawing = False
-
+            reverse=event.button() == Qt.MouseButton.RightButton
             self.current_plot.removeItem(self.curve)
             # 创建鼠标轨迹的多边形
             if len(self.x_data)>2:
 
-                self.graph_widget.select_point_from_polygon(np.column_stack((self.x_data, self.y_data)))
+                self.graph_widget.select_point_from_polygon(np.column_stack((self.x_data, self.y_data)),reverse)
+            else:
 
 
+                # 右键的话  选中单个点
+                pass
+                pos = event.scenePos()
+                mouse_point = self.view_box.mapSceneToView(pos)
+
+                x = mouse_point.x()
+                self.graph_widget.select_point(mouse_point,reverse)
             return
 

@@ -8,8 +8,10 @@ import sys
 
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
+
 from PySide6.QtWidgets import QApplication, QMenuBar
-from qfluentwidgets import (setTheme, Theme, FluentWindow)
+from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition)
+from qfluentwidgets import FluentIcon as FIF
 
 from core import MessageManager, Config
 from core.widget import *
@@ -24,6 +26,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def __init__(self):
         super().__init__()
+        self.setMicaEffectEnabled(False)
         self.init_ui()
 
 
@@ -55,13 +58,17 @@ class NepTrainKitMainWindow(FluentWindow):
         self.navigationInterface.setExpandWidth(200)
         self.navigationInterface.addSeparator()
         self.addSubInterface(self.show_nep_interface, utils.image_to_qicon('show_nep.svg'), 'NEP数据集展示')
+
+        self.addSubInterface(self.setting_interface, FIF.SETTING, '设置', NavigationItemPosition.BOTTOM)
+
         self.navigationInterface.activateWindow()
 
     def init_widget(self):
         self.show_nep_interface=ShowNepWidget(self)
 
+        self.setting_interface=SettingsWidget(self)
     def initWindow(self):
-        self.resize(900, 700)
+        self.resize(1200, 700)
         self.setWindowIcon(utils.image_to_qicon('logo.svg'))
         self.setWindowTitle(f'NepTrainKit')
         desktop = QApplication.screens()[0].availableGeometry()

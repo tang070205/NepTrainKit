@@ -16,7 +16,6 @@ from ase.io import write as ase_write
 import utils
 
 
-
 @utils.loghandle
 class NepTrainResultData:
     def __init__(self,
@@ -37,7 +36,7 @@ class NepTrainResultData:
         atoms_num_list = read_atom_num_from_xyz(self.data_xyz_path)
 
         # self._atoms_dataset=DataBase(ase_read(self.data_xyz_path,index=":",format="extxyz"))
-        self._atoms_dataset=DataBase(np.arange(len(atoms_num_list)))
+        self._atoms_dataset=NepData(np.arange(len(atoms_num_list)))
 
         self._energy_dataset=NepPlotData(read_nep_out_file(self.energy_out_path),title="energy")
 
@@ -109,15 +108,21 @@ class NepTrainResultData:
             MessageManager.send_info_message(f"保存出现未知错误，错误信息已经输出到日志!")
             self.logger.error(traceback.format_exc())
 
+
+    def get_atoms(self,index ):
+
+        return  ase_read(self.data_xyz_path, index=index, format="extxyz")
+
+
     def remove(self,i):
-        # self._atoms_num_dataset.remove(i)
+
 
         self._atoms_dataset.remove(i)
         for dataset in self.dataset:
             dataset.remove(i)
 
     def delete_selected(self ):
-        # for i in self.select_index:
+
         self.remove(list(self.select_index))
 
     @classmethod

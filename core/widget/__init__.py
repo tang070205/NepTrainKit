@@ -4,3 +4,4 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 from .show_nep import ShowNepWidget
+from .settings import SettingsWidget
