@@ -1,8 +1,7 @@
 import os
 
 from PySide6.QtSql import QSqlDatabase, QSqlDriver, QSqlQuery,QSql
-
-
+from PySide6.plugins  import sqldrivers
 
 class Config:
     """
