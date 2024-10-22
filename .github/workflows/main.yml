@@ -27,7 +27,7 @@ jobs:
           script-name: NepTrainKit.py
           standalone  : true
           onefile: false
-#          windows-console-mode: disable
+          windows-console-mode: disable
 
           enable-plugins: pyside6
           windows-icon-from-ico: src/images/logo.png
@@ -36,4 +36,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NepTrainKit
-          path: build/*
+          path: build/NepTrainKit.dist/*
