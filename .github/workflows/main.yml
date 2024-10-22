@@ -27,7 +27,7 @@ jobs:
           script-name: NepTrainKit.py
           standalone  : true
 #          windows-console-mode: disable
-          enable-plugins: pyside6
+          enable-plugins: pyside6,glfw
           windows-icon-from-ico: src/images/logo.png
  
       - name: Upload Artifact
