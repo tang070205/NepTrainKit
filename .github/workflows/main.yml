@@ -28,8 +28,9 @@ jobs:
           standalone  : true
           onefile: false
           windows-console-mode: disable
-
-          enable-plugins: pyside6
+          include-qt-plugins: sqldrivers
+          upx-binary: ./upx
+          enable-plugins: pyside6,upx
           windows-icon-from-ico: src/images/logo.png
  
       - name: Upload Artifact
