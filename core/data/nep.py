@@ -11,10 +11,14 @@ import numpy as np
 from core import MessageManager
 from .base import NepPlotData, NepData, DataBase
 from .io import read_nep_out_file, read_atom_num_from_xyz
+#不显示导入的话 nuitka不会打包extxyz
+from ase.io import extxyz
 from ase.io import read as ase_read
 from ase.io import write as ase_write
 import utils
+#这行代码是防止优化代码 去掉from ase.io import extxyz
 
+extxyz
 
 @utils.loghandle
 class NepTrainResultData:
