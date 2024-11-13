@@ -5,5 +5,5 @@
 # @email    : 1747193328@qq.com
 from .nep import NepTrainResultData
 
-__all__ = ['NepTrainResultData']
+
 
