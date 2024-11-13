@@ -24,7 +24,7 @@ jobs:
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: 2.4.11
-          script-name: main.py
+          script-name: NepTrainKit.py
           standalone  : true
           onefile: false
           windows-console-mode: disable
@@ -37,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NepTrainKit
-          path: build/main.dist/*
+          path: build/NepTrainKit.dist/*
