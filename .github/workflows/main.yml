@@ -23,13 +23,13 @@ jobs:
       - name: Build with Nuitka
         uses: Nuitka/Nuitka-Action@main
         with:
-          nuitka-version: main
+          nuitka-version: 2.4.11
           script-name: main.py
           standalone  : true
           onefile: false
           windows-console-mode: disable
           include-qt-plugins: sqldrivers
-          upx-binary: upx.exe
+          upx-binary: ${{ github.workspace }}/upx.exe
           enable-plugins: pyside6,upx
           windows-icon-from-ico: src/images/logo.png
  
