@@ -8,12 +8,12 @@ import os.path
 from PySide6.QtCore import QUrl
 from PySide6.QtWidgets import QWidget, QGridLayout
 
-from qfluentwidgets import HyperlinkLabel, MessageBox
+from qfluentwidgets import HyperlinkLabel, MessageBox,SubtitleLabel
 
 import utils
 from core import MessageManager
-from core.data import NepTrainResultData
-from core.data.io import  LoadingThread
+from core.io import NepTrainResultData
+from core.io.utils import  LoadingThread
 
 from core.plot import NepResultGraphicsLayoutWidget,GraphicsToolBar,StructurePlotWidget
 
@@ -52,8 +52,6 @@ class ShowNepWidget(QWidget):
         self.plot_widget_layout.addWidget(self.graph_widget)
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
-
-
         self.show_struct_widget = StructurePlotWidget(self )
         # self.Canvas = init_canvas(self.plot_widget)
         # self.plot_switcher = SubplotSwitcher(self.graph_widget)
@@ -67,10 +65,11 @@ class ShowNepWidget(QWidget):
 
         # 创建状态栏
         self.path_label = HyperlinkLabel(  self)
-        self.path_label.setFixedHeight(30)  # 设置状态栏的高度
+        self.path_label.setFixedHeight(20)  # 设置状态栏的高度
 
         # 将状态栏添加到布局的底部
-        self.gridLayout.addWidget(self.path_label, 1, 0, 1, 2)
+
+
         self.gridLayout.setColumnStretch(0, 2)
         self.gridLayout.setColumnStretch(1, 1)
 
@@ -129,8 +128,6 @@ class ShowNepWidget(QWidget):
         然后设置窗口布局
         :return:
         """
-
-
         self.dataset = NepTrainResultData.from_path(path)
         if self.dataset is None:
             # MessageManager.send_error_message(f"当前目录下并没有训练集xyz文件：")

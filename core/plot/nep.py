@@ -12,7 +12,8 @@ from pyqtgraph import mkPen, ScatterPlotItem, PlotDataItem
 
 
 from .canvas import CustomGraphicsLayoutWidget
-from ..data import NepTrainResultData
+from .. import MessageManager
+from ..io import NepTrainResultData
 
 
 class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
@@ -117,3 +118,14 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             # plot.scatter.setBrush(color)
 
 
+    def revoke(self):
+        """
+        如果有删除的结构  撤销上一次删除的
+        :return:
+        """
+        if self.dataset.is_revoke:
+            self.dataset.revoke()
+            self.plot_all()
+
+        else:
+            MessageManager.send_info_message("没有可撤销的删除！")

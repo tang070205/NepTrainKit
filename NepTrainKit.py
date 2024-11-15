@@ -10,7 +10,7 @@ import pyqtgraph as pg
 from PySide6.QtCore import Qt
 
 from PySide6.QtWidgets import QApplication, QMenuBar
-from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition)
+from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge)
 from qfluentwidgets import FluentIcon as FIF
 
 from core import MessageManager, Config
@@ -39,6 +39,10 @@ class NepTrainKitMainWindow(FluentWindow):
         self.init_navigation()
         self.initWindow()
         self.init_menu()
+
+
+
+
     def init_menu(self):
         self.menu = QMenuBar(self)
 
@@ -61,12 +65,15 @@ class NepTrainKitMainWindow(FluentWindow):
 
         self.addSubInterface(self.setting_interface, FIF.SETTING, '设置', NavigationItemPosition.BOTTOM)
 
+
+
         self.navigationInterface.activateWindow()
 
     def init_widget(self):
         self.show_nep_interface=ShowNepWidget(self)
 
         self.setting_interface=SettingsWidget(self)
+
     def initWindow(self):
         self.resize(1200, 700)
         self.setWindowIcon(utils.image_to_qicon('logo.svg'))

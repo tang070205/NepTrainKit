@@ -27,7 +27,7 @@ jobs:
           script-name: NepTrainKit.py
           standalone  : true
           onefile: false
-#          windows-console-mode: disable
+          windows-console-mode: disable
           include-qt-plugins: sqldrivers
           upx-binary: ${{ github.workspace }}/upx.exe
           enable-plugins: pyside6,upx

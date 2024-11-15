@@ -10,7 +10,7 @@ import numpy as np
 
 from core import MessageManager
 from .base import NepPlotData, NepData, DataBase
-from .io import read_nep_out_file, read_atom_num_from_xyz
+from .utils import read_nep_out_file, read_atom_num_from_xyz
 #不显示导入的话 nuitka不会打包extxyz
 from ase.io import extxyz
 from ase.io import read as ase_read
@@ -124,6 +124,13 @@ class NepTrainResultData:
         self._atoms_dataset.remove(i)
         for dataset in self.dataset:
             dataset.remove(i)
+    @property
+    def is_revoke(self):
+        return self._atoms_dataset.remove_data.size!=0
+    def revoke(self):
+        self._atoms_dataset.revoke()
+        for dataset in self.dataset:
+            dataset.revoke( )
 
     def delete_selected(self ):
 

@@ -65,7 +65,6 @@ class LoadingThread(QThread):
         self.start()
     def __finished_work(self ):
         if self.tip:
-
             self.tip.setContent('任务完成啦 😆')
             self.tip.setState(True)
 

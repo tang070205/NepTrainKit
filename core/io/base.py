@@ -22,7 +22,10 @@ class DataBase:
     def __init__(self,data_list ):
         self.raw_data = np.array(data_list)
         self.now_data=np.array(data_list)
-        self.remove_data=np.array([],dtype=int)
+        shape=list(self.now_data.shape)
+        shape[0]=0
+        self.remove_data = np.empty( tuple(shape), dtype=self.now_data.dtype)
+
 
         #记录每次删除了几个  比如[3,6,4]
         self.remove_num=[]
@@ -43,14 +46,20 @@ class DataBase:
         elif isinstance(i,(list,np.ndarray)):
             datas = self.now_data[i]
             self.now_data = np.delete(self.now_data, i, 0)
-            self.remove_data = np.append(self.remove_data, datas)
+            self.remove_data = np.append(self.remove_data, datas,axis=0)
             self.remove_num.append(len(i))
-
-
-
 
     def __getitem__(self, item):
         return self.now_data[item]
+
+    def revoke(self):
+        if self.remove_num:
+            last_remove_num=self.remove_num.pop(-1)
+
+
+            self.now_data = np.append(self.now_data, self.remove_data[-last_remove_num: ],axis=0)
+            self.remove_data = np.delete(self.remove_data, np.s_[-last_remove_num:], axis=0)
+
 
 class NepData:
     def __init__(self,data_list,group_list=1, **kwargs ):
@@ -98,7 +107,9 @@ class NepData:
         self.data.remove(remove_indices)
         self.group_array.remove(remove_indices)
 
-
+    def revoke(self):
+        self.data.revoke()
+        self.group_array.revoke()
 
 
 

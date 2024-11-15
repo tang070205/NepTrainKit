@@ -54,6 +54,9 @@ class GraphicsToolBar(QToolBar):
 
         pen_action=self.add_action("鼠标框选",utils.image_to_qicon("pen.svg"),self.pen)
         pen_action.setCheckable(True)
+
+        revoke_action=self.add_action("撤销",utils.image_to_qicon("revoke.svg"),self.revoke)
+
         delete_action=self.add_action("删除选中",utils.image_to_qicon("delete.svg"),self.delete)
 
     def add_action(self, name,icon,callback):
@@ -102,6 +105,10 @@ class GraphicsToolBar(QToolBar):
     def delete(self):
         self.graph_widget.delete()
 
+    def revoke(self):
+        self.graph_widget.revoke()
+
+
 
     def pan(self, checked):
         """切换平移模式"""
@@ -138,7 +145,6 @@ class GraphicsToolBar(QToolBar):
 
         else:
             self.mode = _Mode.NONE
-
         self._update_buttons_checked()
     def _update_buttons_checked(self,):
 
