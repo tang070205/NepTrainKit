@@ -11,9 +11,6 @@ pip install -r requirements.txt
 ```
 
 
-## 打包
-```bash
-python -m nuitka --mingw64   --windows-console-mode=disable    --standalone  --warn-implicit-exceptions  --warn-unusual-code --show-progress   --plugin-enable=pyside6 --plugin-enable=pylint-warnings     --windows-icon-from-ico=./src/images/logo.png --output-dir=out main.py
-
-```
+## 教程和演示
+https://www.bilibili.com/video/BV1CrU7YUE3Z/
  

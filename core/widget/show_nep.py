@@ -65,7 +65,7 @@ class ShowNepWidget(QWidget):
 
         # 创建状态栏
         self.path_label = HyperlinkLabel(  self)
-        self.path_label.setFixedHeight(20)  # 设置状态栏的高度
+        self.path_label.setFixedHeight(30)  # 设置状态栏的高度
 
         # 将状态栏添加到布局的底部
         self.gridLayout.addWidget(self.path_label, 1, 0, 1, 1)
