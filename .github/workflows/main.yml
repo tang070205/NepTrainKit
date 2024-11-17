@@ -23,10 +23,10 @@ jobs:
       - name: Build with Nuitka
         uses: Nuitka/Nuitka-Action@main
         with:
-          nuitka-version: 2.4.10
+          nuitka-version: main
           script-name: NepTrainKit.py
           standalone  : true
-          onefile: false
+
           windows-console-mode: disable
           include-qt-plugins: sqldrivers
           upx-binary: ${{ github.workspace }}/upx.exe
