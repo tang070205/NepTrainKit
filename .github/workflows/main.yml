@@ -25,8 +25,8 @@ jobs:
         with:
           nuitka-version: main
           script-name: NepTrainKit.py
-          standalone  : true
 
+          compilation-mode: standalone
           windows-console-mode: disable
           include-qt-plugins: sqldrivers
           upx-binary: ${{ github.workspace }}/upx.exe
