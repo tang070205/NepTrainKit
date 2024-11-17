@@ -68,6 +68,7 @@ class ShowNepWidget(QWidget):
         self.path_label.setFixedHeight(20)  # 设置状态栏的高度
 
         # 将状态栏添加到布局的底部
+        self.gridLayout.addWidget(self.path_label, 1, 0, 1, 1)
 
 
         self.gridLayout.setColumnStretch(0, 2)
