@@ -21,7 +21,7 @@ class StructurePlotWidget(gl.GLViewWidget):
 
         # 创建 PyQtGraph 的 3D 窗口
         self.setBackgroundColor('w')
-        self.setCameraPosition(distance=20, elevation=20, azimuth=30)
+        self.setCameraPosition(distance=30, elevation=30, azimuth=30)
         with open("./Config/ptable.json", "r",encoding="utf-8") as f:
             self.table_info=json.loads(f.read())
         # self.setAntialiasing(True)
