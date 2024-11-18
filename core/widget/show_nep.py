@@ -4,11 +4,14 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import os.path
+from io import StringIO
 
 from PySide6.QtCore import QUrl
 from PySide6.QtWidgets import QWidget, QGridLayout
+from ase.io.extxyz import output_column_format,write_extxyz
 
-from qfluentwidgets import HyperlinkLabel, MessageBox,SubtitleLabel
+
+from qfluentwidgets import HyperlinkLabel, MessageBox,SubtitleLabel,PlainTextEdit
 
 import utils
 from core import MessageManager
@@ -39,9 +42,10 @@ class ShowNepWidget(QWidget):
         self.gridLayout.setObjectName("show_nep_gridLayout")
         self.gridLayout.setContentsMargins(0,0,0,0)
         self.plot_widget = QWidget(self)
+
         self.plot_widget_layout = QGridLayout(self.plot_widget)
 
-        self.graph_widget =NepResultGraphicsLayoutWidget(  )
+        self.graph_widget = NepResultGraphicsLayoutWidget(  )
 
         self.graph_widget.structureIndexChanged.connect(self.show_current_structure)
 
@@ -52,16 +56,33 @@ class ShowNepWidget(QWidget):
         self.plot_widget_layout.addWidget(self.graph_widget)
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
-        self.show_struct_widget = StructurePlotWidget(self )
-        # self.Canvas = init_canvas(self.plot_widget)
-        # self.plot_switcher = SubplotSwitcher(self.graph_widget)
-        # self.plot_switcher.subplot(2,2)
+
+        self.struct_widget = QWidget(self)
+        self.struct_widget_layout = QGridLayout(self.struct_widget)
+
+        self.show_struct_widget = StructurePlotWidget(self.struct_widget )
+
+        self.struct_info_edit = PlainTextEdit(self.struct_widget)
+
+
+        self.struct_widget_layout.addWidget(self.show_struct_widget,0,0,1,1)
+        self.struct_widget_layout.addWidget(self.struct_info_edit,1,0,1,1)
+
+        self.struct_widget_layout.setRowStretch(0, 3)
+        self.struct_widget_layout.setRowStretch(1, 1)
+        self.struct_widget_layout.setContentsMargins(0,0,0,0)
+
+
+
+
+
+
 
         self.gridLayout.addWidget(self.plot_widget, 0, 0, 1, 1)
-        self.gridLayout.addWidget(self.show_struct_widget, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.struct_widget, 0, 1, 1, 1)
 
 
-        # self.graph_widget.addPlot()
+
 
         # 创建状态栏
         self.path_label = HyperlinkLabel(  self)
@@ -138,3 +159,13 @@ class ShowNepWidget(QWidget):
     def show_current_structure(self,current_index):
         atoms=self.dataset.get_atoms(current_index)
         self.show_struct_widget.show_atoms(atoms)
+
+        text=StringIO()
+        write_extxyz(text,atoms)
+
+        text.seek(0)
+        # comm=text.readlines()[1]
+        comm=text.read()
+
+        self.struct_info_edit.setPlainText(comm)
+        text.close()

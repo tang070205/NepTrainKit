@@ -4,6 +4,7 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import os
+import re
 import threading
 
 import numpy as np
@@ -12,24 +13,12 @@ from loguru import logger
 from qfluentwidgets import StateToolTip
 
 
-
-
-
-
 def read_atom_num_from_xyz(path):
-    with open(path, 'rb') as file:
-        atom_counts = []
-        while True:
-            line = file.readline().decode().strip()  # 读取一行并去除空白字符
-            if not line:  # 如果读到文件末尾，退出循环
-                break
-            if line.isdigit():  # 检查行是否为数字
-                atom_counts.append(int(line))  # 将数字添加到列表中
-                skip_lines = int(line)  # 要跳过的行数
+    with open(path, 'r') as file:
 
-                file.seek(skip_lines, 1)  # 移动文件指针，跳过接下来的N行
+        nums=re.findall("^(\d+)$",file.read(),re.MULTILINE)
 
-    return atom_counts
+        return [int(num) for num in nums]
 
 
 
@@ -37,7 +26,6 @@ def read_atom_num_from_xyz(path):
 def read_nep_out_file(file_path):
     logger.info("读取文件{}".format(file_path))
     if os.path.exists(file_path):
-
         data = np.loadtxt(file_path)
 
         return data

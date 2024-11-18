@@ -80,6 +80,9 @@ class NepData:
         return self.data.num
     @cached_property
     def cols(self):
+        if self.now_data.shape[0]==0:
+            #数据为0
+            return 0
         index = self.now_data.shape[1] // 2
         return index
     @property
@@ -117,6 +120,7 @@ class NepPlotData(NepData):
 
     def __init__(self,data_list,**kwargs ):
         super().__init__(data_list,**kwargs )
+
         self.__color1=QBrush(Qt.GlobalColor.blue)
         self.__selected_color=QBrush(Qt.GlobalColor.red)
 
@@ -135,11 +139,14 @@ class NepPlotData(NepData):
         return self.__color1
     @property
     def x(self):
+        if self.cols==0:
+            return self.now_data
 
         return self.now_data[ : ,self.cols:].flatten()
     @property
     def y(self):
-
+        if self.cols==0:
+            return self.now_data
         return self.now_data[ : , :self.cols].flatten()
     @property
     def structure_index(self):

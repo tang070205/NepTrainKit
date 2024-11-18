@@ -25,7 +25,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
 
     def set_dataset(self,dataset):
         self.dataset:NepTrainResultData=dataset
-        self.subplot(2,2)
+        self.subplot(2,3)
         self.plot_all()
     def plot_all(self):
 
@@ -36,6 +36,8 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             plot.clear()
             plot.setTitle(_dataset.title)
             # plot.disableAutoRange()
+
+
             plot.addLine(angle=45, pos=(0.5, 0.5), pen=mkPen('r', width=2))
             scatter = ScatterPlotItem(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=_dataset.normal_color, pen=None, symbol='o',

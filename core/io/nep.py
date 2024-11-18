@@ -16,6 +16,7 @@ from ase.io import extxyz
 from ase.io import read as ase_read
 from ase.io import write as ase_write
 import utils
+
 #这行代码是防止优化代码 去掉from ase.io import extxyz
 
 extxyz
@@ -45,6 +46,7 @@ class NepTrainResultData:
         self._energy_dataset=NepPlotData(read_nep_out_file(self.energy_out_path),title="energy")
 
         self._force_dataset=NepPlotData(read_nep_out_file(self.force_out_path),group_list=atoms_num_list,title="force")
+
         self._stress_dataset=NepPlotData(read_nep_out_file(self.stress_out_path),title="stress")
         self._virial_dataset=NepPlotData(read_nep_out_file(self.virial_out_path),title="virial")
 

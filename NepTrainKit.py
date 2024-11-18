@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 
 import sys
+import traceback
 
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
@@ -12,6 +13,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QMenuBar
 from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge)
 from qfluentwidgets import FluentIcon as FIF
+from loguru import logger
 
 from core import MessageManager, Config
 from core.widget import *
@@ -94,8 +96,23 @@ class NepTrainKitMainWindow(FluentWindow):
         if hasattr(widget,"export_file"):
             widget.export_file( )
 
+def global_exception_handler(exc_type, exc_value, exc_traceback):
+    """
+    全局异常处理函数
+    """
+
+
+    # 格式化异常信息
+    error_message = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+
+    # 写入日志
+    logger.error(error_message)
+
+
 if __name__ == '__main__':
     setTheme(Theme.LIGHT)
+    # 设置全局异常捕获
+    sys.excepthook = global_exception_handler
 
     app = QApplication(sys.argv)
 
