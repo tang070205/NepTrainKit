@@ -8,15 +8,15 @@ from io import StringIO
 
 from PySide6.QtCore import QUrl
 from PySide6.QtWidgets import QWidget, QGridLayout
-from ase.io.extxyz import output_column_format,write_extxyz
+from ase.io.extxyz import write_extxyz
 
 
-from qfluentwidgets import HyperlinkLabel, MessageBox,SubtitleLabel,PlainTextEdit
+from qfluentwidgets import HyperlinkLabel, MessageBox,SubtitleLabel,PlainTextEdit,CaptionLabel
 
 import utils
 from core import MessageManager
 from core.io import NepTrainResultData
-from core.io.utils import  LoadingThread
+
 
 from core.plot import NepResultGraphicsLayoutWidget,GraphicsToolBar,StructurePlotWidget
 
@@ -63,13 +63,22 @@ class ShowNepWidget(QWidget):
         self.show_struct_widget = StructurePlotWidget(self.struct_widget )
 
         self.struct_info_edit = PlainTextEdit(self.struct_widget)
+        self.struct_info_edit.setReadOnly(True)
+
+        self.struct_index_label=CaptionLabel(self.struct_widget)
 
 
         self.struct_widget_layout.addWidget(self.show_struct_widget,0,0,1,1)
         self.struct_widget_layout.addWidget(self.struct_info_edit,1,0,1,1)
+        self.struct_widget_layout.addWidget(self.struct_index_label,2,0,1,1)
+
+
+
 
         self.struct_widget_layout.setRowStretch(0, 3)
         self.struct_widget_layout.setRowStretch(1, 1)
+        self.struct_widget_layout.setRowStretch(2, 0)
+
         self.struct_widget_layout.setContentsMargins(0,0,0,0)
 
 
@@ -90,10 +99,12 @@ class ShowNepWidget(QWidget):
 
         # 将状态栏添加到布局的底部
         self.gridLayout.addWidget(self.path_label, 1, 0, 1, 1)
+        # self.gridLayout.setHorizontalSpacing( 0)
 
 
-        self.gridLayout.setColumnStretch(0, 2)
-        self.gridLayout.setColumnStretch(1, 1)
+
+        self.gridLayout.setColumnStretch(0, 3)
+        self.gridLayout.setColumnStretch(1, 3)
 
     def dragEnterEvent(self, event):
         # 检查拖拽的内容是否包含文件
@@ -123,7 +134,7 @@ class ShowNepWidget(QWidget):
             return
         path=utils.call_path_dialog(self,"选择文件保存路径","directory")
         if path:
-            thread=LoadingThread(self,show_tip=True,title="正在导出数据")
+            thread=utils.LoadingThread(self,show_tip=True,title="正在导出数据")
             thread.start_work(self.dataset.export_model_xyz,path)
 
 
@@ -159,7 +170,7 @@ class ShowNepWidget(QWidget):
     def show_current_structure(self,current_index):
         atoms=self.dataset.get_atoms(current_index)
         self.show_struct_widget.show_atoms(atoms)
-
+        self.struct_index_label.setText(f"当前结构(原始文件下标)：{current_index}")
         text=StringIO()
         write_extxyz(text,atoms)
 

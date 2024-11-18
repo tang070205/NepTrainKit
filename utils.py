@@ -4,11 +4,15 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import os
+import subprocess
 
 import numpy as np
+from PySide6.QtCore import QThread
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QFileDialog, QApplication
 from loguru import logger
+from qfluentwidgets import StateToolTip
+
 from core import Config
 #设置log日志文件
 logger.add("./Log/{time:%Y-%m-%d}.log", rotation='00:00' ,
@@ -74,3 +78,38 @@ def call_path_dialog(self, title, dialog_type="file", default_filename="", file_
     Config.set("setting", "last_path", last_dir)
     return path
 
+def unzip( ):
+
+    cmd = f"ping -n 3 127.0.0.1&update.exe update.zip&ping -n 2 127.0.0.1&start NepTrainKit.exe"
+
+    subprocess.Popen(cmd, shell=True)
+    if QApplication.instance():
+        QApplication.instance().exit()
+    else:
+        exit()
+
+
+class LoadingThread(QThread):
+
+    def __init__(self,parent=None,show_tip=True,title='运行中'):
+        super(LoadingThread,self).__init__(parent)
+        self.show_tip=show_tip
+        self.title=title
+        self._parent=parent
+    def run(self ):
+
+        self.func()
+    def start_work(self,func,*args,**kwargs):
+        if self.show_tip:
+            self.tip = StateToolTip(self.title, '请耐心等待哦~~', self._parent)
+            self.tip.show()
+            self.finished.connect(self.__finished_work)
+            self.tip.closedSignal.connect(self.quit)
+        else:
+            self.tip=None
+        self.func=lambda : func(*args,**kwargs)
+        self.start()
+    def __finished_work(self ):
+        if self.tip:
+            self.tip.setContent('任务完成啦 😆')
+            self.tip.setState(True)

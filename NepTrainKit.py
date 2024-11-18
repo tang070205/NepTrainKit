@@ -3,7 +3,7 @@
 # @Time    : 2024/10/17 13:03
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-
+import os
 import sys
 import traceback
 
@@ -18,11 +18,12 @@ from loguru import logger
 from core import MessageManager, Config
 from core.widget import *
 
-pg.setConfigOptions(antialias=False )
+import utils
+
+# pg.setConfigOptions(antialias=False )
 
 pg.setConfigOption('background', 'w')  # 设置背景为白色
 pg.setConfigOption('foreground', 'k')  # 设置前景元素为黑色（如坐标轴）
-import utils
 @utils.loghandle
 class NepTrainKitMainWindow(FluentWindow):
 
@@ -113,7 +114,8 @@ if __name__ == '__main__':
     setTheme(Theme.LIGHT)
     # 设置全局异常捕获
     sys.excepthook = global_exception_handler
-
+    if os.path.exists("update.zip"):
+        utils.unzip()
     app = QApplication(sys.argv)
 
 

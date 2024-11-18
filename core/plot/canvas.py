@@ -76,12 +76,16 @@ class LayoutPlotBase(PlotBase):
         self.cols=col
         self.clear()
 
-        for r in range(row):
-            for c in range(col):
-                plot = self.addPlot(row=r, col=c )
-                plot.getViewBox().mouseDoubleClickEvent = self.on_click(plot)
-                plot.getViewBox().setMouseEnabled(False, False)
-                self.axes_list.append(plot)
+        for r in range(4):
+            if r==0:
+                plot = self.addPlot(row=r, col=0,colspan=3 )
+                # plot.setPreferredHeight(600)
+            else:
+
+                plot = self.addPlot(row=1, col=r-1  )
+            plot.getViewBox().mouseDoubleClickEvent = self.on_click(plot)
+            plot.getViewBox().setMouseEnabled(False, False)
+            self.axes_list.append(plot)
 
         self.on_click(self.axes_list[0])(None)
 
@@ -100,7 +104,7 @@ class LayoutPlotBase(PlotBase):
         :return:
         """
 
-        def handler(event):
+        def handler1(event):
             width_ratios = [1 for i in range(self.cols)]
             height_ratios = [1 for i in range(self.rows)]
             axes_index = self.axes_list.index(plot)
@@ -113,6 +117,23 @@ class LayoutPlotBase(PlotBase):
                 self.ci.layout.setColumnStretchFactor(row, factor)
 
             for col, factor in enumerate(height_ratios):
+                self.ci.layout.setRowStretchFactor(col, factor)
+        def handler(event):
+            # 清除现有布局
+            self.ci.clear()
+
+            # 将被双击的子图放在第一行
+            self.addItem(plot, row=0, col=0, colspan=3 )
+
+            self.set_current_plot(plot)
+
+            # 将其他子图放在第二行
+            other_plots = [p for p in self.axes_list if p != plot]
+            for i, other_plot in enumerate(other_plots):
+                self.addItem(other_plot, row=1, col=i)
+                # other_plot.setTitle(other_plot.titleLabel.text.replace(" (Focused)", ""))
+
+            for col, factor in enumerate([3, 1]):
                 self.ci.layout.setRowStretchFactor(col, factor)
 
         return handler

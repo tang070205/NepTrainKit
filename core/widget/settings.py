@@ -60,9 +60,9 @@ class SettingsWidget(QWidget):
         self.expand_layout.setContentsMargins(60, 10, 60, 0)
         self.expand_layout.addWidget(self.aboutGroup)
     def init_signal(self):
-        # self.aboutCard.clicked.connect(self.check_update)
+        self.aboutCard.clicked.connect(self.check_update)
 
-        self.aboutCard.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(RELEASES_URL)))
+        # self.aboutCard.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(RELEASES_URL)))
         self.feedbackCard.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(FEEDBACK_URL)))
 

@@ -60,7 +60,7 @@ class NepTrainResultData:
 
     @property
     def num(self):
-        return self._energy_dataset.num
+        return self._atoms_dataset.num
     @property
     def energy(self):
         return self._energy_dataset

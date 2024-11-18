@@ -20,11 +20,11 @@ class StructurePlotWidget(gl.GLViewWidget):
         super().__init__(*args,**kwargs)
 
         # 创建 PyQtGraph 的 3D 窗口
-        self.setBackgroundColor('k')
-        self.setCameraPosition(distance=50, elevation=20, azimuth=30)
+        self.setBackgroundColor('w')
+        self.setCameraPosition(distance=20, elevation=20, azimuth=30)
         with open("./Config/ptable.json", "r",encoding="utf-8") as f:
             self.table_info=json.loads(f.read())
-
+        # self.setAntialiasing(True)
 
     def show_lattice(self,lattice_matrix):
 
@@ -63,7 +63,12 @@ class StructurePlotWidget(gl.GLViewWidget):
         lines = np.array(lines).reshape(-1, 3)
 
         # 绘制晶格线条
-        lattice_lines = gl.GLLinePlotItem(pos=lines, color=(1,1,1,1),  width=2, mode='lines')
+        lattice_lines = gl.GLLinePlotItem(pos=lines, color=(0,0,0,1),
+                                          width=1.5, mode='lines',glOptions="translucent",
+                                          antialias=True
+
+                                          )
+        # lattice_lines.color=(0,1,0,1)
         center = lattice_matrix.sum(axis=0) / 2
         self.opts['center'] = pg.Vector(center[0], center[1], center[2])
         self.addItem(lattice_lines)
