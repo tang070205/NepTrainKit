@@ -83,7 +83,8 @@ class StructurePlotWidget(gl.GLViewWidget):
         # colors[:,3]=0.3
         for n,p in zip(numbers,postions):
             color=QColor(self.table_info[str(n)]["color"]).getRgbF()
-            size=self.table_info[str(n)]["radii"]//100
+            size=self.table_info[str(n)]["radii"]/100
+
             sphere = gl.MeshData.sphere(rows=20, cols=20,radius=size)
             m = gl.GLMeshItem(meshdata=sphere, smooth=True, shader='shaded', color=color)
             self.addItem(m)

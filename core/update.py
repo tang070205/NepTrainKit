@@ -71,48 +71,9 @@ class UpdateWoker( QObject):
             headers={
                 "User-Agent": "Awesome-Octocat-App"
             }
-            # version_info = requests.get(RELEASES_API_URL,headers=headers).json()
+            version_info = requests.get(RELEASES_API_URL,headers=headers).json()
             # print(version_info)
-            version_info={'url': 'https://api.github.com/repos/aboys-cb/NepTrainKit/releases/185649649',
-             'assets_url': 'https://api.github.com/repos/aboys-cb/NepTrainKit/releases/185649649/assets',
-             'upload_url': 'https://uploads.github.com/repos/aboys-cb/NepTrainKit/releases/185649649/assets{?name,label}',
-             'html_url': 'https://github.com/aboys-cb/NepTrainKit/releases/tag/v1.2.0', 'id': 185649649,
-             'author': {'login': 'aboys-cb', 'id': 63503186, 'node_id': 'MDQ6VXNlcjYzNTAzMTg2',
-                        'avatar_url': 'https://avatars.githubusercontent.com/u/63503186?v=4', 'gravatar_id': '',
-                        'url': 'https://api.github.com/users/aboys-cb', 'html_url': 'https://github.com/aboys-cb',
-                        'followers_url': 'https://api.github.com/users/aboys-cb/followers',
-                        'following_url': 'https://api.github.com/users/aboys-cb/following{/other_user}',
-                        'gists_url': 'https://api.github.com/users/aboys-cb/gists{/gist_id}',
-                        'starred_url': 'https://api.github.com/users/aboys-cb/starred{/owner}{/repo}',
-                        'subscriptions_url': 'https://api.github.com/users/aboys-cb/subscriptions',
-                        'organizations_url': 'https://api.github.com/users/aboys-cb/orgs',
-                        'repos_url': 'https://api.github.com/users/aboys-cb/repos',
-                        'events_url': 'https://api.github.com/users/aboys-cb/events{/privacy}',
-                        'received_events_url': 'https://api.github.com/users/aboys-cb/received_events', 'type': 'User',
-                        'user_view_type': 'public', 'site_admin': False}, 'node_id': 'RE_kwDONBrO_84LEMnx',
-             'tag_name': 'v1.2.0', 'target_commitish': 'master', 'name': '', 'draft': False, 'prerelease': False,
-             'created_at': '2024-11-15T13:39:32Z', 'published_at': '2024-11-15T15:04:47Z', 'assets': [
-                {'url': 'https://api.github.com/repos/aboys-cb/NepTrainKit/releases/assets/207130929', 'id': 207130929,
-                 'node_id': 'RA_kwDONBrO_84MWJEx', 'name': 'NepTrainKit.zip', 'label': None,
-                 'uploader': {'login': 'aboys-cb', 'id': 63503186, 'node_id': 'MDQ6VXNlcjYzNTAzMTg2',
-                              'avatar_url': 'https://avatars.githubusercontent.com/u/63503186?v=4', 'gravatar_id': '',
-                              'url': 'https://api.github.com/users/aboys-cb', 'html_url': 'https://github.com/aboys-cb',
-                              'followers_url': 'https://api.github.com/users/aboys-cb/followers',
-                              'following_url': 'https://api.github.com/users/aboys-cb/following{/other_user}',
-                              'gists_url': 'https://api.github.com/users/aboys-cb/gists{/gist_id}',
-                              'starred_url': 'https://api.github.com/users/aboys-cb/starred{/owner}{/repo}',
-                              'subscriptions_url': 'https://api.github.com/users/aboys-cb/subscriptions',
-                              'organizations_url': 'https://api.github.com/users/aboys-cb/orgs',
-                              'repos_url': 'https://api.github.com/users/aboys-cb/repos',
-                              'events_url': 'https://api.github.com/users/aboys-cb/events{/privacy}',
-                              'received_events_url': 'https://api.github.com/users/aboys-cb/received_events',
-                              'type': 'User', 'user_view_type': 'public', 'site_admin': False},
-                 'content_type': 'application/x-zip-compressed', 'state': 'uploaded', 'size': 99321296,
-                 'download_count': 14, 'created_at': '2024-11-17T15:35:14Z', 'updated_at': '2024-11-17T15:36:08Z',
-                 'browser_download_url': 'https://github.com/aboys-cb/NepTrainKit/releases/download/v1.2.0/NepTrainKit.zip'}],
-             'tarball_url': 'https://api.github.com/repos/aboys-cb/NepTrainKit/tarball/v1.2.0',
-             'zipball_url': 'https://api.github.com/repos/aboys-cb/NepTrainKit/zipball/v1.2.0',
-             'body': '新增删除后撤销 #2 '}
+
 
             self.version.emit(version_info)
 
