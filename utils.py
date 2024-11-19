@@ -86,7 +86,7 @@ def unzip( ):
     if QApplication.instance():
         QApplication.instance().exit()
     else:
-        exit()
+        quit()
 
 
 class LoadingThread(QThread):
