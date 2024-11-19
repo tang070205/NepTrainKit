@@ -3,7 +3,7 @@
 # @Time    : 2024/10/17 13:33
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-__version__="1.2.0"
+__version__="1.3.0"
 
 OWNER="aboys-cb"
 REPO="NepTrainKit"
