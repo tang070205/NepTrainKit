@@ -4,7 +4,7 @@
 ## 环境安装
 ```bash
 
-conda create -n NepTrainKit -n python=3.10
+conda create -n NepTrainKit python=3.10
 conda activate NepTrainKit
 pip install -r requirements.txt 
 
