@@ -28,7 +28,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         self.subplot(2,3)
         self.plot_all()
     def plot_all(self):
-
+        self.dataset.select_index.clear()
         _pen = mkPen(None)
 
         for index,_dataset in enumerate(self.dataset.dataset):
