@@ -137,7 +137,7 @@ class NepTrainResultData:
     def delete_selected(self ):
 
         self.remove(list(self.select_index))
-
+        self.select_index.clear()
     @classmethod
     def from_path(cls, path,model="train"):
         path = Path(path)

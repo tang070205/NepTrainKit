@@ -32,6 +32,7 @@ class UpdateWoker( QObject):
         self.down_thread=utils.LoadingThread(self._parent,show_tip=True,title="下载中")
 
     def download(self,url):
+        # url="https://github.moeyy.xyz/"+url
         resp = requests.get(url, stream=True)
         # content_size = int(resp.headers['content-length'])
 

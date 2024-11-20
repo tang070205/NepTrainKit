@@ -58,6 +58,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
 
     def delete(self):
         if self.dataset is not None and self.dataset.select_index:
+
             self.dataset.delete_selected()
             self.plot_all()
 

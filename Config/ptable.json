@@ -656,7 +656,7 @@
     "110": {
         "name": "Darmstadtium",
         "radii": 150,
-        "color": "#Ds",
+        "color": "#ef0025",
         "symbol": "Ds"
     },
     "111": {
@@ -668,43 +668,43 @@
     "112": {
         "name": "Copernicium",
         "radii": 150,
-        "color": "#Cn",
+        "color": "#ef0221",
         "symbol": "Cn"
     },
     "113": {
         "name": "Nihonium",
         "radii": 150,
-        "color": "#Nh",
+        "color": "#f7021c",
         "symbol": "Nh"
     },
     "114": {
         "name": "Flerovium",
         "radii": 150,
-        "color": "#Fl",
+        "color": "#fc0112",
         "symbol": "Fl"
     },
     "115": {
         "name": "Moscovium",
         "radii": 150,
-        "color": "#Mc",
+        "color": "#f20414",
         "symbol": "Mc"
     },
     "116": {
         "name": "Livermorium",
         "radii": 150,
-        "color": "#Lv",
+        "color": "#f80313",
         "symbol": "Lv"
     },
     "117": {
         "name": "Tennessine",
         "radii": 150,
-        "color": "#Ts",
+        "color": "#fe0016",
         "symbol": "Ts"
     },
     "118": {
         "name": "Oganesson",
         "radii": 150,
-        "color": "#Og",
+        "color": "#fa010f",
         "symbol": "Og"
     }
 }
