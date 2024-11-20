@@ -79,7 +79,6 @@ class LayoutPlotBase(PlotBase):
         for r in range(4):
             if r==0:
                 plot = self.addPlot(row=r, col=0,colspan=3 )
-                # plot.setPreferredHeight(600)
             else:
 
                 plot = self.addPlot(row=1, col=r-1  )
@@ -104,20 +103,7 @@ class LayoutPlotBase(PlotBase):
         :return:
         """
 
-        def handler1(event):
-            width_ratios = [1 for i in range(self.cols)]
-            height_ratios = [1 for i in range(self.rows)]
-            axes_index = self.axes_list.index(plot)
 
-            height_ratios[axes_index // self.cols] = self.height
-            width_ratios[axes_index % self.cols] = self.width
-            self.set_current_plot(plot)
-
-            for row,factor in enumerate(width_ratios):
-                self.ci.layout.setColumnStretchFactor(row, factor)
-
-            for col, factor in enumerate(height_ratios):
-                self.ci.layout.setRowStretchFactor(col, factor)
         def handler(event):
             # 清除现有布局
             self.ci.clear()
@@ -131,7 +117,6 @@ class LayoutPlotBase(PlotBase):
             other_plots = [p for p in self.axes_list if p != plot]
             for i, other_plot in enumerate(other_plots):
                 self.addItem(other_plot, row=1, col=i)
-                # other_plot.setTitle(other_plot.titleLabel.text.replace(" (Focused)", ""))
 
             for col, factor in enumerate([3, 1]):
                 self.ci.layout.setRowStretchFactor(col, factor)
