@@ -7,7 +7,7 @@ import json
 import sys
 import numpy as np
 from PySide6.QtGui import QColor
-from ase import Atoms
+
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
@@ -99,13 +99,11 @@ class StructurePlotWidget(gl.GLViewWidget):
 
 
 
-    def show_atoms(self,atoms:Atoms):
+    def show_atoms(self,atoms):
 
         self.clear()
 
-
-
-        self.show_lattice(atoms.cell.array)
+        self.show_lattice(atoms.cell )
         self.show_elem(atoms.numbers,atoms.positions)
 if __name__ == '__main__':
     app = QApplication([])

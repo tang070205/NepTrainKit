@@ -35,10 +35,9 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             plot=self.axes_list[index]
             plot.clear()
             plot.setTitle(_dataset.title)
-            # plot.disableAutoRange()
+            if _dataset.title not in ["descriptor"]:
 
-
-            plot.addLine(angle=45, pos=(0.5, 0.5), pen=mkPen('r', width=2))
+                plot.addLine(angle=45, pos=(0.5, 0.5), pen=mkPen('r', width=2))
             scatter = ScatterPlotItem(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=_dataset.normal_color, pen=None, symbol='o',
                                      )

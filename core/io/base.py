@@ -3,7 +3,6 @@
 # @Time    : 2024/10/18 15:31
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-from collections.abc import Iterable
 from functools import cached_property
 
 import numpy as np
@@ -63,8 +62,12 @@ class DataBase:
 
 class NepData:
     def __init__(self,data_list,group_list=1, **kwargs ):
+        if isinstance(data_list,(list )):
+            data_list=np.array(data_list)
+
         self.data = DataBase(data_list )
         if isinstance(group_list,int):
+
             group = np.arange(data_list.shape[0])
 
             self.group_array=DataBase(group)
@@ -94,7 +97,8 @@ class NepData:
         return self.data.remove_data
 
     def convert_index(self,index_list):
-
+        if isinstance(index_list,int):
+            index_list=[index_list]
         return np.where(np.isin(self.group_array.now_data,index_list))[0]
 
 

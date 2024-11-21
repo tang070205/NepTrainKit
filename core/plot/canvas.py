@@ -76,7 +76,7 @@ class LayoutPlotBase(PlotBase):
         self.cols=col
         self.clear()
 
-        for r in range(4):
+        for r in range(5):
             if r==0:
                 plot = self.addPlot(row=r, col=0,colspan=3 )
             else:
@@ -109,7 +109,7 @@ class LayoutPlotBase(PlotBase):
             self.ci.clear()
 
             # 将被双击的子图放在第一行
-            self.addItem(plot, row=0, col=0, colspan=3 )
+            self.addItem(plot, row=0, col=0, colspan=4 )
 
             self.set_current_plot(plot)
 

@@ -8,7 +8,7 @@ from io import StringIO
 
 from PySide6.QtCore import QUrl
 from PySide6.QtWidgets import QWidget, QGridLayout
-from ase.io.extxyz import write_extxyz
+
 
 
 from qfluentwidgets import HyperlinkLabel, MessageBox,SubtitleLabel,PlainTextEdit,CaptionLabel
@@ -169,14 +169,15 @@ class ShowNepWidget(QWidget):
 
     def show_current_structure(self,current_index):
         atoms=self.dataset.get_atoms(current_index)
+
         self.show_struct_widget.show_atoms(atoms)
         self.struct_index_label.setText(f"当前结构(原始文件下标)：{current_index}")
-        text=StringIO()
-        write_extxyz(text,atoms)
+        text_io=StringIO()
+        atoms.write(text_io)
 
-        text.seek(0)
+        text_io.seek(0)
         # comm=text.readlines()[1]
-        comm=text.read()
+        comm=text_io.read()
 
         self.struct_info_edit.setPlainText(comm)
-        text.close()
+        text_io.close()
