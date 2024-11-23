@@ -11,7 +11,7 @@ import numpy as np
 
 from core import MessageManager,Structure
 from .base import NepPlotData, NepData, DataBase
-from .utils import read_nep_out_file, read_atom_num_from_xyz
+from .utils import read_nep_out_file, read_atom_num_from_xyz,check_fullbatch
 
 
 import utils
@@ -62,10 +62,14 @@ class NepTrainResultData:
 
 
 
-
         # self._atoms_dataset=DataBase(ase_read(self.data_xyz_path,index=":",format="extxyz"))
         # self._atoms_dataset=NepData(np.arange(len(atoms_num_list)))
         structures=Structure.read_multiple(self.data_xyz_path)
+        if len(structures)>=1000:
+            if not check_fullbatch(self.nep_txt_path.with_name("nep.in"),len(structures)):
+                MessageManager.send_message_box("检测到目前是非full batch，请先预测后再加载！")
+                raise ValueError("检测到目前是非full batch，请先预测后再加载！")
+
         self._atoms_dataset=NepData(structures)
 
         self._energy_dataset=NepPlotData(read_nep_out_file(self.energy_out_path),title="energy")
@@ -84,6 +88,8 @@ class NepTrainResultData:
         self._descriptor_dataset=NepPlotData(desc_array,title="descriptor")
 
         self.select_index=set()
+
+
 
 
     @property

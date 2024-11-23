@@ -151,8 +151,7 @@ class ShowNepWidget(QWidget):
             if box.result()==0:
                 return
 
-        self.path_label.setText(f"当前工作路径：{path}")
-        self.path_label.setUrl(QUrl.fromLocalFile(path))
+
         #设置工作路径后 开始画图了
         self.check_nep_result(path)
     def check_nep_result(self,path):
@@ -165,6 +164,8 @@ class ShowNepWidget(QWidget):
         if self.dataset is None:
             # MessageManager.send_error_message(f"当前目录下并没有训练集xyz文件：")
             return
+        self.path_label.setText(f"当前工作路径：{path}")
+        self.path_label.setUrl(QUrl.fromLocalFile(path))
         self.graph_widget.set_dataset(self.dataset)
 
     def show_current_structure(self,current_index):

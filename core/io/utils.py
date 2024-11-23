@@ -12,6 +12,24 @@ import numpy as np
 from loguru import logger
 
 
+def read_nep_in(  file_name):
+    run_in={}
+    with open(file_name, 'r', encoding="utf8") as f:
+
+        groups = re.findall("^([A-Za-z_]+)\s+(.*)", f.read(), re.MULTILINE)
+
+        for group in groups:
+            run_in[group[0].strip()] = group[1].strip()
+    return run_in
+def check_fullbatch(nep_in_path,structure_num):
+
+    run_in = read_nep_in(nep_in_path)
+    if run_in.get("prediction")=="1":
+        return True
+    if int(run_in.get("batch",1000))>=structure_num:
+        return True
+    return False
+
 
 def read_atom_num_from_xyz(path):
     with open(path, 'r') as file:

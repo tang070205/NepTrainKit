@@ -8,7 +8,7 @@
 from PySide6.QtCore import QObject, Signal, Qt
 
 
-from qfluentwidgets import   InfoBar, InfoBarIcon, InfoBarPosition
+from qfluentwidgets import   InfoBar, InfoBarIcon, InfoBarPosition,MessageBox
 
 
 class MessageManager(QObject):
@@ -60,6 +60,15 @@ class MessageManager(QObject):
     def send_error_message(cls, message,title="错误"):
         cls._createInstance()
         cls._instance.show_message.emit(InfoBarIcon.ERROR, message,title)
+
+    @classmethod
+
+    def send_message_box(cls,message,title="提示"):
+        cls._createInstance()
+
+        w = MessageBox(title, message, cls._instance._parent)
+        w.cancelButton.hide()
+        w.exec_()
 
 
 
