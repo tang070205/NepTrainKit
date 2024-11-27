@@ -8,12 +8,35 @@ jobs:
     strategy:
       matrix:
         #macos-latest,ubuntu-latest , windows-latest
-        os: [  ubuntu-latest, windows-latest ]
+        os: [  ubuntu-latest  ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
- 
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+            # APT update
+            sudo apt update
+            
+            # Install Pyside6 system dependencies
+            # https://doc.qt.io/qt-6/linux-requirements.html
+            sudo apt install -y \
+              libfontconfig1-dev \
+              libfreetype6-dev \
+              libx11-dev \
+              libx11-xcb-dev \
+              libxext-dev \
+              libxfixes-dev \
+              libxi-dev \
+              libxrender-dev \
+              libxkbcommon-dev \
+              libxkbcommon-x11-dev \
+              libatspi2.0-dev \
+              '^libxcb.*-dev'
+            
+            # Install Nuitka dependencies
+            sudo apt install -y ccache clang patchelf
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
