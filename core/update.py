@@ -11,7 +11,7 @@ import traceback
 import requests
 from PySide6.QtCore import QThread, Signal, QObject
 from PySide6.QtWidgets import QApplication
-from adodbapi.examples.xls_read import filename
+
 from qfluentwidgets import MessageBox
 
 import utils
