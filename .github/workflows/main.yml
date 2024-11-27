@@ -5,7 +5,11 @@ on:
  
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        #macos-latest,ubuntu-latest , windows-latest
+        os: [  ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
