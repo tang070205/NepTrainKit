@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 import os
 import subprocess
+import sys
 
 import numpy as np
 from PySide6.QtCore import QThread
@@ -79,8 +80,11 @@ def call_path_dialog(self, title, dialog_type="file", default_filename="", file_
     return path
 
 def unzip( ):
+    if sys.platform=="win32":
 
-    cmd = f"ping -n 3 127.0.0.1&update.exe update.zip&ping -n 2 127.0.0.1&start NepTrainKit.exe"
+        cmd = f"ping -n 3 127.0.0.1&update.exe update.zip&ping -n 2 127.0.0.1&start NepTrainKit.exe"
+    else:
+        cmd = f"ping -n 3 127.0.0.1&update.bin update.zip&ping -n 2 127.0.0.1&start NepTrainKit.bin"
 
     subprocess.Popen(cmd, shell=True)
     if QApplication.instance():
