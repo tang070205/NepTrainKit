@@ -11,11 +11,12 @@ import traceback
 import requests
 from PySide6.QtCore import QThread, Signal, QObject
 from PySide6.QtWidgets import QApplication
+from adodbapi.examples.xls_read import filename
 from qfluentwidgets import MessageBox
 
 import utils
 from core import MessageManager
-from version import RELEASES_URL, RELEASES_API_URL, __version__
+from version import RELEASES_URL, RELEASES_API_URL, __version__,UPDATE_FILE
 
 
 @utils.loghandle
@@ -39,7 +40,7 @@ class UpdateWoker( QObject):
 
         count = 0
 
-        with open("update.zip", "wb") as f:
+        with open(UPDATE_FILE, "wb") as f:
             for i in resp.iter_content(1024):
                 if i:
                     f.write(i)
@@ -74,7 +75,7 @@ class UpdateWoker( QObject):
                 "User-Agent": "Awesome-Octocat-App"
             }
             version_info = requests.get(RELEASES_API_URL,headers=headers).json()
-            print(version_info)
+            # print(version_info)
 
 
             self.version.emit(version_info)

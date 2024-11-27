@@ -114,7 +114,7 @@ if __name__ == '__main__':
     setTheme(Theme.LIGHT)
     # 设置全局异常捕获
     sys.excepthook = global_exception_handler
-    if os.path.exists("update.zip"):
+    if os.path.exists("update.zip") or os.path.exists("update.tar.gz"):
         utils.unzip()
     app = QApplication(sys.argv)
 

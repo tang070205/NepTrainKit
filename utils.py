@@ -13,7 +13,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QApplication
 from loguru import logger
 from qfluentwidgets import StateToolTip
-
+from version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
 from core import Config
 #设置log日志文件
 logger.add("./Log/{time:%Y-%m-%d}.log", rotation='00:00' ,
@@ -80,11 +80,8 @@ def call_path_dialog(self, title, dialog_type="file", default_filename="", file_
     return path
 
 def unzip( ):
-    if sys.platform=="win32":
 
-        cmd = f"ping -n 3 127.0.0.1&update.exe update.zip&ping -n 2 127.0.0.1&start NepTrainKit.exe"
-    else:
-        cmd = f"ping -n 3 127.0.0.1&update.bin update.zip&ping -n 2 127.0.0.1&start NepTrainKit.bin"
+    cmd = f"ping -n 3 127.0.0.1&{UPDATE_EXE} {UPDATE_FILE}&ping -n 2 127.0.0.1&start {NepTrainKit_EXE}"
 
     subprocess.Popen(cmd, shell=True)
     if QApplication.instance():
