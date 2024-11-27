@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 import os
 import subprocess
+import sys
 import traceback
 
 import requests
@@ -73,7 +74,7 @@ class UpdateWoker( QObject):
                 "User-Agent": "Awesome-Octocat-App"
             }
             version_info = requests.get(RELEASES_API_URL,headers=headers).json()
-            # print(version_info)
+            print(version_info)
 
 
             self.version.emit(version_info)
@@ -104,7 +105,15 @@ class UpdateWoker( QObject):
         box.exec_()
         if box.result() == 0:
             return
-        self.down_thread.start_work(self.download,version_info["assets"][0]["browser_download_url"])
+
+        for assets in version_info["assets"]:
+
+            if sys.platform in assets["name"] and "NepTrainKit" in assets["name"]:
+
+                self.down_thread.start_work(self.download,assets["browser_download_url"])
+                return
+        MessageManager.send_warning_message("没有匹配到适合当前系统的更新包，请手动下载！")
+
 
 
     def check_update(self):
