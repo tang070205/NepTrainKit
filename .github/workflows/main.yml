@@ -33,7 +33,7 @@ jobs:
           mode: standalone
           windows-console-mode: disable
           include-qt-plugins: sqldrivers
-          upx-binary: ${{ github.workspace }}/upx.exe
+          upx-binary: ${{ github.workspace }}/upx${{ runner.os == 'Windows' && '.exe' || '' }}
           enable-plugins: pyside6,upx
           windows-icon-from-ico: src/images/logo.png
  
