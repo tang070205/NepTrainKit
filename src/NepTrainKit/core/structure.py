@@ -106,9 +106,12 @@ class Structure:
 
             structure_info[prop["name"]] = _info
             index += prop["count"]
+        try:
 
-        return cls(lattice, structure_info, properties, additional_fields)
-
+            return cls(lattice, structure_info, properties, additional_fields)
+        except:
+            print(lattice)
+            print("".join(lines))
     @classmethod
     def _parse_global_properties(cls, line):
         """
@@ -122,11 +125,12 @@ class Structure:
 
         for match in matches:
             key = match[0] or match[2]
+            key=key.title()
             value = match[1] or match[3]
 
-            if key == "Lattice":
+            if key  == "Lattice":
                 lattice = list(map(float, value.split()))
-            elif key == "Properties":
+            elif key  == "Properties":
                 # Parse Properties details
                 properties = cls._parse_properties(value)
             else:

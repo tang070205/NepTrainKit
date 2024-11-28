@@ -10,7 +10,7 @@ import traceback
 import pyqtgraph as pg
 from PySide6.QtCore import Qt, QFile, QTextStream
 from PySide6.QtGui import QIcon
-
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from PySide6.QtWidgets import QApplication, QMenuBar
 from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge)
 from qfluentwidgets import FluentIcon as FIF
