@@ -36,7 +36,7 @@ jobs:
           include-qt-plugins: sqldrivers
           upx-binary: ${{ github.workspace }}/src/NepTrainKit/upx${{ runner.os == 'Windows' && '.exe' || '' }}
           enable-plugins: pyside6,upx
-          windows-icon-from-ico: src/images/logo.png
+          windows-icon-from-ico: NepTrainKit/src/images/logo.png
           working-directory: ${{ github.workspace }}/src/
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
