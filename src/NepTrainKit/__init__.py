@@ -5,4 +5,18 @@
 # @email    : 1747193328@qq.com
 import os
 
-module_path = os.path.dirname(__file__)
+try:
+    # Actual if statement not needed, but keeps code inspectors more happy
+    if __nuitka_binary_dir is not None:
+        is_nuitka_compiled = True
+except NameError:
+    is_nuitka_compiled = False
+
+print("is_nuitka_compiled",is_nuitka_compiled)
+
+if is_nuitka_compiled:
+
+    module_path="./"
+else:
+
+    module_path = os.path.dirname(__file__)
