@@ -12,7 +12,7 @@ try:
 except NameError:
     is_nuitka_compiled = False
 
-print("is_nuitka_compiled",is_nuitka_compiled)
+
 
 if is_nuitka_compiled:
 
