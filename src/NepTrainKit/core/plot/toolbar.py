@@ -11,7 +11,7 @@ from PySide6.QtGui import QAction, QIcon, QPen
 from PySide6.QtWidgets import QToolBar
 from pyqtgraph import ViewBox, PlotCurveItem
 
-import utils
+from NepTrainKit import utils
 
 
 class _Mode(str, Enum):
@@ -48,16 +48,16 @@ class GraphicsToolBar(QToolBar):
             self.current_plot=None
             self.view_box=None
     def init_actions(self):
-        self.add_action("重置视图",utils.image_to_qicon("init.svg"),self.reset_view)
-        pan_action=self.add_action("平移",utils.image_to_qicon("pan.svg"),self.pan)
+        self.add_action("重置视图",QIcon(":/images/src/images/init.svg"),self.reset_view)
+        pan_action=self.add_action("平移",QIcon(":/images/src/images/pan.svg"),self.pan)
         pan_action.setCheckable(True)
 
-        pen_action=self.add_action("鼠标框选",utils.image_to_qicon("pen.svg"),self.pen)
+        pen_action=self.add_action("鼠标框选",QIcon(":/images/src/images/pen.svg"),self.pen)
         pen_action.setCheckable(True)
 
-        revoke_action=self.add_action("撤销",utils.image_to_qicon("revoke.svg"),self.revoke)
+        revoke_action=self.add_action("撤销",QIcon(":/images/src/images/revoke.svg"),self.revoke)
 
-        delete_action=self.add_action("删除选中",utils.image_to_qicon("delete.svg"),self.delete)
+        delete_action=self.add_action("删除选中",QIcon(":/images/src/images/delete.svg"),self.delete)
 
     def add_action(self, name,icon,callback):
         action=QAction(QIcon(icon),name,self)

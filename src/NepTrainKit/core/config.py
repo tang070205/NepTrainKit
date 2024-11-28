@@ -2,6 +2,8 @@ import os
 
 from PySide6.QtSql import QSqlDatabase, QSqlDriver, QSqlQuery,QSql
 
+from NepTrainKit import module_path
+
 
 class Config:
     """
@@ -25,7 +27,7 @@ class Config:
     def connect_db(self):
         self.db=QSqlDatabase.addDatabase("QSQLITE","config")
 
-        self.db.setDatabaseName('./Config/config.sqlite')
+        self.db.setDatabaseName(os.path.join(module_path,'Config/config.sqlite'))
 
         self.db.open()
 

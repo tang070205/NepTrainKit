@@ -5,16 +5,14 @@
 # @email    : 1747193328@qq.com
 import os
 import subprocess
-import sys
 
-import numpy as np
 from PySide6.QtCore import QThread
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QApplication
 from loguru import logger
 from qfluentwidgets import StateToolTip
-from version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
-from core import Config
+from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
+from NepTrainKit.core import Config
 #设置log日志文件
 logger.add("./Log/{time:%Y-%m-%d}.log", rotation='00:00' ,
            level="INFO",   encoding="utf8",
@@ -27,21 +25,7 @@ def loghandle(cls):
         setattr(cls, "logger", logger)
     return cls
 
-def image_abs_path(file_name):
-    """
-    将图转换成绝对路径的格式
-    :param file_name: 文件名 比如save.svg
-    :return: 全路径
-    """
 
-    root=os.path.abspath(os.path.dirname(__file__))
-
-    return os.path.join(root,f"src/images/{file_name}")
-def image_to_qicon(file_name):
-    path=image_abs_path(file_name)
-    if not os.path.exists(path):
-        logger.warning(f"尝试使用不存在的文件路径：{path}")
-    return QIcon(path)
 
 
 

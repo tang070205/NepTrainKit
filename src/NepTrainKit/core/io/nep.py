@@ -9,12 +9,12 @@ from pathlib import Path
 
 import numpy as np
 
-from core import MessageManager,Structure
+from NepTrainKit.core import MessageManager,Structure
 from .base import NepPlotData, NepData, DataBase
 from .utils import read_nep_out_file, read_atom_num_from_xyz,check_fullbatch
 
 
-import utils
+from NepTrainKit import utils
 from ..calculator import Nep3Calculator
 def pca(X, k):
     # 1. 标准化数据（去均值和方差标准化）

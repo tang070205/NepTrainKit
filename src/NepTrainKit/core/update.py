@@ -14,9 +14,9 @@ from PySide6.QtWidgets import QApplication
 
 from qfluentwidgets import MessageBox
 
-import utils
-from core import MessageManager
-from version import RELEASES_URL, RELEASES_API_URL, __version__,UPDATE_FILE
+from NepTrainKit import utils
+from NepTrainKit.core import MessageManager
+from NepTrainKit.version import RELEASES_URL, RELEASES_API_URL, __version__,UPDATE_FILE
 
 
 @utils.loghandle

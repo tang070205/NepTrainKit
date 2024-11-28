@@ -4,6 +4,7 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import json
+import os.path
 import sys
 import numpy as np
 from PySide6.QtGui import QColor
@@ -12,8 +13,8 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 
-from core import MessageManager
-
+from NepTrainKit.core import MessageManager
+from NepTrainKit import module_path
 
 class StructurePlotWidget(gl.GLViewWidget):
     def __init__(self,*args,**kwargs):
@@ -22,7 +23,7 @@ class StructurePlotWidget(gl.GLViewWidget):
         # 创建 PyQtGraph 的 3D 窗口
         self.setBackgroundColor('w')
         self.setCameraPosition(distance=30, elevation=30, azimuth=30)
-        with open("./Config/ptable.json", "r",encoding="utf-8") as f:
+        with open(os.path.join(module_path,"Config/ptable.json"), "r",encoding="utf-8") as f:
             self.table_info=json.loads(f.read())
         # self.setAntialiasing(True)
 

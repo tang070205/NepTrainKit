@@ -1,0 +1,70 @@
+[build-system]
+requires = [
+"wheel",
+"setuptools>=68.0.0",
+"pybind11>=2.12.0"
+]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "NepTrainKit"
+authors = [{ name = "Chen Cheng bing", email = "1747193328@qq.com" }]
+
+
+description = """
+NepTrainKit is a Python package for visualizing and manipulating training datasets for NEP.
+"""
+readme = "README.md"
+requires-python = ">=3.8,<3.13"
+license= { "file"="LICENSE" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+
+"PySide6-Fluent-Widgets>=1.7.0",
+"loguru>=0.7.2",
+"requests>=2.32.3",
+"pyqtgraph>=0.13.7",
+"PyOpenGL>=3.1.7"
+]
+version = "1.4.3"
+
+[project.urls]
+Homepage = "https://github.com/aboys-cb/NepTrainKit"
+Documentation = "https://github.com/aboys-cb/NepTrainKit"
+Repository = "https://github.com/aboys-cb/NepTrainKit"
+Issues = "https://github.com/aboys-cb/NepTrainKit/issues"
+
+
+
+[project.scripts]
+NepTrainKit = "NepTrainKit.main:main"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["NepTrainKit", "NepTrainKit.*","nep_cpu.*" ,"nep_cpu"]
+
+[tool.setuptools.package-data]
+"NepTrainKit.Config" = ["config.sqlite","ptable.json" ]
+
+"nep_cpu" = ["nep_cpu*.*" ]
+
+[tool.cibuildwheel.linux]
+archs = ["auto64"]
+

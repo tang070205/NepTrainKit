@@ -13,12 +13,12 @@ from PySide6.QtWidgets import QWidget, QGridLayout
 
 from qfluentwidgets import HyperlinkLabel, MessageBox,SubtitleLabel,PlainTextEdit,CaptionLabel
 
-import utils
-from core import MessageManager
-from core.io import NepTrainResultData
+from NepTrainKit import utils
+from NepTrainKit.core import MessageManager
+from NepTrainKit.core.io import NepTrainResultData
 
 
-from core.plot import NepResultGraphicsLayoutWidget,GraphicsToolBar,StructurePlotWidget
+from NepTrainKit.core.plot import NepResultGraphicsLayoutWidget,GraphicsToolBar,StructurePlotWidget
 
 
 

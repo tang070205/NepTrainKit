@@ -12,10 +12,10 @@ from PySide6.QtWidgets import QWidget
 from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, MessageBox
 from qfluentwidgets import FluentIcon as FIF
 
-import utils
-from core import MessageManager
-from core.update import UpdateWoker
-from version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR, RELEASES_URL
+from NepTrainKit import utils
+from NepTrainKit.core import MessageManager
+from NepTrainKit.core.update import UpdateWoker
+from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR, RELEASES_URL
 
 @utils.loghandle
 class SettingsWidget(QWidget):

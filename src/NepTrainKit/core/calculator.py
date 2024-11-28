@@ -8,7 +8,7 @@ import os
 
 import numpy as np
 
-from .nep_cpu import NEP3
+from nep_cpu import NEP3
 
 class Nep3Calculator:
 

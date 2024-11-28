@@ -8,17 +8,18 @@ import sys
 import traceback
 
 import pyqtgraph as pg
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QFile, QTextStream
+from PySide6.QtGui import QIcon
 
 from PySide6.QtWidgets import QApplication, QMenuBar
 from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge)
 from qfluentwidgets import FluentIcon as FIF
 from loguru import logger
 
-from core import MessageManager, Config
-from core.widget import *
+from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.core.widget import *
 
-import utils
+from NepTrainKit import utils,src_rc
 
 # pg.setConfigOptions(antialias=False )
 
@@ -51,9 +52,9 @@ class NepTrainKitMainWindow(FluentWindow):
 
         file_menu = self.menu.addMenu("文件")
 
-        open_dir_action = file_menu.addAction(utils.image_to_qicon('open.svg'),"打开")
+        open_dir_action = file_menu.addAction(QIcon(':/images/src/images/open.svg'),"打开")
         open_dir_action.triggered.connect(self.open_file_dialog)
-        export_action=file_menu.addAction(utils.image_to_qicon('save.svg'),"导出")
+        export_action=file_menu.addAction(QIcon(':/images/src/images/save.svg'),"导出")
 
         export_action.triggered.connect(self.export_file_dialog)
 
@@ -64,7 +65,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.navigationInterface.setReturnButtonVisible(False)
         self.navigationInterface.setExpandWidth(200)
         self.navigationInterface.addSeparator()
-        self.addSubInterface(self.show_nep_interface, utils.image_to_qicon('show_nep.svg'), 'NEP数据集展示')
+        self.addSubInterface(self.show_nep_interface, QIcon(':/images/src/images/show_nep.svg'), 'NEP数据集展示')
 
         self.addSubInterface(self.setting_interface, FIF.SETTING, '设置', NavigationItemPosition.BOTTOM)
 
@@ -79,7 +80,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def initWindow(self):
         self.resize(1200, 700)
-        self.setWindowIcon(utils.image_to_qicon('logo.svg'))
+        self.setWindowIcon(QIcon(':/images/src/images/logo.svg'))
         self.setWindowTitle(f'NepTrainKit')
         desktop = QApplication.screens()[0].availableGeometry()
         w, h = desktop.width(), desktop.height()
@@ -109,8 +110,7 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
     # 写入日志
     logger.error(error_message)
 
-
-if __name__ == '__main__':
+def main():
     setTheme(Theme.LIGHT)
     # 设置全局异常捕获
     sys.excepthook = global_exception_handler
@@ -118,12 +118,16 @@ if __name__ == '__main__':
         utils.unzip()
     app = QApplication(sys.argv)
 
-
-    with open("./src/qss/theme.qss", "r",encoding="utf8") as f:
-        app.setStyleSheet(f.read())
+    theme_file = QFile(":/theme/src/qss/theme.qss")
+    theme_file.open(QFile.ReadOnly )
+    theme=theme_file.readAll().data().decode("utf-8")
+    app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
     w.show()
 
     app.exec()
 
+
+if __name__ == '__main__':
+    main()
 
