@@ -203,14 +203,24 @@ class Structure:
             else:
                 global_line.append(f'{key}="{value}"')
         file.write(" ".join(global_line) + "\n")
-        prop_list = []
 
-        for prop in self.properties:
-            prop_list.append(self.structure_info[prop["name"]].reshape((-1, prop["count"])))
-        prop_array = np.hstack(prop_list)
-        np.savetxt(
-            file,  # 输出到 StringIO 而不是文件
-            prop_array,  # 数据
-            fmt="% -5s" + "%18s" * (prop_array.shape[1] - 1),
-            delimiter="       ",  # 无额外分隔符
-        )
+
+
+
+
+        for row in range(self.num_atoms):
+            line = ""
+            for prop  in self.properties :
+                if prop["count"] == 1:
+                    values=[self.structure_info[prop["name"]][row]]
+                else:
+                    values=self.structure_info[prop["name"]][row,:]
+
+
+
+                if prop["type"] == 'S':  # 字符串类型
+                    line += " ".join([f"{x }" for x in values]) + " "
+
+                elif prop["type"] == 'R':  # 浮点数类型
+                    line += " ".join([f"{x:g}" for x in values]) + " "
+            file.write(line.strip() + "\n")
