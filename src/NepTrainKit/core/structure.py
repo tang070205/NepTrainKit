@@ -123,12 +123,12 @@ class Structure:
 
         for match in matches:
             key = match[0] or match[2]
-            key=key.title()
+            # key=key.title()
             value = match[1] or match[3]
 
-            if key  == "Lattice":
+            if key.title()  == "Lattice":
                 lattice = list(map(float, value.split()))
-            elif key  == "Properties":
+            elif key.title()  == "Properties":
                 # Parse Properties details
                 properties = cls._parse_properties(value)
             else:
@@ -211,6 +211,6 @@ class Structure:
         np.savetxt(
             file,  # 输出到 StringIO 而不是文件
             prop_array,  # 数据
-            fmt="% -5s" + "%14s" * (prop_array.shape[1] - 1),
+            fmt="% -5s" + "%18s" * (prop_array.shape[1] - 1),
             delimiter="       ",  # 无额外分隔符
         )
