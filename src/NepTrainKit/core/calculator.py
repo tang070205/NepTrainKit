@@ -22,11 +22,15 @@ class Nep3Calculator:
         self.type_dict = {e: i for i, e in enumerate(self.element_list)}
 
 
+
+
     def get_descriptors(self,structure):
         symbols = structure.elements
         _type = [self.type_dict[k] for k in symbols]
         _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
+
         _position = structure.positions.transpose(1, 0).reshape(-1).tolist()
+
         descriptor = self.nep3.find_descriptors(_type, _box, _position)
 
         descriptors_per_atom = np.array(descriptor).reshape(-1, len(structure)).T

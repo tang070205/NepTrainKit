@@ -40,7 +40,7 @@ dependencies = [
 "pyqtgraph>=0.13.7",
 "PyOpenGL>=3.1.7"
 ]
-version = "1.4.5"
+version = "1.4.6"
 
 [project.urls]
 Homepage = "https://github.com/aboys-cb/NepTrainKit"
@@ -52,6 +52,7 @@ Issues = "https://github.com/aboys-cb/NepTrainKit/issues"
 
 [project.scripts]
 NepTrainKit = "NepTrainKit.main:main"
+nepkit = "NepTrainKit.main:main"
 
 [tool.setuptools]
 include-package-data = false

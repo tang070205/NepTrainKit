@@ -169,6 +169,9 @@ class Structure:
 
         i = 0
         while i < len(lines):
+            if not lines[i].strip():
+                i += 1
+                continue
             num_atoms = int(lines[i].strip())
             end = i + 2 + num_atoms
             structure_lines = lines[i:end]

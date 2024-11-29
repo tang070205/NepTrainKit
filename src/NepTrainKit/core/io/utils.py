@@ -16,6 +16,8 @@ from loguru import logger
 
 def read_nep_in(  file_name):
     run_in={}
+    if  not os.path.exists(file_name):
+        return run_in
     with open(file_name, 'r', encoding="utf8") as f:
 
         groups = re.findall("^([A-Za-z_]+)\s+(.*)", f.read(), re.MULTILINE)

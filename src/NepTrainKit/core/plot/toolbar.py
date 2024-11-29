@@ -164,7 +164,7 @@ class GraphicsToolBar(QToolBar):
 
         dataset = self.graph_widget.dataset.descriptor
         indices_to_remove = farthest_point_sampling(dataset.now_data,n_samples=n_samples,min_dist=distance)
-        print(indices_to_remove)
+
         # 获取所有索引（从 0 到 len(arr)-1）
         all_indices = np.arange(dataset.now_data.shape[0])
 
