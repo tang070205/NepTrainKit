@@ -25,29 +25,29 @@ class SettingsWidget(QWidget):
         self.setObjectName('SettingsWidget')
         self.expand_layout = ExpandLayout(self)
         self.setLayout(self.expand_layout)
-        self.aboutGroup = SettingCardGroup("关于", self)
+        self.aboutGroup = SettingCardGroup("About", self)
         self.helpCard = HyperlinkCard(
             HELP_URL,
-             '打开帮助页面' ,
+             'Open Help Page' ,
             FIF.HELP,
-             '帮助' ,
-             '发现新功能并学习有关NepTrainKit的有用提示' ,
+             'Help' ,
+             'Discover new features and learn useful tips about NepTrainKit.' ,
             self.aboutGroup
         )
         self.feedbackCard = PrimaryPushSettingCard(
-            "提供反馈",
+            "Submit Feedback",
             FIF.FEEDBACK,
-            "提供反馈",
+            "Submit Feedback",
 
-            '通过提供反馈帮助我们改进NepTrainKit',
+            'Help us improve NepTrainKit by providing feedback.',
             self.aboutGroup
         )
         self.aboutCard = PrimaryPushSettingCard(
-            '检查更新',
+            'Check for Updates',
             FIF.INFO,
-            "关于",
-            '© ' + '版权' + f" {YEAR}, {AUTHOR}. " +
-            "版本" + f" {__version__}",
+            "About",
+            'Copyright ©' + f" {YEAR}, {AUTHOR}. " +
+            "Version" + f" {__version__}",
             self.aboutGroup
         )
         self.aboutGroup.addSettingCard(self.helpCard)

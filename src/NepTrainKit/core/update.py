@@ -31,7 +31,7 @@ class UpdateWoker( QObject):
         self.version.connect(self._check_update_call_back)
         self.download_success.connect(self._call_restart)
         self.update_thread=utils.LoadingThread(self._parent,show_tip=False)
-        self.down_thread=utils.LoadingThread(self._parent,show_tip=True,title="下载中")
+        self.down_thread=utils.LoadingThread(self._parent,show_tip=True,title="Downloading")
 
     def download(self,url):
         # url="https://github.moeyy.xyz/"+url
@@ -50,12 +50,12 @@ class UpdateWoker( QObject):
 
     def _call_restart(self):
 
-        box = MessageBox("重启询问？"  ,
-                         "更新包下载完成！是否现在重启？\n如果取消，将下次打开软件的时候自动更新！",
+        box = MessageBox("Do you want to restart？"  ,
+                         "Update package downloaded successfully! Would you like to restart now?\nIf you cancel, the update will be applied automatically the next time you open the software.",
                          self._parent
                          )
-        box.yesButton.setText("更新")
-        box.cancelButton.setText("取消")
+        box.yesButton.setText("Update")
+        box.cancelButton.setText("Cancel")
 
         box.exec_()
         if box.result() == 0:
@@ -67,7 +67,7 @@ class UpdateWoker( QObject):
 
 
     def _check_update(self):
-        MessageManager.send_info_message("检查更新中...")
+        MessageManager.send_info_message("Checking for updates, please wait...")
 
 
         try:
@@ -82,7 +82,7 @@ class UpdateWoker( QObject):
 
         except:
             self.logger.error(traceback.format_exc())
-            MessageManager.send_error_message("网络异常！")
+            MessageManager.send_error_message("Network error!")
 
 
 
@@ -93,15 +93,15 @@ class UpdateWoker( QObject):
             MessageManager.send_warning_message(version_info['message'])
             return
         if version_info['tag_name'][1:] == __version__:
-            MessageManager.send_success_message("当前版本已经是最新版了！")
+            MessageManager.send_success_message("You are already using the latest version!")
 
             return
         box = MessageBox("检测到新版本：" + version_info["name"] + version_info["tag_name"],
                          version_info["body"],
                          self._parent
                          )
-        box.yesButton.setText("更新")
-        box.cancelButton.setText("取消")
+        box.yesButton.setText("Update")
+        box.cancelButton.setText("Cancel")
 
         box.exec_()
         if box.result() == 0:
@@ -113,7 +113,7 @@ class UpdateWoker( QObject):
 
                 self.down_thread.start_work(self.download,assets["browser_download_url"])
                 return
-        MessageManager.send_warning_message("没有匹配到适合当前系统的更新包，请手动下载！")
+        MessageManager.send_warning_message("No update package available for your system. Please download it manually!")
 
 
 

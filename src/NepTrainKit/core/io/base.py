@@ -97,6 +97,9 @@ class NepData:
         return self.data.remove_data
 
     def convert_index(self,index_list):
+        """
+        传入结构的原始下标 然后转换成现在已有的
+        """
         if isinstance(index_list,int):
             index_list=[index_list]
         return np.where(np.isin(self.group_array.now_data,index_list))[0]
@@ -105,12 +108,12 @@ class NepData:
 
     def remove(self,remove_index):
         """
-        这里根据权重添加一层 根据权重 计算下实际删除的索引坐标
+         计算下实际删除的索引坐标
         :param i:
         :return:
         """
         remove_indices=self.convert_index(remove_index)
-        # print(self.title,remove_indices)
+
         self.data.remove(remove_indices)
         self.group_array.remove(remove_indices)
 
@@ -118,6 +121,12 @@ class NepData:
         self.data.revoke()
         self.group_array.revoke()
 
+
+    def get_max_error_index(self,nmax):
+        error = np.sum(np.abs(self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]), axis=1)
+        rmse_max_ids = np.argsort(-error)
+
+        return   self.group_array.now_data[rmse_max_ids[:nmax]].tolist()
 
 
 class NepPlotData(NepData):

@@ -18,8 +18,9 @@ from ..io import NepTrainResultData
 
 class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
     structureIndexChanged=Signal(int)
-    def __init__(self):
-        super().__init__()
+    def __init__(self,parent=None):
+        super().__init__(parent)
+        self._parent=parent
         self.dataset=None
 
 
@@ -27,6 +28,13 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         self.dataset:NepTrainResultData=dataset
         self.subplot(2,3)
         self.plot_all()
+
+    def get_current_dataset(self):
+        if self.current_plot is None:
+            return None
+        plot_index = self.axes_list.index(self.current_plot)
+        return self.dataset.dataset[plot_index]
+
     def plot_all(self):
         self.dataset.select_index.clear()
         _pen = mkPen(None)
@@ -61,19 +69,13 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             self.dataset.delete_selected()
             self.plot_all()
 
-    def select(self,index):
-        self.dataset.select(index)
+
     def select_point_from_polygon(self,polygon_xy,reverse ):
         index=self.is_point_in_polygon(np.column_stack([self.current_plot.scatter.data["x"],self.current_plot.scatter.data["y"]]),polygon_xy)
         index = np.where(index)[0]
         select_index=self.current_plot.scatter.data[index]["data"].tolist()
-        if reverse:
-            self.dataset.uncheck(select_index)
-        else:
+        self.select_index(select_index,reverse)
 
-            self.dataset.select(select_index)
-        if select_index:
-            self.update_axes_color(select_index ,reverse)
 
     def select_point(self,pos,reverse):
         items=self.current_plot.scatter.pointsAt(pos)
@@ -83,15 +85,18 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
 
             index=item.index()
             structure_index =item.data()
-            if reverse:
-                self.dataset.uncheck(structure_index)
-            else:
+            self.select_index(structure_index,reverse)
 
-                self.dataset.select(structure_index)
+    def select_index(self,structure_index,reverse):
+        if isinstance(structure_index,int):
+            structure_index=[structure_index]
+        if reverse:
+            self.dataset.uncheck(structure_index)
+        else:
 
-
-
-            self.update_axes_color([structure_index],reverse )
+            self.dataset.select(structure_index)
+        if structure_index:
+            self.update_axes_color(structure_index, reverse)
 
 
     def update_axes_color(self,structure_index,reverse ):
@@ -130,4 +135,4 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             self.plot_all()
 
         else:
-            MessageManager.send_info_message("没有可撤销的删除！")
+            MessageManager.send_info_message("No undoable deletion!")

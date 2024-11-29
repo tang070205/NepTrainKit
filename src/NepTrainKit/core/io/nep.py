@@ -67,8 +67,8 @@ class NepTrainResultData:
         structures=Structure.read_multiple(self.data_xyz_path)
         if len(structures)>=1000:
             if not check_fullbatch(self.nep_txt_path.with_name("nep.in"),len(structures)):
-                MessageManager.send_message_box("检测到目前是非full batch，请先预测后再加载！")
-                raise ValueError("检测到目前是非full batch，请先预测后再加载！")
+                MessageManager.send_message_box("Detected that the current mode is not full batch. Please make predictions first, then load!")
+                raise ValueError("Detected that the current mode is not full batch. Please make predictions first, then load!")
 
         self._atoms_dataset=NepData(structures)
 
@@ -157,9 +157,9 @@ class NepTrainResultData:
 
             # ase_write(Path(save_path).joinpath("export_good_model.xyz") ,result,append=True)
             # ase_write(Path(save_path).joinpath("export_remove_model.xyz") ,remove,append=True)
-            MessageManager.send_info_message(f"文件导出到：{save_path}")
+            MessageManager.send_info_message(f"File exported to: {save_path}")
         except:
-            MessageManager.send_info_message(f"保存出现未知错误，错误信息已经输出到日志!")
+            MessageManager.send_info_message(f"An unknown error occurred while saving. The error message has been output to the log!")
             self.logger.error(traceback.format_exc())
 
 
@@ -193,7 +193,7 @@ class NepTrainResultData:
         path = Path(path)
         dataset_path = path.joinpath(f"{model}.xyz")
         if not dataset_path.exists():
-            MessageManager.send_error_message(f"当前工作路径不存在{model}.xyz")
+            MessageManager.send_error_message(f"{model}.xyz not found in the current working directory.")
             return None
         nep_txt_path = path.joinpath(f"nep.txt")
 

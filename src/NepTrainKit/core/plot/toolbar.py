@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 from enum import Enum
 
+
 import numpy as np
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon, QPen
@@ -12,6 +13,9 @@ from PySide6.QtWidgets import QToolBar
 from pyqtgraph import ViewBox, PlotCurveItem
 
 from NepTrainKit import utils
+from NepTrainKit.core import Config
+from NepTrainKit.core.custom_widget.dialog import GetIntMessageBox, SparseMessageBox
+from NepTrainKit.core.io.select import farthest_point_sampling
 
 
 class _Mode(str, Enum):
@@ -35,6 +39,7 @@ class GraphicsToolBar(QToolBar):
 
     def __init__(self,graph_widget, parent=None):
         super().__init__(parent)
+
         self.graph_widget=graph_widget
         self.graph_widget.tool_bar=self
         self.graph_widget.currentPlotChanged.connect(self.reset_connect)
@@ -48,16 +53,31 @@ class GraphicsToolBar(QToolBar):
             self.current_plot=None
             self.view_box=None
     def init_actions(self):
-        self.add_action("重置视图",QIcon(":/images/src/images/init.svg"),self.reset_view)
-        pan_action=self.add_action("平移",QIcon(":/images/src/images/pan.svg"),self.pan)
+        self.add_action("Reset View",QIcon(":/images/src/images/init.svg"),self.reset_view)
+        pan_action=self.add_action("Pan View",QIcon(":/images/src/images/pan.svg"),self.pan)
         pan_action.setCheckable(True)
 
-        pen_action=self.add_action("鼠标框选",QIcon(":/images/src/images/pen.svg"),self.pen)
+
+
+
+        find_max_action=self.add_action( "Find Max Error Point",
+                                          QIcon(":/images/src/images/find_max.svg"),
+                                          self.find_max_error_point)
+        sparse_action=self.add_action( "Sparse samples",
+                                          QIcon(":/images/src/images/sparse.svg"),
+                                          self.sparse_point)
+
+
+        pen_action=self.add_action("Mouse Selection",QIcon(":/images/src/images/pen.svg"),self.pen)
         pen_action.setCheckable(True)
 
-        revoke_action=self.add_action("撤销",QIcon(":/images/src/images/revoke.svg"),self.revoke)
 
-        delete_action=self.add_action("删除选中",QIcon(":/images/src/images/delete.svg"),self.delete)
+
+
+
+        revoke_action=self.add_action("Undo",QIcon(":/images/src/images/revoke.svg"),self.revoke)
+
+        delete_action=self.add_action("Delete Selected Items",QIcon(":/images/src/images/delete.svg"),self.delete)
 
     def add_action(self, name,icon,callback):
         action=QAction(QIcon(icon),name,self)
@@ -108,7 +128,50 @@ class GraphicsToolBar(QToolBar):
     def revoke(self):
         self.graph_widget.revoke()
 
+    def find_max_error_point(self):
+        dataset = self.graph_widget.get_current_dataset()
+        if dataset is None:
+            return
+        box= GetIntMessageBox(self.graph_widget._parent,"Please enter an integer N, it will find the top N structures with the largest errors")
+        n = Config.getint("widget","max_error_value",10)
+        box.intSpinBox.setValue(n)
 
+        if not box.exec():
+            return
+        nmax= box.intSpinBox.value()
+        Config.set("widget","max_error_value",nmax)
+        index= (dataset.get_max_error_index(nmax))
+
+        self.graph_widget.select_index(index,False)
+
+    def sparse_point(self):
+        if  self.graph_widget.dataset is None:
+            return
+        box= SparseMessageBox(self.graph_widget._parent,"Please specify the maximum number of structures and minimum distance")
+        n_samples = Config.getint("widget","sparse_num_value",10)
+        distance = Config.getfloat("widget","sparse_distance_value",0.01)
+
+        box.intSpinBox.setValue(n_samples)
+        box.doubleSpinBox.setValue(distance)
+
+        if not box.exec():
+            return
+        n_samples= box.intSpinBox.value()
+        distance= box.doubleSpinBox.value()
+
+        Config.set("widget","sparse_num_value",n_samples)
+        Config.set("widget","sparse_distance_value",distance)
+
+        dataset = self.graph_widget.dataset.descriptor
+        indices_to_remove = farthest_point_sampling(dataset.now_data,n_samples=n_samples,min_dist=distance)
+        print(indices_to_remove)
+        # 获取所有索引（从 0 到 len(arr)-1）
+        all_indices = np.arange(dataset.now_data.shape[0])
+
+        # 使用 setdiff1d 获取不在 indices_to_remove 中的索引
+        remaining_indices = np.setdiff1d(all_indices, indices_to_remove)
+        structures = dataset.group_array[remaining_indices]
+        self.graph_widget.select_index(structures.tolist(),False)
 
     def pan(self, checked):
         """切换平移模式"""
@@ -149,11 +212,11 @@ class GraphicsToolBar(QToolBar):
     def _update_buttons_checked(self,):
 
         # sync button checkstates to match active mode
-        if '平移' in self._actions:
-            self._actions['平移'].setChecked(self.mode.name == 'PAN')
+        if 'Pan View' in self._actions:
+            self._actions['Pan View'].setChecked(self.mode.name == 'PAN')
 
-        if '鼠标框选' in self._actions:
-            self._actions['鼠标框选'].setChecked(self.mode.name == 'PEN')
+        if 'Mouse Selection' in self._actions:
+            self._actions['Mouse Selection'].setChecked(self.mode.name == 'PEN')
 
     def _mousePressEvent(self, event):
         """鼠标按下时开始绘制"""

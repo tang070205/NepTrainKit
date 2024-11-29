@@ -9,7 +9,8 @@ import traceback
 
 import pyqtgraph as pg
 from PySide6.QtCore import Qt, QFile, QTextStream
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QFont
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from PySide6.QtWidgets import QApplication, QMenuBar
 from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge)
@@ -50,13 +51,18 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_menu(self):
         self.menu = QMenuBar(self)
 
-        file_menu = self.menu.addMenu("文件")
+        file_menu = self.menu.addMenu("File")
 
-        open_dir_action = file_menu.addAction(QIcon(':/images/src/images/open.svg'),"打开")
+        open_dir_action = file_menu.addAction(QIcon(':/images/src/images/open.svg'),"Open")
         open_dir_action.triggered.connect(self.open_file_dialog)
-        export_action=file_menu.addAction(QIcon(':/images/src/images/save.svg'),"导出")
+        export_action=file_menu.addAction(QIcon(':/images/src/images/save.svg'),"Export")
 
         export_action.triggered.connect(self.export_file_dialog)
+
+
+
+
+
 
 
         self.titleBar.hBoxLayout.insertWidget(2, self.menu,0,Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignCenter)
@@ -65,9 +71,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self.navigationInterface.setReturnButtonVisible(False)
         self.navigationInterface.setExpandWidth(200)
         self.navigationInterface.addSeparator()
-        self.addSubInterface(self.show_nep_interface, QIcon(':/images/src/images/show_nep.svg'), 'NEP数据集展示')
+        self.addSubInterface(self.show_nep_interface, QIcon(':/images/src/images/show_nep.svg'), 'NEP Dataset Display')
 
-        self.addSubInterface(self.setting_interface, FIF.SETTING, '设置', NavigationItemPosition.BOTTOM)
+        self.addSubInterface(self.setting_interface, FIF.SETTING, 'Settings', NavigationItemPosition.BOTTOM)
 
 
 
@@ -117,7 +123,8 @@ def main():
     if os.path.exists("update.zip") or os.path.exists("update.tar.gz"):
         utils.unzip()
     app = QApplication(sys.argv)
-
+    font = QFont("Arial", 12)  # 设置字体为 Arial，字号为 12
+    app.setFont(font)
     theme_file = QFile(":/theme/src/qss/theme.qss")
     theme_file.open(QFile.ReadOnly )
     theme=theme_file.readAll().data().decode("utf-8")

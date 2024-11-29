@@ -12,6 +12,8 @@ import numpy as np
 from loguru import logger
 
 
+
+
 def read_nep_in(  file_name):
     run_in={}
     with open(file_name, 'r', encoding="utf8") as f:
@@ -42,7 +44,7 @@ def read_atom_num_from_xyz(path):
 
 
 def read_nep_out_file(file_path):
-    logger.info("读取文件{}".format(file_path))
+    logger.info("Reading file: {}".format(file_path))
     if os.path.exists(file_path):
         data = np.loadtxt(file_path)
 

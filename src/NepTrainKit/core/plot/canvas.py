@@ -126,7 +126,7 @@ class LayoutPlotBase(PlotBase):
 class CustomGraphicsLayoutWidget(LayoutPlotBase,GraphicsLayoutWidget):
 
     def __init__(self,*args,**kwargs):
-        super().__init__(self,*args,**kwargs)
+        super().__init__(self )
 
         GraphicsLayoutWidget.__init__(self,*args,**kwargs)
 

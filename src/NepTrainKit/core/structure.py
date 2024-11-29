@@ -106,12 +106,10 @@ class Structure:
 
             structure_info[prop["name"]] = _info
             index += prop["count"]
-        try:
 
-            return cls(lattice, structure_info, properties, additional_fields)
-        except:
-            print(lattice)
-            print("".join(lines))
+
+        return cls(lattice, structure_info, properties, additional_fields)
+
     @classmethod
     def _parse_global_properties(cls, line):
         """

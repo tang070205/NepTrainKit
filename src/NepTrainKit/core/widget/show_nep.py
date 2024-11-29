@@ -45,7 +45,7 @@ class ShowNepWidget(QWidget):
 
         self.plot_widget_layout = QGridLayout(self.plot_widget)
 
-        self.graph_widget = NepResultGraphicsLayoutWidget(  )
+        self.graph_widget = NepResultGraphicsLayoutWidget(self  )
 
         self.graph_widget.structureIndexChanged.connect(self.show_current_structure)
 
@@ -124,17 +124,17 @@ class ShowNepWidget(QWidget):
 
 
     def open_file(self):
-        path = utils.call_path_dialog(self,"请选择工作路径","directory")
+        path = utils.call_path_dialog(self,"Please choose the working directory","directory")
         if path:
             self.set_work_path(path)
 
     def export_file(self):
         if self.dataset is None:
-            MessageManager.send_info_message("您还没有加载NEP数据！")
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
             return
-        path=utils.call_path_dialog(self,"选择文件保存路径","directory")
+        path=utils.call_path_dialog(self,"Choose a file save location","directory")
         if path:
-            thread=utils.LoadingThread(self,show_tip=True,title="正在导出数据")
+            thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
             thread.start_work(self.dataset.export_model_xyz,path)
 
 
@@ -146,7 +146,7 @@ class ShowNepWidget(QWidget):
         url=self.path_label.getUrl().toString()
 
         if os.path.exists(url.replace("file:///","")):
-            box=MessageBox("询问","检测到已有工作目录，加载新的目录将清空之前的结果\n请问是否要载入新的工作路径？",self)
+            box=MessageBox("Ask","A working directory already exists. Loading a new directory will erase the previous results.\nDo you want to load the new working path?",self)
             box.exec_()
             if box.result()==0:
                 return
@@ -164,7 +164,7 @@ class ShowNepWidget(QWidget):
         if self.dataset is None:
             # MessageManager.send_error_message(f"当前目录下并没有训练集xyz文件：")
             return
-        self.path_label.setText(f"当前工作路径：{path}")
+        self.path_label.setText(f"Current working directory: {path}")
         self.path_label.setUrl(QUrl.fromLocalFile(path))
         self.graph_widget.set_dataset(self.dataset)
 
@@ -172,7 +172,7 @@ class ShowNepWidget(QWidget):
         atoms=self.dataset.get_atoms(current_index)
 
         self.show_struct_widget.show_atoms(atoms)
-        self.struct_index_label.setText(f"当前结构(原始文件下标)：{current_index}")
+        self.struct_index_label.setText(f"Current structure (original file index):{current_index}")
         text_io=StringIO()
         atoms.write(text_io)
 

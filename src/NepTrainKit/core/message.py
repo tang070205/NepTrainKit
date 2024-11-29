@@ -43,27 +43,27 @@ class MessageManager(QObject):
 
 
     @classmethod
-    def send_info_message(cls,message,title="提示"):
+    def send_info_message(cls,message,title="Tip"):
         cls._createInstance()
 
         cls._instance.show_message.emit(InfoBarIcon.INFORMATION,message,title)
     @classmethod
-    def send_success_message(cls,message,title="成功"):
+    def send_success_message(cls,message,title="Success"):
         cls._createInstance()
         cls._instance.show_message.emit(InfoBarIcon.SUCCESS,message,title)
     @classmethod
-    def send_warning_message(cls,message,title="警告"):
+    def send_warning_message(cls,message,title="Warning"):
         cls._createInstance()
         cls._instance.show_message.emit(InfoBarIcon.WARNING,message,title)
 
     @classmethod
-    def send_error_message(cls, message,title="错误"):
+    def send_error_message(cls, message,title="Error"):
         cls._createInstance()
         cls._instance.show_message.emit(InfoBarIcon.ERROR, message,title)
 
     @classmethod
 
-    def send_message_box(cls,message,title="提示"):
+    def send_message_box(cls,message,title="Tip"):
         cls._createInstance()
 
         w = MessageBox(title, message, cls._instance._parent)

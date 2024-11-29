@@ -13,7 +13,8 @@
     <file>src/images/revoke.svg</file>
     <file>src/images/save.svg</file>
     <file>src/images/show_nep.svg</file>
-
+    <file>src/images/find_max.svg</file>
+    <file>src/images/sparse.svg</file>
   </qresource>
   <qresource prefix="/theme">
     <file>src/qss/theme.qss</file>
