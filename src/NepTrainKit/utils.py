@@ -13,10 +13,8 @@ from loguru import logger
 from qfluentwidgets import StateToolTip
 from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
 from NepTrainKit.core import Config
-#设置log日志文件
-logger.add("./Log/{time:%Y-%m-%d}.log", rotation='00:00' ,
-           level="INFO",   encoding="utf8",
-           compression="zip", retention="4 days")
+
+
 
 
 def loghandle(cls):

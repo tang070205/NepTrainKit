@@ -4,6 +4,9 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import os
+import sys
+
+from loguru import logger
 
 try:
     # Actual if statement not needed, but keeps code inspectors more happy
@@ -16,7 +19,12 @@ except NameError:
 
 if is_nuitka_compiled:
 
+    # 设置log日志文件
+    logger.add("./Log/{time:%Y-%m}.log",
+               level="INFO",
+                )
     module_path="./"
 else:
 
     module_path = os.path.dirname(__file__)
+
