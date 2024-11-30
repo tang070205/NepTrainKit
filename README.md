@@ -6,7 +6,7 @@
  
 </h4>
 
-[中文](README_CN.md)
+[中文](README_zh.md)
 
 
 #  About NepTrainKit
