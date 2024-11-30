@@ -1,18 +1,15 @@
 
+<h4 align="center">
 
-
-## 环境安装
-```bash
-
-conda create -n NepTrainKit python=3.10
-conda activate NepTrainKit
-pip install -r requirements.txt 
-
-```
-
-
-## 教程和演示
-https://www.bilibili.com/video/BV1CrU7YUE3Z/
-
+[![PyPI Downloads](https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI)](https://pypi.org/project/NepTrainKit)
+[![Requires Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white)](https://python.org/downloads)
  
- 
+</h4>
+[中文](README_CN.md)
+
+
+#  About NepTrainKit
+NepTrainKit is a toolkit focused on the operation and visualization of neural network potential function (NEP) training datasets. It is mainly used to simplify and optimize the NEP model training process, providing an intuitive graphical interface and analysis tools to help users adjust hyperparameters and evaluate model performance more efficiently.
+# Installation
+- Install directly using the pip install command: `pip install NepTrainKit`. After installation, you can call the program using `NepTrainKit` or `nepkit`.
+- Go to the **release** page of this project to download the executable **NepTrainKit.win32.zip**. Currently, this program only supports Windows systems.

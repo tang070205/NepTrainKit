@@ -7,9 +7,9 @@ import time
 
 import numpy as np
 from PySide6.QtCore import Signal
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QGraphicsItem
-from pyqtgraph import mkPen, ScatterPlotItem, PlotDataItem
-
+from pyqtgraph import mkPen, ScatterPlotItem, PlotDataItem, TextItem
 
 from .canvas import CustomGraphicsLayoutWidget
 from .. import MessageManager
@@ -29,6 +29,12 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         self.subplot(2,3)
         self.plot_all()
 
+
+    def set_current_plot(self,plot):
+        result = super().set_current_plot(plot)
+        if result:
+            dataset=self.get_current_dataset()
+            plot.setTitle(dataset.title+f" RMSE:{dataset.get_formart_rmse()}")
     def get_current_dataset(self):
         if self.current_plot is None:
             return None
@@ -42,10 +48,14 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         for index,_dataset in enumerate(self.dataset.dataset):
             plot=self.axes_list[index]
             plot.clear()
-            plot.setTitle(_dataset.title)
             if _dataset.title not in ["descriptor"]:
 
+
+
                 plot.addLine(angle=45, pos=(0.5, 0.5), pen=mkPen('r', width=2))
+            # else:
+            plot.setTitle(_dataset.title)
+
             scatter = ScatterPlotItem(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=_dataset.normal_color, pen=None, symbol='o',
                                      )

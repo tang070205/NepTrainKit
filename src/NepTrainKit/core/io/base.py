@@ -121,6 +121,26 @@ class NepData:
         self.data.revoke()
         self.group_array.revoke()
 
+    def get_rmse(self):
+        return np.sqrt(((self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]) ** 2).mean( ))
+
+    def get_formart_rmse(self):
+        rmse=self.get_rmse()
+        if self.title =="energy":
+            unit="meV/atom"
+            rmse*=1000
+        elif self.title =="force":
+            unit="meV/A"
+            rmse*=1000
+        elif self.title =="virial":
+            unit="meV/atom"
+            rmse*=1000
+        elif self.title =="stress":
+            unit="MPa"
+            rmse*=1000
+        else:
+            return ""
+        return f"{rmse:.2f}{unit}"
 
     def get_max_error_index(self,nmax):
         error = np.sum(np.abs(self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]), axis=1)

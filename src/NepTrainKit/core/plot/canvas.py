@@ -8,6 +8,7 @@ from abc import abstractmethod
 
 import numpy as np
 from PySide6.QtCore import Signal
+from nuitka.nodes.shapes.BuiltinTypeShapes import truediv_shapes_tuple
 
 from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem
 
@@ -96,6 +97,8 @@ class LayoutPlotBase(PlotBase):
 
             self.current_plot=plot
             self.currentPlotChanged.emit()
+            return True
+        return False
     def on_click(self,plot):
         """
         子图点击  放大
