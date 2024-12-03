@@ -7,12 +7,14 @@ import contextlib
 import os
 
 import numpy as np
+from PySide6.QtCore import QObject
 
 from nep_cpu import NEP3
 
-class Nep3Calculator:
+class Nep3Calculator(QObject):
 
     def __init__(self, model_file="nep.txt"):
+        super().__init__()
         if not isinstance(model_file, str):
             model_file=str(model_file,encoding="utf-8")
         with open(os.devnull, 'w') as devnull:

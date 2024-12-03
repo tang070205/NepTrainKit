@@ -5,13 +5,9 @@
 # @email    : 1747193328@qq.com
 import os
 import re
-import threading
 
 import numpy as np
-
 from loguru import logger
-
-
 
 
 def read_nep_in(  file_name):
@@ -46,6 +42,7 @@ def read_atom_num_from_xyz(path):
 
 
 def read_nep_out_file(file_path):
+
     logger.info("Reading file: {}".format(file_path))
     if os.path.exists(file_path):
         data = np.loadtxt(file_path)

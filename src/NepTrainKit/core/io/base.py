@@ -3,11 +3,13 @@
 # @Time    : 2024/10/18 15:31
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import re
 from functools import cached_property
 
 import numpy as np
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QBrush
+
+from NepTrainKit import utils
+from NepTrainKit.core.types import Brushes
 
 
 class DataBase:
@@ -54,8 +56,6 @@ class DataBase:
     def revoke(self):
         if self.remove_num:
             last_remove_num=self.remove_num.pop(-1)
-
-
             self.now_data = np.append(self.now_data, self.remove_data[-last_remove_num: ],axis=0)
             self.remove_data = np.delete(self.remove_data, np.s_[-last_remove_num:], axis=0)
 
@@ -149,27 +149,28 @@ class NepData:
         return   self.group_array.now_data[rmse_max_ids[:nmax]].tolist()
 
 
+
+
 class NepPlotData(NepData):
 
     def __init__(self,data_list,**kwargs ):
         super().__init__(data_list,**kwargs )
 
-        self.__color1=QBrush(Qt.GlobalColor.blue)
-        self.__selected_color=QBrush(Qt.GlobalColor.red)
+
 
 
     @property
     def colors(self):
         structure_index=self.structure_index
-        colors = np.full(structure_index.shape[0], self.__color1)  # 初始颜色为蓝色
+        colors = np.full(structure_index.shape[0], self.normal_color)  # 初始颜色为蓝色
         # print(colors)
         return colors
     @property
     def selected_color(self):
-        return self.__selected_color
+        return Brushes.RedBrush
     @property
     def normal_color(self):
-        return self.__color1
+        return Brushes.BlueBrush
     @property
     def x(self):
         if self.cols==0:
@@ -186,7 +187,14 @@ class NepPlotData(NepData):
         return self.group_array[ : ].repeat(self.cols)
 
 
+class StructureData(NepData):
+
+    @utils.timeit
+    def get_all_config(self):
+
+        return [structure.additional_fields["Config_type"]  for structure in self.now_data]
 
 
-
-
+    def search_config(self,config):
+        result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.additional_fields["Config_type"])]
+        return self.group_array[result_index].tolist()

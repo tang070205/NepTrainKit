@@ -3,17 +3,15 @@
 # @Time    : 2024/10/20 22:22
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import time
 
 import numpy as np
 from PySide6.QtCore import Signal
-from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QGraphicsItem
-from pyqtgraph import mkPen, ScatterPlotItem, PlotDataItem, TextItem
+from pyqtgraph import mkPen, ScatterPlotItem, TextItem
 
 from .canvas import CustomGraphicsLayoutWidget
 from .. import MessageManager
 from ..io import NepTrainResultData
+from ..types import Brushes
 
 
 class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
@@ -29,12 +27,19 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         self.subplot(2,3)
         self.plot_all()
 
+    def convert_pos(self,plot,pos):
+        view_range = plot.viewRange()
+        x_range = view_range[0]  # x轴范围 [xmin, xmax]
+        y_range = view_range[1]  # y轴范围 [ymin, ymax]
 
-    def set_current_plot(self,plot):
-        result = super().set_current_plot(plot)
-        if result:
-            dataset=self.get_current_dataset()
-            plot.setTitle(dataset.title+f" RMSE:{dataset.get_formart_rmse()}")
+        # 将百分比位置转换为坐标
+        x_percent = pos[0] # 50% 对应 x 轴中间
+        y_percent =  pos[1]  # 20% 对应 y 轴上的某个位置
+
+        x_pos = x_range[0] + x_percent * (x_range[1] - x_range[0])  # 根据百分比计算实际位置
+        y_pos = y_range[0] + y_percent * (y_range[1] - y_range[0])  # 根据百分比计算实际位置
+        return x_pos,y_pos
+
     def get_current_dataset(self):
         if self.current_plot is None:
             return None
@@ -44,15 +49,14 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
     def plot_all(self):
         self.dataset.select_index.clear()
         _pen = mkPen(None)
-
+        # import time
+        # start = time.time()
         for index,_dataset in enumerate(self.dataset.dataset):
             plot=self.axes_list[index]
             plot.clear()
             if _dataset.title not in ["descriptor"]:
-
-
-
                 plot.addLine(angle=45, pos=(0.5, 0.5), pen=mkPen('r', width=2))
+
             # else:
             plot.setTitle(_dataset.title)
 
@@ -63,9 +67,19 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
 
             scatter.sigClicked.connect(self.item_clicked)
             plot.scatter=scatter
+            # plot.setDownsampling(auto=False )
             plot.addItem(scatter)
-            # plot.autoRange()
+            if _dataset.title not in ["descriptor"]:
 
+                pos=self.convert_pos(plot,(0 ,1))
+                text=f"rmse: {_dataset.get_formart_rmse()}"
+                text_item = TextItem(text=text ,color=(231, 63, 50))
+                text_item.setPos(*pos)
+                plot.addItem(text_item)
+
+            # plot.autoRange()
+        # print(time.time()-start)
+        #5.67748498916626
     def item_clicked(self,scatter_item,items,event):
 
         if items.any():
@@ -100,39 +114,40 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
     def select_index(self,structure_index,reverse):
         if isinstance(structure_index,int):
             structure_index=[structure_index]
+        elif isinstance(structure_index,np.ndarray):
+            structure_index=structure_index.tolist()
+
+        if not structure_index:
+            return
         if reverse:
             self.dataset.uncheck(structure_index)
+            self.update_axes_color(structure_index, Brushes.BlueBrush)
+
         else:
 
             self.dataset.select(structure_index)
-        if structure_index:
-            self.update_axes_color(structure_index, reverse)
+
+            self.update_axes_color(structure_index, Brushes.RedBrush)
 
 
-    def update_axes_color(self,structure_index,reverse ):
+    def update_axes_color(self,structure_index,color=Brushes.RedBrush):
 
 
         for i,plot in enumerate(self.axes_list):
 
             if not hasattr(plot,"scatter"):
                 continue
-
-
-
             structure_index_set= set(structure_index)
             index_list = [i for i, val in enumerate(plot.scatter.data["data"]) if val in structure_index_set]
-            plot.scatter.data["brush"][index_list]=self.dataset.dataset[i].normal_color if  reverse else self.dataset.dataset[i].selected_color
-            plot.scatter.data['sourceRect'][index_list] = (0, 0, 0, 0)
 
+            plot.scatter.data["brush"][index_list]=   color
+            plot.scatter.data['sourceRect'][index_list] = (0, 0, 0, 0)
 
 
             plot.scatter.updateSpots(  )
 
 
-            #这种全部重新设置 比较慢  放弃
-            # color=self.dataset.dataset[i].colors
-            # color[index_list]=self.dataset.dataset[i].selected_color
-            # plot.scatter.setBrush(color)
+
 
 
     def revoke(self):

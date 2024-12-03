@@ -34,12 +34,12 @@ class _Mode(str, Enum):
 
 
 
-class GraphicsToolBar(QToolBar):
+class NepDisplayGraphicsToolBar(QToolBar):
 
 
     def __init__(self,graph_widget, parent=None):
         super().__init__(parent)
-
+        self._parent = parent
         self.graph_widget=graph_widget
         self.graph_widget.tool_bar=self
         self.graph_widget.currentPlotChanged.connect(self.reset_connect)
@@ -59,7 +59,6 @@ class GraphicsToolBar(QToolBar):
 
 
 
-
         find_max_action=self.add_action( "Find Max Error Point",
                                           QIcon(":/images/src/images/find_max.svg"),
                                           self.find_max_error_point)
@@ -70,10 +69,6 @@ class GraphicsToolBar(QToolBar):
 
         pen_action=self.add_action("Mouse Selection",QIcon(":/images/src/images/pen.svg"),self.pen)
         pen_action.setCheckable(True)
-
-
-
-
 
         revoke_action=self.add_action("Undo",QIcon(":/images/src/images/revoke.svg"),self.revoke)
 

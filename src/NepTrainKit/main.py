@@ -12,8 +12,9 @@ from PySide6.QtCore import Qt, QFile, QTextStream
 from PySide6.QtGui import QIcon, QFont
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from PySide6.QtWidgets import QApplication, QMenuBar
-from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge)
+from PySide6.QtWidgets import QApplication, QMenuBar, QWidget, QGridLayout, QMainWindow
+from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge,
+                            ToolButton, TransparentToolButton, SearchLineEdit)
 from qfluentwidgets import FluentIcon as FIF
 from loguru import logger
 
@@ -26,7 +27,7 @@ from NepTrainKit import utils,src_rc
 
 pg.setConfigOption('background', 'w')  # 设置背景为白色
 pg.setConfigOption('foreground', 'k')  # 设置前景元素为黑色（如坐标轴）
-@utils.loghandle
+
 class NepTrainKitMainWindow(FluentWindow):
 
     def __init__(self):
@@ -49,23 +50,44 @@ class NepTrainKitMainWindow(FluentWindow):
 
 
     def init_menu(self):
-        self.menu = QMenuBar(self)
+        # self.menu = QMenuBar(self)
+        #
+        # file_menu = self.menu.addMenu("File")
+        #
+        #
+        #
+        #
+        # open_dir_action = file_menu.addAction(QIcon(':/images/src/images/open.svg'),"Open")
+        # open_dir_action.triggered.connect(self.open_file_dialog)
+        # export_action=file_menu.addAction(QIcon(':/images/src/images/save.svg'),"Export")
+        #
+        # export_action.triggered.connect(self.export_file_dialog)
 
-        file_menu = self.menu.addMenu("File")
+        self.menu_widget=QWidget(self)
+        self.menu_widget.setStyleSheet("ButtonView{background: rgb(240, 244, 249)}")
 
-        open_dir_action = file_menu.addAction(QIcon(':/images/src/images/open.svg'),"Open")
-        open_dir_action.triggered.connect(self.open_file_dialog)
-        export_action=file_menu.addAction(QIcon(':/images/src/images/save.svg'),"Export")
-
-        export_action.triggered.connect(self.export_file_dialog)
-
-
-
+        self.menu_gridLayout = QGridLayout(self.menu_widget)
+        self.menu_gridLayout.setContentsMargins(3,0,3,0)
+        self.menu_gridLayout.setSpacing(1)
+        self.open_dir_button = TransparentToolButton(QIcon(':/images/src/images/open.svg') ,self.menu_widget)
+        self.open_dir_button.clicked.connect(self.open_file_dialog)
 
 
+        self.save_dir_button = TransparentToolButton(QIcon(':/images/src/images/save.svg') ,self.menu_widget)
+        self.save_dir_button.clicked.connect(self.export_file_dialog)
 
 
-        self.titleBar.hBoxLayout.insertWidget(2, self.menu,0,Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignCenter)
+
+        self.menu_gridLayout.addWidget(self.open_dir_button, 0, 0)
+        self.menu_gridLayout.addWidget(self.save_dir_button, 0, 1)
+
+        # self.search_lineEdit = SearchLineEdit(self.menu_widget)
+        # self.menu_gridLayout.addWidget(self.search_lineEdit, 0, 4)
+
+
+
+
+        self.titleBar.hBoxLayout.insertWidget(2, self.menu_widget,0,Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignCenter)
 
     def init_navigation(self):
         self.navigationInterface.setReturnButtonVisible(False)

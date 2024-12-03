@@ -4,5 +4,5 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 from .nep import NepResultGraphicsLayoutWidget
-from .toolbar import GraphicsToolBar
+from .toolbar import NepDisplayGraphicsToolBar
 from .structure import StructurePlotWidget

@@ -5,6 +5,8 @@
 # @email    : 1747193328@qq.com
 import os
 import subprocess
+import threading
+import time
 
 from PySide6.QtCore import QThread
 from PySide6.QtGui import QIcon
@@ -16,12 +18,15 @@ from NepTrainKit.core import Config
 
 
 
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()  # 记录开始时间
+        result = func(*args, **kwargs)  # 调用原始函数
+        end_time = time.time()  # 记录结束时间
+        logger.debug(f"Function '{func.__name__}' executed in {end_time - start_time:.4f} seconds")
+        return result
+    return wrapper
 
-def loghandle(cls):
-    #装饰器 给类传入一个变量可以直接调用self.logger
-    if not hasattr(cls, "logger"):
-        setattr(cls, "logger", logger)
-    return cls
 
 
 
@@ -80,8 +85,8 @@ class LoadingThread(QThread):
         self.title=title
         self._parent=parent
     def run(self ):
-
         self.func()
+
     def start_work(self,func,*args,**kwargs):
         if self.show_tip:
             self.tip = StateToolTip(self.title, '请耐心等待哦~~', self._parent)

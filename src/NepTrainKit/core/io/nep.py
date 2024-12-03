@@ -3,19 +3,19 @@
 # @Time    : 2024/10/18 13:26
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import time
 import traceback
 from pathlib import Path
 
 import numpy as np
+from PySide6.QtCore import QObject
+from loguru import logger
 
-from NepTrainKit.core import MessageManager,Structure
-from .base import NepPlotData, NepData, DataBase
-from .utils import read_nep_out_file, read_atom_num_from_xyz,check_fullbatch
-
-
-from NepTrainKit import utils
+from NepTrainKit.core import MessageManager, Structure
+from .base import NepPlotData, StructureData
+from .utils import read_nep_out_file, read_atom_num_from_xyz, check_fullbatch
 from ..calculator import Nep3Calculator
+
+
 def pca(X, k):
     # 1. 标准化数据（去均值和方差标准化）
     mean = np.mean(X, axis=0)
@@ -36,8 +36,17 @@ def pca(X, k):
 
     return X_pca
 
-@utils.loghandle
-class NepTrainResultData:
+class TestWorker(QObject):
+    def parse(self):
+        structures=Structure.read_multiple("./train.xyz",0 )
+        nep3 = Nep3Calculator("nep.txt")
+
+        desc_list=[nep3.get_descriptors(structure).mean(0) for structure in structures]
+        print("fined")
+
+
+
+class NepTrainResultData(QObject):
     def __init__(self,
                  nep_txt_path,
                  data_xyz_path,
@@ -47,7 +56,7 @@ class NepTrainResultData:
                  virial_out_path,
 
                  ):
-
+        super().__init__()
         #这里不知道怎么展示结构  先保存下路径
         self.nep_txt_path=nep_txt_path
         self.data_xyz_path = data_xyz_path
@@ -55,36 +64,36 @@ class NepTrainResultData:
         self.force_out_path = force_out_path
         self.stress_out_path = stress_out_path
         self.virial_out_path = virial_out_path
+
         atoms_num_list = read_atom_num_from_xyz(self.data_xyz_path)
+        # return
 
 
-
-
-
-
-        # self._atoms_dataset=DataBase(ase_read(self.data_xyz_path,index=":",format="extxyz"))
-        # self._atoms_dataset=NepData(np.arange(len(atoms_num_list)))
-        structures=Structure.read_multiple(self.data_xyz_path)
+        structures=Structure.read_multiple(self.data_xyz_path  )
+        # return
         if len(structures)>=1000:
             if not check_fullbatch(self.nep_txt_path.with_name("nep.in"),len(structures)):
                 MessageManager.send_message_box("Detected that the current mode is not full batch. Please make predictions first, then load!")
                 raise ValueError("Detected that the current mode is not full batch. Please make predictions first, then load!")
 
-        self._atoms_dataset=NepData(structures)
+        self._atoms_dataset=StructureData(structures)
+
 
         self._energy_dataset=NepPlotData(read_nep_out_file(self.energy_out_path),title="energy")
 
         self._force_dataset=NepPlotData(read_nep_out_file(self.force_out_path),group_list=atoms_num_list,title="force")
-
+        # print(self._force_dataset.now_data.shape)
         self._stress_dataset=NepPlotData(read_nep_out_file(self.stress_out_path),title="stress")
         self._virial_dataset=NepPlotData(read_nep_out_file(self.virial_out_path),title="virial")
 
-        nep3 = Nep3Calculator(nep_txt_path.as_posix())
+
+        nep3 = Nep3Calculator(self.nep_txt_path.as_posix())
+
         desc_list=[nep3.get_descriptors(structure).mean(0) for structure in structures]
         desc_array=np.vstack(desc_list)
         desc_array = pca(desc_array,2)
 
-
+        # desc_array=np.array([])
         self._descriptor_dataset=NepPlotData(desc_array,title="descriptor")
 
         self.select_index=set()
@@ -94,12 +103,16 @@ class NepTrainResultData:
 
     @property
     def dataset(self):
-        # return [self.energy, self.stress,self.virial]
+        # return [self.energy, self.stress,self.virial, self.descriptor]
         return [self.energy,self.force,self.stress,self.virial, self.descriptor]
 
     @property
     def num(self):
         return self._atoms_dataset.num
+    @property
+    def structure(self):
+        return self._atoms_dataset
+
     @property
     def energy(self):
         return self._energy_dataset
@@ -160,7 +173,7 @@ class NepTrainResultData:
             MessageManager.send_info_message(f"File exported to: {save_path}")
         except:
             MessageManager.send_info_message(f"An unknown error occurred while saving. The error message has been output to the log!")
-            self.logger.error(traceback.format_exc())
+            logger.error(traceback.format_exc())
 
 
     def get_atoms(self,index ):
@@ -193,9 +206,12 @@ class NepTrainResultData:
         path = Path(path)
         dataset_path = path.joinpath(f"{model}.xyz")
         if not dataset_path.exists():
-            MessageManager.send_error_message(f"{model}.xyz not found in the current working directory.")
+            MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
             return None
         nep_txt_path = path.joinpath(f"nep.txt")
+        if not nep_txt_path.exists():
+            MessageManager.send_message_box(f"nep.txt not found in the current working directory.")
+            return None
 
         energy_out_path = path.joinpath(f"energy_{model}.out")
         force_out_path = path.joinpath(f"force_{model}.out")

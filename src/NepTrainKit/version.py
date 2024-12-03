@@ -16,7 +16,7 @@ RELEASES_API_URL=f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"
 
 
 YEAR=2024
-AUTHOR="陈成兵"
+AUTHOR="ChengBing Chen"
 if sys.platform=="win32":
     UPDATE_FILE="update.zip"
     UPDATE_EXE="update.exe"

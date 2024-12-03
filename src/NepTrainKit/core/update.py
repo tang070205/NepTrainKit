@@ -11,6 +11,7 @@ import traceback
 import requests
 from PySide6.QtCore import QThread, Signal, QObject
 from PySide6.QtWidgets import QApplication
+from loguru import logger
 
 from qfluentwidgets import MessageBox
 
@@ -19,7 +20,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.version import RELEASES_URL, RELEASES_API_URL, __version__,UPDATE_FILE
 
 
-@utils.loghandle
+
 class UpdateWoker( QObject):
     version=Signal(dict)
     download_success=Signal( )
@@ -81,7 +82,7 @@ class UpdateWoker( QObject):
             self.version.emit(version_info)
 
         except:
-            self.logger.error(traceback.format_exc())
+            logger.error(traceback.format_exc())
             MessageManager.send_error_message("Network error!")
 
 

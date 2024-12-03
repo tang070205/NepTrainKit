@@ -17,7 +17,6 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.update import UpdateWoker
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR, RELEASES_URL
 
-@utils.loghandle
 class SettingsWidget(QWidget):
     def __init__(self,parent):
 

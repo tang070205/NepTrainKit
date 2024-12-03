@@ -4,8 +4,16 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import re
+import threading
+import time
+from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor
 
 import numpy as np
+from PySide6.QtCore import QThread, QObject
+from PySide6.QtWidgets import QApplication
+
+from NepTrainKit import utils
+from NepTrainKit.utils import timeit
 
 atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
                  'B': 5, 'C': 6, 'N': 7, 'O': 8,
@@ -36,12 +44,15 @@ atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
 
 
 
-class Structure:
+class Structure(QObject):
     def __init__(self, lattice, structure_info, properties, additional_fields):
+        super().__init__()
         self.properties = properties
         self.lattice = np.array(lattice).reshape((3,3))  # Optional: Lattice vectors
         self.structure_info = structure_info
         self.additional_fields = additional_fields
+        if "Config_type" not in self.additional_fields.keys():
+            self.additional_fields["Config_type"] = ""
 
 
     def __len__(self):
@@ -85,6 +96,7 @@ class Structure:
         # Parse the second line (global properties)
         global_properties = lines[1].strip()
         lattice, properties, additional_fields = cls._parse_global_properties(global_properties)
+
         array = np.array([line.split() for line in lines[2:]])
 
         structure_info = {}
@@ -132,8 +144,11 @@ class Structure:
                 # Parse Properties details
                 properties = cls._parse_properties(value)
             else:
-                if '"' in value:
 
+                if '"' in value:
+                    if key=="config_type":
+                        #这里是为了后面的Config搜索做统一
+                        key=key.title()
                     additional_fields[key] = value.strip('"')  # 去掉引号
                 else:
                     try:
@@ -159,25 +174,33 @@ class Structure:
         return parsed_properties
 
     @staticmethod
-    def read_multiple(filename):
+
+    def read_multiple(filename ):
         """
         Read a multi-structure XYZ file and return a list of Structure objects.
         """
+
+
         structures = []
+
         with open(filename, 'r') as file:
-            lines = file.readlines()
+            lines = file.read().splitlines()
 
         i = 0
         while i < len(lines):
-            if not lines[i].strip():
+            num_atoms = lines[i].strip()
+
+            if not num_atoms:
                 i += 1
                 continue
-            num_atoms = int(lines[i].strip())
+            num_atoms = int(num_atoms)
             end = i + 2 + num_atoms
             structure_lines = lines[i:end]
+
             structure = Structure.read(structure_lines)
             structures.append(structure)
             i = end
+
         return structures
 
     def write(self, file):

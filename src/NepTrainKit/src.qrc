@@ -15,6 +15,10 @@
     <file>src/images/show_nep.svg</file>
     <file>src/images/find_max.svg</file>
     <file>src/images/sparse.svg</file>
+    <file>src/images/search.svg</file>
+    <file>src/images/check.svg</file>
+    <file>src/images/uncheck.svg</file>
+
   </qresource>
   <qresource prefix="/theme">
     <file>src/qss/theme.qss</file>
