@@ -8,8 +8,6 @@ from abc import abstractmethod
 
 import numpy as np
 from PySide6.QtCore import Signal
-from nuitka.nodes.shapes.BuiltinTypeShapes import truediv_shapes_tuple
-
 from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem
 
 
