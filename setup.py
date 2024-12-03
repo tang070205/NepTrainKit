@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import platform
 import sys
+from distutils.ccompiler import get_default_compiler
 
 
 from setuptools import Extension, setup
@@ -21,17 +22,28 @@ from setuptools.command.build_ext import build_ext
 # 获取 pybind11 的 include 路径
 pybind11_include = pybind11.get_include()
 
+# 检测当前编译器
+compiler = get_default_compiler()
+
+# 设定编译选项
+extra_compile_args = []
+extra_link_args = []
+
+if platform.system() == 'Windows' and compiler == 'msvc':  # 对于 MSVC 编译器（Windows）
+    extra_compile_args = ['/O2', '/std:c++17', '/openmp']
+elif platform.system() != 'Windows' and compiler != 'msvc':  # 对于 GCC 或 Clang 编译器（Linux/macOS）
+    extra_compile_args = ['-O3', '-std=c++17', '-fopenmp']
 # 定义扩展模块
 ext_modules = [
     Extension(
         "nep_cpu",  # 模块名
-        ["src/nep_cpu/nep_bindings.cpp"],  # 源文件
+        ["src/nep_cpu/nep_cpu.cpp"],  # 源文件
         include_dirs=[
             pybind11_include,
             # "src/nep_cpu"
         ],
-        extra_compile_args=["-O3", "-Wall", "-std=c++17"],  # 编译选项
-        extra_link_args=[],
+        extra_compile_args=extra_compile_args,  # 编译选项
+        extra_link_args=extra_link_args,
         language="c++",  # 指定语言为 C++
     ),
 ]

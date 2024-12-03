@@ -23,7 +23,7 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
         self.checkButton = LineEditButton(":/images/src/images/check.svg", self)
         self.checkButton.setToolTip("Mark structure according to Config_type")
         self.uncheckButton = LineEditButton(":/images/src/images/uncheck.svg", self)
-        self.checkButton.setToolTip("Unmark structure according to Config_type")
+        self.uncheckButton.setToolTip("Unmark structure according to Config_type")
 
         self.searchButton.setIconSize(QSize(16, 16))
 

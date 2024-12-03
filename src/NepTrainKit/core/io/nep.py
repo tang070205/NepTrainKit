@@ -36,13 +36,7 @@ def pca(X, k):
 
     return X_pca
 
-class TestWorker(QObject):
-    def parse(self):
-        structures=Structure.read_multiple("./train.xyz",0 )
-        nep3 = Nep3Calculator("nep.txt")
 
-        desc_list=[nep3.get_descriptors(structure).mean(0) for structure in structures]
-        print("fined")
 
 
 
@@ -82,15 +76,15 @@ class NepTrainResultData(QObject):
         self._energy_dataset=NepPlotData(read_nep_out_file(self.energy_out_path),title="energy")
 
         self._force_dataset=NepPlotData(read_nep_out_file(self.force_out_path),group_list=atoms_num_list,title="force")
-        # print(self._force_dataset.now_data.shape)
+
         self._stress_dataset=NepPlotData(read_nep_out_file(self.stress_out_path),title="stress")
         self._virial_dataset=NepPlotData(read_nep_out_file(self.virial_out_path),title="virial")
 
 
         nep3 = Nep3Calculator(self.nep_txt_path.as_posix())
 
-        desc_list=[nep3.get_descriptors(structure).mean(0) for structure in structures]
-        desc_array=np.vstack(desc_list)
+        desc_array=nep3.get_descriptors(  structures)
+
         desc_array = pca(desc_array,2)
 
         # desc_array=np.array([])
