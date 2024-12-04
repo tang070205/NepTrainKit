@@ -28,11 +28,53 @@ compiler = get_default_compiler()
 # 设定编译选项
 extra_compile_args = []
 extra_link_args = []
+import os
+import subprocess
+from setuptools import setup, Extension
+
+def check_openmp_support():
+    code = """
+    #include <omp.h>
+    #include <stdio.h>
+    int main() {
+        #ifdef _OPENMP
+        return 0;
+        #else
+        return 1;
+        #endif
+    }
+    """
+    with open("test_openmp.c", "w") as f:
+        f.write(code)
+
+    compiler = os.environ.get("CC", "gcc")  # 默认使用 gcc，用户可通过 CC 环境变量指定编译器
+    try:
+        subprocess.run([compiler, "-fopenmp", "test_openmp.c", "-o", "test_openmp"],
+                       check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(["./test_openmp"], check=True)
+        return result.returncode == 0
+    except subprocess.CalledProcessError:
+        return False
+    finally:
+        os.remove("test_openmp.c")
+        for o in ["test_openmp.exe","test_openmp.bin","test_openmp.o"]:
+            if os.path.exists(o):
+                os.remove(o)
+
+# 检测结果
+openmp_supported = check_openmp_support()
+
+
+
 
 if platform.system() == 'Windows' and compiler == 'msvc':  # 对于 MSVC 编译器（Windows）
-    extra_compile_args = ['/O2', '/std:c++17', '/openmp']
+    extra_compile_args = ['/O2', '/std:c++17' ]
+    if openmp_supported:
+        extra_compile_args.append('/openmp')
 elif platform.system() != 'Windows' and compiler != 'msvc':  # 对于 GCC 或 Clang 编译器（Linux/macOS）
-    extra_compile_args = ['-O3', '-std=c++17', '-fopenmp']
+    extra_compile_args = ['-O3', '-std=c++17' ]
+    if openmp_supported:
+        extra_compile_args.append('-fopenmp')
 # 定义扩展模块
 ext_modules = [
     Extension(
