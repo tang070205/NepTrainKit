@@ -11,7 +11,7 @@
 
 用户可以通过以下两种方式导入文件：
 
-- 点击菜单左上角的导入按钮<img alt="open" height="20" src="../src/NepTrainKit/src/images/open.svg" width="20"/>导入路径。
+- 点击菜单左上角的导入按钮<img alt="open" height="20" src="./image/open.svg" width="20"/>导入路径。
 - 将文件直接拖拽到软件界面中进行导入。
 
 > [!NOTE]
@@ -26,19 +26,19 @@
 
 <img alt="工具栏" height="50" src="./image/工具栏.png" width="300"/>
 
-<img src="../src/NepTrainKit/src/images/init.svg" alt="init" style="zoom:20%;" width="20" height="20"/> 还原工具：将图片恢复到初始状态，清除所有已做的修改。
+<img src="./image/init.svg" alt="init" style="zoom:20%;" width="20" height="20"/> 还原工具：将图片恢复到初始状态，清除所有已做的修改。
 
-<img src="../src/NepTrainKit/src/images/pan.svg" alt="pan" style="zoom:50%;" width="20" height="20"/> 缩放工具：可以拖动图像的坐标轴或对图像进行缩放，调整视图位置。
+<img src="./image/pan.svg" alt="pan" style="zoom:50%;" width="20" height="20"/> 缩放工具：可以拖动图像的坐标轴或对图像进行缩放，调整视图位置。
 
-<img src="../src/NepTrainKit/src/images/find_max.svg" alt="find_max" style="zoom:50%;" width="20" height="20"/> 误差最大点选择工具：自动识别指定数量的误差最大点，便于用户进行处理。
+<img src="./image/find_max.svg" alt="find_max" style="zoom:50%;" width="20" height="20"/> 误差最大点选择工具：自动识别指定数量的误差最大点，便于用户进行处理。
 
-<img src="../src/NepTrainKit/src/images/sparse.svg" alt="sparse" style="zoom:50%;" width="20" height="20"/> 最远点采样工具：用户可自行设置训练集最大数量和最小取样距离来筛选结构。           
+<img src="./image/sparse.svg" alt="sparse" style="zoom:50%;" width="20" height="20"/> 最远点采样工具：用户可自行设置训练集最大数量和最小取样距离来筛选结构。           
 
-<img src="../src/NepTrainKit/src/images/pen.svg" alt="pen" style="zoom:50%;" width="20" height="20"/> 选中编辑工具：鼠标左键框选或直接选中结构，鼠标右键可取消选中。
+<img src="./image/pen.svg" alt="pen" style="zoom:50%;" width="20" height="20"/> 选中编辑工具：鼠标左键框选或直接选中结构，鼠标右键可取消选中。
 
-<img src="../src/NepTrainKit/src/images/revoke.svg" alt="revoke" style="zoom:50%;" width="20" height="20"/> 撤销工具：如果误删或误操作，可以使用撤销功能恢复之前的状态，支持连续多次撤销。
+<img src="./image/revoke.svg" alt="revoke" style="zoom:50%;" width="20" height="20"/> 撤销工具：如果误删或误操作，可以使用撤销功能恢复之前的状态，支持连续多次撤销。
 
-<img src="../src/NepTrainKit/src/images/delete.svg" alt="delete" style="zoom:50%;" width="20" height="20"/> 删除工具：移除选中点所对应的结构。
+<img src="./image/delete.svg" alt="delete" style="zoom:50%;" width="20" height="20"/> 删除工具：移除选中点所对应的结构。
 
 ### 4、结果可视化和结构展示
 
@@ -58,7 +58,7 @@
 
 ### 6、结果导出
 
-操作完成后，可以点击导出按钮<img alt="save" height="20" src="../src/NepTrainKit/src/images/save.svg" width="20"/>
+操作完成后，可以点击导出按钮<img alt="save" height="20" src="./image/save.svg" width="20"/>
 将结果导出为两个文件：
 
 - **export_remove_model.xyz**：包含已删除结构的信息。
