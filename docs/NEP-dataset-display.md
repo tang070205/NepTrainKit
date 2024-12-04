@@ -58,7 +58,8 @@
 
 ### 6、结果导出
 
-操作完成后，可以点击导出按钮<img src=".../src/NepTrainKit/src/images/save.svg" alt="save" style="zoom:50%;" />将结果导出为两个文件：
+操作完成后，可以点击导出按钮<img alt="save" height="20" src="../src/NepTrainKit/src/images/save.svg" width="20"/>
+将结果导出为两个文件：
 
 - **export_remove_model.xyz**：包含已删除结构的信息。
 
