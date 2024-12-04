@@ -36,7 +36,7 @@ In the drawing toolbar, we have integrated function buttons such as reset, zoom,
 
 <img src="./_static/image/init.svg" alt="init" width='30' height='30'  /> **Reset Tool:** Restores the image to its initial state, clearing all modifications made.
 
-<img src="./_static/image/pan.svg" alt="pan" width='30' height='30' /> **Zoom Tool: **Allows users to drag the image's axes or zoom in/out to adjust the view position.
+<img src="./_static/image/pan.svg" alt="pan" width='30' height='30' /> **Zoom Tool:** Allows users to drag the image's axes or zoom in/out to adjust the view position.
 
 <img src="./_static/image/find_max.svg" alt="find_max" width='30' height='30' /> **Error Max Point Selection Tool:** Automatically identifies a specified number of points with the largest errors, making it easier for users to process them.
 
@@ -46,7 +46,7 @@ In the drawing toolbar, we have integrated function buttons such as reset, zoom,
 
 <img src="./_static/image/revoke.svg" alt="revoke" width='30' height='30' /> **Undo Tool:** If a structure is accidentally deleted or modified, the undo function can restore the previous state. It supports multiple consecutive undo actions.
 
-<img src="./_static/image/delete.svg" alt="delete" width='30' height='30' /> **Delete Tool: **Removes the structure corresponding to the selected point.
+<img src="./_static/image/delete.svg" alt="delete" width='30' height='30' /> **Delete Tool:** Removes the structure corresponding to the selected point.
 
 <img alt="search" height="30" src="./_static/image/search.svg" width="30"/> **Search Tool:** Allows you to select a single **Config_type** and search for specific prefixes, suffixes, or strings.
 
