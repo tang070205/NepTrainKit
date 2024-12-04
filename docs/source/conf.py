@@ -5,10 +5,10 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-from recommonmark.parser import CommonMarkParser
+
 
 project = 'NepTrainKit'
-copyright = '2024, ChengBing Chen'
+copyright = '2024, ChengBing Chen,YuTong Li'
 author = 'ChengBing Chen'
 release = '1.4.9'
 
@@ -16,24 +16,39 @@ release = '1.4.9'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.mathjax',
-    'recommonmark',
+    # 'sphinx.ext.autodoc',
+    # 'sphinx.ext.napoleon',
+    # 'sphinx.ext.mathjax',
+
+"sphinx_design",
+    "myst_parser"
+]
+myst_enable_extensions = [
+    "amsmath",
+    "attrs_inline",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    # "linkify",
+    "replacements",
+    "smartquotes",
+    "strikethrough",
+    "substitution",
+    "tasklist",
 ]
 
 templates_path = ['_templates']
-exclude_patterns = [  'recommonmark']
-locale_dirs = ['docs/locales']  # 语言文件目录
-language = 'zh_CN'
+# locale_dirs = ['docs/locales']  # 语言文件目录
+language = 'en'
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
-source_parsers = {
-    '.md': CommonMarkParser,
-}
 
-source_suffix = ['.rst', '.md']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}

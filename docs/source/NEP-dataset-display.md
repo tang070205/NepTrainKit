@@ -1,66 +1,79 @@
+# NEP Dataset Display
 
-# NEP dataset display
 
-### 1.操作界面
 
-如图所示，该软件的整体操作界面主要包括工具栏、结果可视化区、结构展示区、信息显示区和工作路径显示区。
+## 1.User Interface
 
-<img alt="操作界面" height="400" src="./_static/操作界面.png" width="600"/>
+As shown in the figure, the overall user interface of the software primarily includes the toolbar, result visualization area, structure display area, information display area, and working path display area.
 
-### 2、文件导入
+![interface](./_static/image/interface.png)
 
-用户可以通过以下两种方式导入文件：
+## 2.Data transmission area
 
-- 点击菜单左上角的导入按钮<img alt="open" height="20" src="./_static/open.svg" width="20"/>导入路径。
-- 将文件直接拖拽到软件界面中进行导入。
+### Data Import
 
-> [!NOTE]
->
-> （1）请确保 NepTrainkit 的工作路径中不包含中文字符，否则可能导致程序无法正常显示。
->
-> （2）为了保证 NepTrainkit 正常显示图像，至少需要提供 **nep.txt** 和 **train.xyz** 两个文件。
+Users can import files in the following two ways:
 
-### 3、工具栏
+- Click the import button located at the top left of the menu <img src="./_static/image/open.svg" alt="open" width='20' height='20' /> to import the file path.
+- Drag and drop the file directly into the software interface for import.
+:::{important}
+- Please ensure that the working path of NepTrainkit does not contain any Chinese characters, as this may prevent the program from displaying correctly.
+- To ensure proper use of NepTrainkit, at least two files, **nep.txt** and **train.xyz**, must be provided.
+:::
+### Data Export
 
-在绘图工具栏中，我们集成了还原、缩放、选中编辑、撤销、删除等功能按钮，用户可以通过这些功能对图像进行一些基本操作。请注意，这些操作工具仅对主图有效。
+After completing the operation, the user can click the save button <img alt="save" height="20" src="./_static/image/save.svg" width="20"/>
+to export the results as two files:
 
-<img alt="工具栏" height="50" src="./_static/工具栏.png" width="300"/>
+- **export_remove_model.xyz**: Contains information about the deleted structures.
+- **export_good_model.xyz**: Contains information about the remaining structures.
 
-<img src="./_static/init.svg" alt="init"   width="20" height="20"/> 还原工具：将图片恢复到初始状态，清除所有已做的修改。
+## 3.Toolbar
 
-<img src="./_static/pan.svg" alt="pan"   width="20" height="20"/> 缩放工具：可以拖动图像的坐标轴或对图像进行缩放，调整视图位置。
+In the drawing toolbar, we have integrated function buttons such as reset, zoom, selection and editing, undo, and delete. Users can perform basic operations on the image using these tools. Please note that these operation tools are only effective on the main chart.
 
-<img src="./_static/find_max.svg" alt="find_max"   width="20" height="20"/> 误差最大点选择工具：自动识别指定数量的误差最大点，便于用户进行处理。
+<img src="./_static/image/toolbar.png" alt="toolbar" width='600' height='70' />
 
-<img src="./_static/sparse.svg" alt="sparse"   width="20" height="20"/> 最远点采样工具：用户可自行设置训练集最大数量和最小取样距离来筛选结构。           
+<img src="./_static/image/init.svg" alt="init" width='30' height='30'  /> **Reset Tool:** Restores the image to its initial state, clearing all modifications made.
 
-<img src="./_static/pen.svg" alt="pen"   width="20" height="20"/> 选中编辑工具：鼠标左键框选或直接选中结构，鼠标右键可取消选中。
+<img src="./_static/image/pan.svg" alt="pan" width='30' height='30' /> **Zoom Tool: **Allows users to drag the image's axes or zoom in/out to adjust the view position.
 
-<img src="./_static/revoke.svg" alt="revoke"   width="20" height="20"/> 撤销工具：如果误删或误操作，可以使用撤销功能恢复之前的状态，支持连续多次撤销。
+<img src="./_static/image/find_max.svg" alt="find_max" width='30' height='30' /> **Error Max Point Selection Tool:** Automatically identifies a specified number of points with the largest errors, making it easier for users to process them.
 
-<img src="./_static/delete.svg" alt="delete"   width="20" height="20"/> 删除工具：移除选中点所对应的结构。
+<img src="./_static/image/sparse.svg" alt="sparse" width='30' height='30' /> **Farthest Point Sampling Tool:** Users can set the maximum number of training samples and the minimum sampling distance to filter structures.
 
-### 4、结果可视化和结构展示
+<img src="./_static/image/pen.svg" alt="pen" width='30' height='30' /> **Selection and Editing Tool:** Use the left mouse button to draw a selection box or directly select a structure; right-click to deselect.
 
-- 在结果可视化区域共有五个子图，展示了数据集的描述符、能量、力、压力和位力信息。我们采用**pyqtgraph**库来封装绘图功能，同时五个子图都支持通过双击操作切换为主图。
+<img src="./_static/image/revoke.svg" alt="revoke" width='30' height='30' /> **Undo Tool:** If a structure is accidentally deleted or modified, the undo function can restore the previous state. It supports multiple consecutive undo actions.
 
-- 通过点击主图中的数据点，便可以在右侧展示区得到相应的晶体结构，晶体结构中的原子大小和颜色分别依据原子半径和CPK配色方案来设定。
+<img src="./_static/image/delete.svg" alt="delete" width='30' height='30' /> **Delete Tool: **Removes the structure corresponding to the selected point.
 
- <img src="./_static/可视化.png" alt="可视化"   width="500" height="300"/>
+<img alt="search" height="30" src="./_static/image/search.svg" width="30"/> **Search Tool:** Allows you to select a single **Config_type** and search for specific prefixes, suffixes, or strings.
 
-**绘图细节：**在绘图过程中，**能量**、**力**、**压力**和**位力**数据均从工作路径中的 NEP 输出文件中读取。对于**描述符的投影**，我们使用 NEP_CPU 获取每个原子的描述符，计算其平均值作为结构描述符。然后，采用主成分分析（PCA）方法将结构描述符投影到二维空间，以便于可视化展示。
 
-### 5、信息显示区
+:::{important}
+After clicking the search button, the relevant structures will turn green to indicate the search results. However, at this point, the structures will not be selected. You will need to perform additional actions to complete the selection.
+:::
 
-在右侧文本信息区显示了xyz文件的信息，并在下方给出了当前结构在原始文件中的帧数。默认情况下，点击任一子图中的数据点，显示区将同步展示所选结构的详细信息。
+<img alt="select" height="30" src="./_static/image/check.svg" width="30"/> **Select Button:** Selects the structures found by the search.
 
-<img src="./_static/信息显示.png" alt="信息显示" />
+<img alt="cancel" height="30" src="./_static/image/uncheck.svg" width="30"/> **Deselect Button:** Deselects the selected structures.
 
-### 6、结果导出
+:::{important}
+If there are no **Config_type** available, clicking the **Select** button will select all visible items, and clicking the **Deselect** button will deselect all items.
+:::
+## 4.Result Visualization and Structure Display
 
-操作完成后，可以点击导出按钮<img alt="save" height="20" src="./_static/save.svg" width="20"/>
-将结果导出为两个文件：
+- The result visualization area consists of five subplots, displaying the descriptors, energy, force, pressure, and potential energy information of the dataset. We use the **pyqtgraph** library to encapsulate the plotting functions, and all five subplots support switching to the main plot by double-clicking.
+- By clicking on a data point in the main plot, the corresponding crystal structure will be displayed in the right-side display area. The atom sizes and colors in the crystal structure are set based on the atomic radius and the CPK color scheme, respectively.
 
-- **export_remove_model.xyz**：包含已删除结构的信息。
+<img src="./_static/image/visualization.png" alt="visualization" width='810' height='450' />
 
-- **export_good_model.xyz**：包含剩余结构的信息。
+**Plotting Details:** During the plotting process, **energy**, **force**, **pressure**, and **potential energy** data are all read from the NEP output files in the working path. For **descriptor projection**, we use NEP_CPU to obtain the descriptor of each atom and compute its average as the structure descriptor. Then, principal component analysis (PCA) is used to project the structure descriptors into a two-dimensional space for easier visualization.
+
+## 5.Information Display Area
+
+- In the information display area on the right, the system will show detailed information about the selected **xyz file**. By default, when you click on any data point in the subplots, the display area on the right will synchronize and show the detailed information of the selected structure.
+- Below the display area, the **frame number** of the current structure in the original file will be shown. Users can adjust the frame number to view the corresponding structure and its detailed information.
+
+<img src="./_static/image/information.png" alt="information" width='650' height='190' />
