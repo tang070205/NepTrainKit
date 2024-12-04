@@ -16,9 +16,10 @@ def read_nep_in(  file_name):
         return run_in
     with open(file_name, 'r', encoding="utf8") as f:
 
-        groups = re.findall("^([A-Za-z_]+)\s+(.*)", f.read(), re.MULTILINE)
+        groups = re.findall("^([A-Za-z_]+)\s+([^\#\n]*)", f.read(), re.MULTILINE)
 
         for group in groups:
+
             run_in[group[0].strip()] = group[1].strip()
     return run_in
 def check_fullbatch(nep_in_path,structure_num):

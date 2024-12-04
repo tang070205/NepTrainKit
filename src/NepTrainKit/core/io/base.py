@@ -122,6 +122,8 @@ class NepData:
         self.group_array.revoke()
 
     def get_rmse(self):
+        if not self.cols:
+            return 0
         return np.sqrt(((self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]) ** 2).mean( ))
 
     def get_formart_rmse(self):
@@ -170,7 +172,7 @@ class NepPlotData(NepData):
         return Brushes.RedBrush
     @property
     def normal_color(self):
-        return Brushes.BlueBrush
+        return Brushes.TransparentBrush
     @property
     def x(self):
         if self.cols==0:
@@ -196,5 +198,6 @@ class StructureData(NepData):
 
 
     def search_config(self,config):
+
         result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.additional_fields["Config_type"])]
         return self.group_array[result_index].tolist()

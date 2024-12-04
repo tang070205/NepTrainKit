@@ -3,6 +3,7 @@
 # @Time    : 2024/11/21 14:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import multiprocessing
 import re
 import threading
 import time
@@ -44,7 +45,7 @@ atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
 
 
 
-class Structure(QObject):
+class Structure():
     def __init__(self, lattice, structure_info, properties, additional_fields):
         super().__init__()
         self.properties = properties
@@ -81,7 +82,13 @@ class Structure(QObject):
     def num_atoms(self):
         return len(self.elements)
 
-
+    def __getattr__(self, item):
+        if item in self.additional_fields.keys():
+            return self.additional_fields[item]
+        elif item in self.structure_info.keys():
+            return self.structure_info[item]
+        else:
+            raise AttributeError
 
     @classmethod
     def read(cls, lines):
@@ -96,18 +103,30 @@ class Structure(QObject):
         # Parse the second line (global properties)
         global_properties = lines[1].strip()
         lattice, properties, additional_fields = cls._parse_global_properties(global_properties)
+        # array = np.array([line.split() for line in lines[2:]],dtype=str)
+        # array =  [line.split() for line in lines[2:]]
 
-        array = np.array([line.split() for line in lines[2:]])
+        array = np.array([line.split() for line in lines[2:]],dtype=object )
+        # print(array.shape)
+        # array = np.array([line.split() for line in lines[2:]])
 
+        # print(array.shape)
         structure_info = {}
         index = 0
+
         for prop in properties:
 
             _info = array[:, index:index + prop["count"]]
+            #
+            # _info =[row[index:index + prop["count"]] for row in array]
+
             if prop["type"] == "S":
-                _info = _info.astype(str)
+                pass
+                # _info=_info.astype(np.str_)
+                # _info = np.array(_info,dtype=str)
             elif prop["type"] == "R":
-                _info = _info.astype(float)
+                _info=_info.astype(float)
+                 # _info = np.array(_info,dtype=float)
             else:
                 pass
             if prop["count"] == 1:
@@ -119,7 +138,7 @@ class Structure(QObject):
             structure_info[prop["name"]] = _info
             index += prop["count"]
 
-
+        # return
         return cls(lattice, structure_info, properties, additional_fields)
 
     @classmethod
@@ -146,15 +165,20 @@ class Structure(QObject):
             else:
 
                 if '"' in value:
-                    if key=="config_type":
-                        #这里是为了后面的Config搜索做统一
-                        key=key.title()
-                    additional_fields[key] = value.strip('"')  # 去掉引号
+
+                    value = value.strip('"')  # 去掉引号
                 else:
                     try:
-                        additional_fields[key] = float(value)
+                        value = float(value)
                     except Exception as e:
-                        additional_fields[key] = value
+                        value = value
+                if key == "config_type" or key == "Config_type":
+                    # 这里是为了后面的Config搜索做统一
+                    key = "Config_type"
+                    value=str(value)
+
+                additional_fields[key] = value
+                # print(additional_fields)
         return lattice, properties, additional_fields
 
     @staticmethod
@@ -174,13 +198,13 @@ class Structure(QObject):
         return parsed_properties
 
     @staticmethod
-
+    @utils.timeit
     def read_multiple(filename ):
         """
         Read a multi-structure XYZ file and return a list of Structure objects.
         """
 
-
+        # data_to_process = []
         structures = []
 
         with open(filename, 'r') as file:
@@ -196,10 +220,13 @@ class Structure(QObject):
             num_atoms = int(num_atoms)
             end = i + 2 + num_atoms
             structure_lines = lines[i:end]
-
+            # data_to_process.append(structure_lines)
             structure = Structure.read(structure_lines)
             structures.append(structure)
             i = end
+        # with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+            # map 函数并行处理每个结构的读取
+            # structures = pool.map(Structure.read, data_to_process)
 
         return structures
 

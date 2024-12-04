@@ -64,6 +64,7 @@ class NepTrainResultData(QObject):
 
 
         structures=Structure.read_multiple(self.data_xyz_path  )
+        # print(structures)
         # return
         if len(structures)>=1000:
             if not check_fullbatch(self.nep_txt_path.with_name("nep.in"),len(structures)):

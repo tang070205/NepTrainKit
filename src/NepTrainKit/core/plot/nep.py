@@ -12,6 +12,7 @@ from .canvas import CustomGraphicsLayoutWidget
 from .. import MessageManager
 from ..io import NepTrainResultData
 from ..types import Brushes
+from NepTrainKit import utils
 
 
 class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
@@ -45,7 +46,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             return None
         plot_index = self.axes_list.index(self.current_plot)
         return self.dataset.dataset[plot_index]
-
+    @utils.timeit
     def plot_all(self):
         self.dataset.select_index.clear()
         _pen = mkPen(None)
@@ -61,7 +62,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             plot.setTitle(_dataset.title)
 
             scatter = ScatterPlotItem(_dataset.x,_dataset.y,data=_dataset.structure_index,
-                                      brush=_dataset.normal_color, pen=None, symbol='o',
+                                      brush=Brushes.TransparentBrush ,pen=mkPen(color="blue", width=0.5), symbol='o',size=7
                                      )
 
 
@@ -121,7 +122,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             return
         if reverse:
             self.dataset.uncheck(structure_index)
-            self.update_axes_color(structure_index, Brushes.BlueBrush)
+            self.update_axes_color(structure_index, Brushes.TransparentBrush)
 
         else:
 

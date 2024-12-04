@@ -12,3 +12,4 @@ class Brushes:
     GreenBrush = QBrush(QColor(0, 255, 0))  # 绿色
     BlueBrush = QBrush(QColor(0, 0, 255))  # 蓝色
     YellowBrush = QBrush(QColor(255, 255, 0))  # 黄色
+    TransparentBrush = QBrush(QColor(0, 0, 0,0))  # 黄色
