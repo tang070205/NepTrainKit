@@ -26,11 +26,11 @@
 
 ![工具栏](./image/工具栏.png)
 
-<img src="../src/NepTrainKit/src/images/init.svg" alt="init" style="zoom:20%;" /> 还原工具：将图片恢复到初始状态，清除所有已做的修改。
+<img src="../src/NepTrainKit/src/images/init.svg" alt="init" style="zoom:20%;" width="20" height="20"/> 还原工具：将图片恢复到初始状态，清除所有已做的修改。
 
-<img src="../src/NepTrainKit/src/images/pan.svg" alt="pan" style="zoom:50%;" /> 缩放工具：可以拖动图像的坐标轴或对图像进行缩放，调整视图位置。
+<img src="../src/NepTrainKit/src/images/pan.svg" alt="pan" style="zoom:50%;" width="30" height="30"/> 缩放工具：可以拖动图像的坐标轴或对图像进行缩放，调整视图位置。
 
-<img src="../src/NepTrainKit/src/images/find_max.svg" alt="find_max" style="zoom:50%;" /> 误差最大点选择工具：自动识别指定数量的误差最大点，便于用户进行处理。
+<img src="../src/NepTrainKit/src/images/find_max.svg" alt="find_max" style="zoom:50%;" width="10" height="10"/> 误差最大点选择工具：自动识别指定数量的误差最大点，便于用户进行处理。
 
 <img src="../src/NepTrainKit/src/images/sparse.svg" alt="sparse" style="zoom:50%;" /> 最远点采样工具：用户可自行设置训练集最大数量和最小取样距离来筛选结构。           
 
