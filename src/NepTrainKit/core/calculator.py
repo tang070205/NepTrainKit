@@ -10,8 +10,10 @@ import numpy as np
 from PySide6.QtCore import QObject
 from NepTrainKit import utils
 from NepTrainKit.core import Structure
-from NepTrainKit.nep_cpu import CpuNep
-
+try:
+    from NepTrainKit.nep_cpu import CpuNep
+except ImportError:
+    from nep_cpu import CpuNep
 class Nep3Calculator(QObject):
 
     def __init__(self, model_file="nep.txt"):
