@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "NepTrainKit"
 authors = [{ name = "Chen Cheng bing", email = "1747193328@qq.com" }]
-
+version = "1.5.0"
 
 description = """
 NepTrainKit is a Python package for visualizing and manipulating training datasets for NEP.
@@ -42,7 +42,7 @@ dependencies = [
 "PyOpenGL>=3.1.7",
 "numpy>=1.26.0"
 ]
-version = "1.4.9"
+
 
 [project.urls]
 Homepage = "https://github.com/aboys-cb/NepTrainKit"
@@ -61,12 +61,12 @@ include-package-data = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["NepTrainKit", "NepTrainKit.*","nep_cpu.*" ,"nep_cpu"]
+include = ["NepTrainKit", "NepTrainKit.*" ]
 
 [tool.setuptools.package-data]
 "NepTrainKit.Config" = ["config.sqlite","ptable.json" ]
 
-"nep_cpu" = ["nep_cpu*.*" ]
+
 
 [tool.cibuildwheel.linux]
 archs = ["auto64"]

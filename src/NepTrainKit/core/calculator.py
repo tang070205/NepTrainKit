@@ -10,7 +10,7 @@ import numpy as np
 from PySide6.QtCore import QObject
 from NepTrainKit import utils
 from NepTrainKit.core import Structure
-from nep_cpu import CpuNep
+from NepTrainKit.nep_cpu import CpuNep
 
 class Nep3Calculator(QObject):
 
@@ -44,6 +44,8 @@ class Nep3Calculator(QObject):
         _types=[]
         _boxs=[]
         _positions=[]
+        if isinstance(structures, Structure):
+            structures=[structures]
         for structure in structures:
             symbols = structure.elements
             _type = [self.type_dict[k] for k in symbols]

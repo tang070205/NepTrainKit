@@ -154,12 +154,12 @@ class Structure():
 
         for match in matches:
             key = match[0] or match[2]
-            # key=key.title()
+            # key=key.capitalize()
             value = match[1] or match[3]
 
-            if key.title()  == "Lattice":
+            if key.capitalize()  == "Lattice":
                 lattice = list(map(float, value.split()))
-            elif key.title()  == "Properties":
+            elif key.capitalize()  == "Properties":
                 # Parse Properties details
                 properties = cls._parse_properties(value)
             else:

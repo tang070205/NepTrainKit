@@ -10,13 +10,11 @@ from __future__ import annotations
 import platform
 import sys
 from distutils.ccompiler import get_default_compiler
-
-
-from setuptools import Extension, setup
+import os
+import subprocess
 import pybind11
-import setuptools
 from pybind11.setup_helpers import Pybind11Extension
-from setuptools import find_packages, setup
+from setuptools import  Extension, find_packages, setup
 from setuptools.command.build_ext import build_ext
 
 # 获取 pybind11 的 include 路径
@@ -28,9 +26,8 @@ compiler = get_default_compiler()
 # 设定编译选项
 extra_compile_args = []
 extra_link_args = []
-import os
-import subprocess
-from setuptools import setup, Extension
+
+
 
 def check_openmp_support():
     code = """
@@ -71,14 +68,18 @@ if platform.system() == 'Windows' and compiler == 'msvc':  # 对于 MSVC 编译�
     extra_compile_args = ['/O2', '/std:c++17' ]
     if openmp_supported:
         extra_compile_args.append('/openmp')
+        extra_link_args.append('/openmp')
+
 elif platform.system() != 'Windows' and compiler != 'msvc':  # 对于 GCC 或 Clang 编译器（Linux/macOS）
     extra_compile_args = ['-O3', '-std=c++17' ]
     if openmp_supported:
         extra_compile_args.append('-fopenmp')
+        extra_link_args.append('-fopenmp')
+
 # 定义扩展模块
 ext_modules = [
     Extension(
-        "nep_cpu",  # 模块名
+        "NepTrainKit.nep_cpu",  # 模块名
         ["src/nep_cpu/nep_cpu.cpp"],  # 源文件
         include_dirs=[
             pybind11_include,
@@ -100,8 +101,7 @@ class BuildExt(build_ext):
             ext.extra_compile_args = opts + ext.extra_compile_args
         build_ext.build_extensions(self)
 
-is_win_64 = sys.platform.startswith("win") and platform.machine().endswith("64")
-extra_link_args = ["-Wl,--allow-multiple-definition"] if is_win_64 else []
+
 
 setup(
     author="Chen Cheng bing",
