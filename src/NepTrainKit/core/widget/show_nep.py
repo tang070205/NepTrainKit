@@ -4,6 +4,7 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import os.path
+import sys
 import threading
 import time
 from io import StringIO
@@ -162,7 +163,12 @@ class ShowNepWidget(QWidget):
             path = os.path.dirname(path)
         url=self.path_label.getUrl().toString()
 
-        if os.path.exists(url.replace("file:///","")):
+        old_path=url.replace("file://","")
+        if sys.platform == "win32":
+            old_path=old_path[1:]
+        else:
+            pass
+        if os.path.exists(old_path):
             box=MessageBox("Ask","A working directory already exists. Loading a new directory will erase the previous results.\nDo you want to load the new working path?",self)
             box.exec_()
             if box.result()==0:
@@ -181,7 +187,8 @@ class ShowNepWidget(QWidget):
 
         # self.check_nep_result(path)
     def set_dataset(self):
-
+        if self.dataset is None:
+            return
         self.struct_index_spinbox.setMaximum(self.dataset.num)
 
         self.struct_index_spinbox.valueChanged.emit(0)

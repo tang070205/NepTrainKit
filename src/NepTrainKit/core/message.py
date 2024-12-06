@@ -22,12 +22,13 @@ class MessageManager(QObject):
     """
     _instance = None
     show_message = Signal(  InfoBarIcon,str,str )
-
+    show_box= Signal(   str,str )
 
     def __init__(self,parent=None):
         super().__init__()
         self._parent = parent
         self.show_message.connect(self._show_message)
+        self.show_box.connect(self._show_box)
 
     @classmethod
     def _createInstance(cls,parent=None):
@@ -65,8 +66,10 @@ class MessageManager(QObject):
 
     def send_message_box(cls,message,title="Tip"):
         cls._createInstance()
+        cls._instance.show_box.emit( message,title)
 
-        w = MessageBox(title, message, cls._instance._parent)
+    def _show_box(self,message,title ):
+        w = MessageBox(title, message, self._parent)
         w.cancelButton.hide()
         w.exec_()
 

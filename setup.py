@@ -54,7 +54,7 @@ def check_openmp_support():
         return False
     finally:
         os.remove("test_openmp.c")
-        for o in ["test_openmp.exe","test_openmp.bin","test_openmp.o"]:
+        for o in ["test_openmp.exe","test_openmp.bin","test_openmp.o","test_openmp"]:
             if os.path.exists(o):
                 os.remove(o)
 
