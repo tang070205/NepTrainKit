@@ -15,7 +15,7 @@ from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem
 
 class PlotBase:
 
-    currentPlotChanged=Signal()
+
 
     def __init__(self):
         self.current_plot=self
@@ -61,6 +61,7 @@ class LayoutPlotBase(PlotBase):
     def __init__(self,row=None,col=None,**kwargs):
         super().__init__()
         self.current_plot=None
+        self.current_view_box=None
         self.tool_bar=None
         self.axes_list=[]
         self.width = 3
@@ -91,10 +92,10 @@ class LayoutPlotBase(PlotBase):
     def set_current_plot(self,plot):
 
         if self.current_plot != plot:
-
-
+            self.current_view_box = plot.getViewBox()
             self.current_plot=plot
-            self.currentPlotChanged.emit()
+            if self.tool_bar is not None:
+                self.tool_bar.reset()
             return True
         return False
     def on_click(self,plot):

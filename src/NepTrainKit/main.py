@@ -27,7 +27,7 @@ from NepTrainKit import utils,src_rc
 
 pg.setConfigOption('background', 'w')  # 设置背景为白色
 pg.setConfigOption('foreground', 'k')  # 设置前景元素为黑色（如坐标轴）
-
+pg.setConfigOptions(useOpenGL=True)
 class NepTrainKitMainWindow(FluentWindow):
 
     def __init__(self):

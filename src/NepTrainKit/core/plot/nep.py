@@ -5,12 +5,15 @@
 # @email    : 1747193328@qq.com
 
 import numpy as np
-from PySide6.QtCore import Signal
-from pyqtgraph import mkPen, ScatterPlotItem, TextItem
+from PySide6.QtCore import Signal, Qt
+from pyqtgraph import mkPen, ScatterPlotItem, TextItem, ViewBox
 
+from .toolbar import NepDisplayGraphicsToolBar
 from .canvas import CustomGraphicsLayoutWidget
-from .. import MessageManager
+from .. import MessageManager, Config
+from ..custom_widget.dialog import GetIntMessageBox, SparseMessageBox
 from ..io import NepTrainResultData
+from ..io.select import farthest_point_sampling
 from ..types import Brushes
 from NepTrainKit import utils
 
@@ -21,8 +24,142 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         super().__init__(parent)
         self._parent=parent
         self.dataset=None
+        self.draw_mode=False
 
 
+
+    def set_tool_bar(self, tool):
+        self.tool_bar: NepDisplayGraphicsToolBar = tool
+        self.tool_bar.panSignal.connect(self.pan)
+        self.tool_bar.resetSignal.connect(self.auto_range)
+        self.tool_bar.deleteSignal.connect(self.delete)
+        self.tool_bar.revokeSignal.connect(self.revoke)
+        self.tool_bar.findMaxSignal.connect(self.find_max_error_point)
+        self.tool_bar.sparseSignal.connect(self.sparse_point)
+        self.tool_bar.penSignal.connect(self.pen)
+
+    def auto_range(self):
+        if self.current_plot:
+            self.current_plot.getViewBox().autoRange()
+
+    def pan(self, checked):
+
+        if self.current_plot:
+
+            self.current_plot.setMouseEnabled(checked, checked)
+            self.current_plot.getViewBox().setMouseMode(ViewBox.PanMode)
+    def pen(self, checked):
+        if self.current_plot is None:
+
+            return False
+
+        if checked:
+            self.draw_mode=True
+            # 初始化鼠标状态和轨迹数据
+            self.is_drawing = False
+            self.x_data = []
+            self.y_data = []
+
+        else:
+            self.draw_mode=False
+            pass
+    def mousePressEvent(self, event):
+        if not self.draw_mode:
+            return super().mousePressEvent(event)
+
+        if event.button() == Qt.MouseButton.LeftButton or event.button() == Qt.MouseButton.RightButton:
+            self.is_drawing = True
+            self.x_data.clear()  # 清空之前的轨迹数据
+            self.y_data.clear()  # 清空之前的轨迹数据
+            self.curve = self.current_plot.plot([], [], pen='r')
+
+            self.curve.setData([], [])  # 清空绘制线条，避免对角线
+
+
+    def mouseReleaseEvent(self, event):
+
+        if not self.draw_mode:
+            return super().mouseReleaseEvent(event)
+        if event.button() == Qt.MouseButton.LeftButton  or event.button() == Qt.MouseButton.RightButton:
+            self.is_drawing = False
+            reverse=event.button() == Qt.MouseButton.RightButton
+            self.current_plot.removeItem(self.curve)
+            # 创建鼠标轨迹的多边形
+            if len(self.x_data)>2:
+
+                self.select_point_from_polygon(np.column_stack((self.x_data, self.y_data)),reverse)
+            else:
+                # 右键的话  选中单个点
+                pass
+                pos = event.pos()
+                mouse_point = self.current_view_box.mapSceneToView(pos)
+
+                x = mouse_point.x()
+                self.select_point(mouse_point,reverse)
+            return
+
+
+    def mouseMoveEvent(self, event):
+        if not self.draw_mode:
+            return super().mouseMoveEvent(event)
+
+        if self.is_drawing:
+            pos = event.pos()
+            if self.current_plot.sceneBoundingRect().contains(pos):
+                # 将场景坐标转换为视图坐标
+                mouse_point =self.current_view_box.mapSceneToView(pos)
+                x, y = mouse_point.x(), mouse_point.y()
+                # 记录轨迹数据
+                self.x_data.append(x)
+                self.y_data.append(y)
+
+                # 更新绘图
+                self.curve.setData(self.x_data, self.y_data)
+
+    def find_max_error_point(self):
+        dataset = self.get_current_dataset()
+        if dataset is None:
+            return
+        box= GetIntMessageBox(self._parent,"Please enter an integer N, it will find the top N structures with the largest errors")
+        n = Config.getint("widget","max_error_value",10)
+        box.intSpinBox.setValue(n)
+
+        if not box.exec():
+            return
+        nmax= box.intSpinBox.value()
+        Config.set("widget","max_error_value",nmax)
+        index= (dataset.get_max_error_index(nmax))
+
+        self.select_index(index,False)
+
+    def sparse_point(self):
+        if  self.dataset is None:
+            return
+        box= SparseMessageBox(self._parent,"Please specify the maximum number of structures and minimum distance")
+        n_samples = Config.getint("widget","sparse_num_value",10)
+        distance = Config.getfloat("widget","sparse_distance_value",0.01)
+
+        box.intSpinBox.setValue(n_samples)
+        box.doubleSpinBox.setValue(distance)
+
+        if not box.exec():
+            return
+        n_samples= box.intSpinBox.value()
+        distance= box.doubleSpinBox.value()
+
+        Config.set("widget","sparse_num_value",n_samples)
+        Config.set("widget","sparse_distance_value",distance)
+
+        dataset = self.dataset.descriptor
+        indices_to_remove = farthest_point_sampling(dataset.now_data,n_samples=n_samples,min_dist=distance)
+
+        # 获取所有索引（从 0 到 len(arr)-1）
+        all_indices = np.arange(dataset.now_data.shape[0])
+
+        # 使用 setdiff1d 获取不在 indices_to_remove 中的索引
+        remaining_indices = np.setdiff1d(all_indices, indices_to_remove)
+        structures = dataset.group_array[remaining_indices]
+        self.select_index(structures.tolist(),False)
     def set_dataset(self,dataset):
         self.dataset:NepTrainResultData=dataset
         self.subplot(2,3)
@@ -62,8 +199,10 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             plot.setTitle(_dataset.title)
 
             scatter = ScatterPlotItem(_dataset.x,_dataset.y,data=_dataset.structure_index,
-                                      brush=Brushes.TransparentBrush ,pen=mkPen(color="blue", width=0.5), symbol='o',size=7
-                                     )
+                                      brush=Brushes.TransparentBrush ,pen=mkPen(color="blue", width=0.5),
+                                      symbol='o',size=7,
+                                     pxMode=True
+                                      )
 
 
             scatter.sigClicked.connect(self.item_clicked)
@@ -156,7 +295,8 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         如果有删除的结构  撤销上一次删除的
         :return:
         """
-        if self.dataset.is_revoke:
+
+        if self.dataset and  self.dataset.is_revoke:
             self.dataset.revoke()
             self.plot_all()
 
