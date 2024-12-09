@@ -24,9 +24,6 @@ class NepDisplayGraphicsToolBar(QToolBar):
     def __init__(self,  parent=None):
         super().__init__(parent)
         self._parent = parent
-
-
-
         self._actions={}
         self.init_actions()
 
@@ -69,8 +66,6 @@ class NepDisplayGraphicsToolBar(QToolBar):
         if self.action_group.checkedAction():
             self.action_group.checkedAction().setChecked(False)
 
-
-
     def add_action(self, name,icon,callback,checkable=False):
         action=QAction(QIcon(icon),name,self)
         if checkable:
@@ -87,28 +82,15 @@ class NepDisplayGraphicsToolBar(QToolBar):
     def pan(self, checked):
         """切换平移模式"""
 
-
         if checked:
-
             self.panSignal.emit(True)
-
         else:
-
             self.panSignal.emit(False)
-
-
-
 
 
     def pen(self, checked):
 
-
         if checked:
-
             self.penSignal.emit(True)
         else:
-
             self.penSignal.emit(False)
-
-
-
