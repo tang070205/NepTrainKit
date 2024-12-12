@@ -12,7 +12,7 @@ from loguru import logger
 
 from NepTrainKit.core import MessageManager, Structure
 from .base import NepPlotData, StructureData
-from .utils import read_nep_out_file, read_atom_num_from_xyz, check_fullbatch
+from .utils import read_nep_out_file, read_atom_num_from_xyz, check_fullbatch, read_nep_in
 from ..calculator import Nep3Calculator
 
 
@@ -66,8 +66,9 @@ class NepTrainResultData(QObject):
         structures=Structure.read_multiple(self.data_xyz_path  )
         # print(structures)
         # return
+        nep_in= read_nep_in(self.nep_txt_path.with_name("nep.in"))
         if len(structures)>=1000:
-            if not check_fullbatch(self.nep_txt_path.with_name("nep.in"),len(structures)):
+            if not check_fullbatch(nep_in,len(structures)):
                 MessageManager.send_message_box("Detected that the current mode is not full batch. Please make predictions first, then load!")
                 raise ValueError("Detected that the current mode is not full batch. Please make predictions first, then load!")
 
@@ -78,9 +79,15 @@ class NepTrainResultData(QObject):
 
         self._force_dataset=NepPlotData(read_nep_out_file(self.force_out_path),group_list=atoms_num_list,title="force")
 
-        self._stress_dataset=NepPlotData(read_nep_out_file(self.stress_out_path),title="stress")
-        self._virial_dataset=NepPlotData(read_nep_out_file(self.virial_out_path),title="virial")
 
+        if float(nep_in.get("lambda_v",1)) !=0:
+            self._stress_dataset = NepPlotData(read_nep_out_file(self.stress_out_path), title="stress")
+
+            self._virial_dataset = NepPlotData(read_nep_out_file(self.virial_out_path),title="virial")
+        else:
+            self._stress_dataset = NepPlotData([], title="stress")
+
+            self._virial_dataset = NepPlotData([],title="virial")
 
         nep3 = Nep3Calculator(self.nep_txt_path.as_posix())
 

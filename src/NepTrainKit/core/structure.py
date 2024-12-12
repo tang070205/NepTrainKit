@@ -272,5 +272,5 @@ class Structure():
                     line += " ".join([f"{x }" for x in values]) + " "
 
                 elif prop["type"] == 'R':  # 浮点数类型
-                    line += " ".join([f"{x:g}" for x in values]) + " "
+                    line += " ".join([f"{x:.10g}" for x in values]) + " "
             file.write(line.strip() + "\n")

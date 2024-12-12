@@ -21,10 +21,11 @@ def read_nep_in(  file_name):
         for group in groups:
 
             run_in[group[0].strip()] = group[1].strip()
-    return run_in
-def check_fullbatch(nep_in_path,structure_num):
 
-    run_in = read_nep_in(nep_in_path)
+    return run_in
+def check_fullbatch(run_in,structure_num):
+
+
     if run_in.get("prediction")=="1":
         return True
     if int(run_in.get("batch",1000))>=structure_num:

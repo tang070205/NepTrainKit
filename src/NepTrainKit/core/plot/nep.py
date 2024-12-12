@@ -6,7 +6,8 @@
 
 import numpy as np
 from PySide6.QtCore import Signal, Qt
-from pyqtgraph import mkPen, ScatterPlotItem, TextItem, ViewBox
+from PySide6.QtGui import QPainter
+from pyqtgraph import mkPen, ScatterPlotItem, TextItem, ViewBox,PlotDataItem
 
 from .toolbar import NepDisplayGraphicsToolBar
 from .canvas import CustomGraphicsLayoutWidget
@@ -25,8 +26,8 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         self._parent=parent
         self.dataset=None
         self.draw_mode=False
-
-
+        self.setRenderHint(QPainter.Antialiasing, False)
+        self.setViewportUpdateMode(self.ViewportUpdateMode.BoundingRectViewportUpdate)
 
     def set_tool_bar(self, tool):
         self.tool_bar: NepDisplayGraphicsToolBar = tool
@@ -191,6 +192,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         # start = time.time()
         for index,_dataset in enumerate(self.dataset.dataset):
             plot=self.axes_list[index]
+            plot.disableAutoRange()
             plot.clear()
             if _dataset.title not in ["descriptor"]:
                 plot.addLine(angle=45, pos=(0.5, 0.5), pen=mkPen('r', width=2))
@@ -201,14 +203,20 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             scatter = ScatterPlotItem(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=Brushes.TransparentBrush ,pen=mkPen(color="blue", width=0.5),
                                       symbol='o',size=7,
-                                     pxMode=True
+
                                       )
 
 
             scatter.sigClicked.connect(self.item_clicked)
             plot.scatter=scatter
-            # plot.setDownsampling(auto=False )
+            # plot.setDownsampling(auto=True, mode='peak')
+
             plot.addItem(scatter)
+
+            # 优化抗锯齿设置
+
+            # 设置视图框更新模式
+            plot.autoRange()
             if _dataset.title not in ["descriptor"]:
 
                 pos=self.convert_pos(plot,(0 ,1))
@@ -217,7 +225,6 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
                 text_item.setPos(*pos)
                 plot.addItem(text_item)
 
-            # plot.autoRange()
         # print(time.time()-start)
         #5.67748498916626
     def item_clicked(self,scatter_item,items,event):
