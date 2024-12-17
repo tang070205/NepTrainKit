@@ -3,17 +3,20 @@
 # @Time    : 2024/10/18 13:26
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import multiprocessing
 import traceback
+from functools import partial
+
 from pathlib import Path
 
 import numpy as np
 from PySide6.QtCore import QObject
 from loguru import logger
 
-from NepTrainKit.core import MessageManager, Structure
+from NepTrainKit.core import MessageManager, Structure, Config
 from .base import NepPlotData, StructureData
 from .utils import read_nep_out_file, read_atom_num_from_xyz, check_fullbatch, read_nep_in
-from ..calculator import Nep3Calculator
+from ..calculator import  process_calculate,process_get_descriptors
 
 
 def pca(X, k):
@@ -60,38 +63,91 @@ class NepTrainResultData(QObject):
         self.virial_out_path = virial_out_path
 
         atoms_num_list = read_atom_num_from_xyz(self.data_xyz_path)
-        # return
-
 
         structures=Structure.read_multiple(self.data_xyz_path  )
-        # print(structures)
-        # return
-        nep_in= read_nep_in(self.nep_txt_path.with_name("nep.in"))
-        if len(structures)>=1000:
-            if not check_fullbatch(nep_in,len(structures)):
-                MessageManager.send_message_box("Detected that the current mode is not full batch. Please make predictions first, then load!")
-                raise ValueError("Detected that the current mode is not full batch. Please make predictions first, then load!")
-
         self._atoms_dataset=StructureData(structures)
 
+        nep_in= read_nep_in(self.nep_txt_path.with_name("nep.in"))
 
-        self._energy_dataset=NepPlotData(read_nep_out_file(self.energy_out_path),title="energy")
+        if (not check_fullbatch(nep_in,len(structures))
+                or all([
+                    not self.energy_out_path.exists(),
+                    not self.force_out_path.exists(),
+                    not self.stress_out_path.exists(),
+                    not self.virial_out_path.exists()
 
-        self._force_dataset=NepPlotData(read_nep_out_file(self.force_out_path),group_list=atoms_num_list,title="force")
+        ])):
+                nep_potentials_array,nep_forces_array,nep_virials_array = process_calculate(self.nep_txt_path.as_posix(), structures)
+                energy_array=np.column_stack([nep_potentials_array/atoms_num_list,[structure.per_atom_energy for structure in structures]])
+                try:
+
+                    forces_array=np.column_stack([nep_forces_array,
+                        np.vstack([structure.forces for structure in structures]),
+
+                        ])
+                except:
+                    logger.error(traceback.format_exc())
+
+                    forces_array=np.array([])
+                try:
+                    virials_array = np.column_stack([nep_virials_array,
+                        np.vstack([structure.nep_virial  for structure in structures]),
+
+                        ])
+
+                    coefficient=(atoms_num_list/np.array([structure.volume for structure in structures]))[:, np.newaxis]
+
+                    stress_array = virials_array*coefficient*160.21766208
+
+                except:
+                    logger.error(traceback.format_exc())
+                    virials_array = np.array([])
+                    stress_array=np.array([])
+
+
+
+                # MessageManager.send_message_box("Detected that the current mode is not full batch. Please make predictions first, then load!")
+                # raise ValueError("Detected that the current mode is not full batch. Please make predictions first, then load!")
+        else:
+            energy_array=read_nep_out_file(self.energy_out_path)
+            forces_array=read_nep_out_file(self.force_out_path)
+            virials_array=read_nep_out_file(self.virial_out_path)
+            stress_array=read_nep_out_file(self.stress_out_path)
+        default_forces = Config.get("widget","forces_data","Row")
+        if forces_array.size!=0 and default_forces=="Norm":
+            # 使用 np.cumsum() 计算每个分组的结束索引
+            split_indices = np.cumsum(atoms_num_list)[:-1]
+
+            # 使用 np.split() 按照分组拆分数组
+            split_arrays = np.split(forces_array, split_indices)
+
+
+            sum_along_axis_1 = partial(np.linalg.norm, axis=0)
+
+
+            # 对每个分组求和，使用 np.vectorize 进行向量化
+            forces_array = np.array(list(map(sum_along_axis_1, split_arrays)))
+            self._force_dataset=NepPlotData(forces_array, title="force")
+        else:
+            self._force_dataset=NepPlotData(forces_array,group_list=atoms_num_list, title="force")
+
+
+        self._energy_dataset=NepPlotData(energy_array,title="energy")
+
 
 
         if float(nep_in.get("lambda_v",1)) !=0:
-            self._stress_dataset = NepPlotData(read_nep_out_file(self.stress_out_path), title="stress")
+            self._stress_dataset = NepPlotData(stress_array, title="stress")
 
-            self._virial_dataset = NepPlotData(read_nep_out_file(self.virial_out_path),title="virial")
+            self._virial_dataset = NepPlotData(virials_array,title="virial")
         else:
             self._stress_dataset = NepPlotData([], title="stress")
 
             self._virial_dataset = NepPlotData([],title="virial")
 
-        nep3 = Nep3Calculator(self.nep_txt_path.as_posix())
 
-        desc_array=nep3.get_descriptors(  structures)
+        desc_array = process_get_descriptors(self.nep_txt_path.as_posix(),structures)
+
 
         desc_array = pca(desc_array,2)
 

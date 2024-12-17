@@ -67,8 +67,29 @@ class Structure():
     def cell(self):
         return self.lattice
     @property
+    def volume(self):
+        return np.abs(np.linalg.det(self.lattice))
+
+    @property
     def numbers(self):
         return [atomic_numbers[element] for element in self.elements]
+
+    @property
+    def per_atom_energy(self):
+
+
+        return self.additional_fields[ "energy"]/self.num_atoms
+
+    @property
+    def nep_virial(self):
+
+        vir=np.array(self.virial.split(" "),dtype=float)
+
+        return vir[[0,4,8,1,5,6]]/self.num_atoms
+
+
+
+
 
     @property
     def elements(self):
@@ -81,8 +102,20 @@ class Structure():
     @property
     def num_atoms(self):
         return len(self.elements)
+    # 在序列化时使用 __getstate__ 进行处理
+    def __getstate__(self):
+        # 返回对象的状态字典，这里可以控制哪些属性需要序列化
+
+        state = self.__dict__.copy()
+
+        return state
+
+    # 反序列化时使用 __setstate__
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
     def __getattr__(self, item):
+
         if item in self.additional_fields.keys():
             return self.additional_fields[item]
         elif item in self.structure_info.keys():
@@ -176,7 +209,8 @@ class Structure():
                     # 这里是为了后面的Config搜索做统一
                     key = "Config_type"
                     value=str(value)
-
+                if key.lower() in ("energy", "pbc","virial"):
+                    key=key.lower()
                 additional_fields[key] = value
                 # print(additional_fields)
         return lattice, properties, additional_fields

@@ -4,7 +4,7 @@ from PySide6.QtSql import QSqlDatabase, QSqlDriver, QSqlQuery,QSql
 
 from NepTrainKit import module_path
 
-
+import shutil
 class Config:
     """
 使用数据库保存软件配置
@@ -26,8 +26,13 @@ class Config:
         self.connect_db()
     def connect_db(self):
         self.db=QSqlDatabase.addDatabase("QSQLITE","config")
+        user_config_path=os.path.expanduser("~/.config/NepTrainKit")
+        if not os.path.exists(f"{user_config_path}/config.sqlite"):
+            if not os.path.exists(user_config_path):
+                os.mkdir(user_config_path)
 
-        self.db.setDatabaseName(os.path.join(module_path,'Config/config.sqlite'))
+            shutil.copy(os.path.join(module_path,'Config/config.sqlite'),f"{user_config_path}/config.sqlite")
+        self.db.setDatabaseName(f"{user_config_path}/config.sqlite")
 
         self.db.open()
 
@@ -106,6 +111,7 @@ class Config:
             self.theme=value
         query = QSqlQuery(self._instance.db)
         result=query.exec_(f"""INSERT OR REPLACE INTO  "main"."config"("section", "option", "value") VALUES ('{section}', '{option}', '{value}')""")
+
     @classmethod
     def update_section(self,old,new):
         query = QSqlQuery(self._instance.db)

@@ -2935,8 +2935,17 @@ void NEP3::compute(
     exit(1);
   }
 
-  allocate_memory(N);
-
+//  allocate_memory(N);
+    int num_atoms = N;
+    std::vector<double> sum_fxyz(N * (paramb.n_max_angular + 1) * NUM_OF_ABC);
+    std::vector<int> NN_radial(N);
+    std::vector<int> NL_radial(N * MN);
+    std::vector<int> NN_angular(N);
+    std::vector<int> NL_angular(N * MN);
+    std::vector<double> r12(N * MN * 6);
+    std::vector<double> Fp(N * annmb.dim);
+    int num_cells[3];
+    double ebox[18];
   for (int n = 0; n < potential.size(); ++n) {
     potential[n] = 0.0;
   }

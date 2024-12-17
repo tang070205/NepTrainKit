@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time    : 2024/10/17 13:14
 # @Author  : 兵
@@ -14,8 +14,8 @@ from PySide6.QtWidgets import QFileDialog, QApplication
 from loguru import logger
 from qfluentwidgets import StateToolTip
 from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
-from NepTrainKit.core import Config
 
+from NepTrainKit.core import   Config
 
 
 def timeit(func):
@@ -79,7 +79,7 @@ def unzip( ):
 
 class LoadingThread(QThread):
 
-    def __init__(self,parent=None,show_tip=True,title='运行中'):
+    def __init__(self,parent=None,show_tip=True,title='running'):
         super(LoadingThread,self).__init__(parent)
         self.show_tip=show_tip
         self.title=title
@@ -89,7 +89,7 @@ class LoadingThread(QThread):
 
     def start_work(self,func,*args,**kwargs):
         if self.show_tip:
-            self.tip = StateToolTip(self.title, '请耐心等待哦~~', self._parent)
+            self.tip = StateToolTip(self.title, 'Please wait patiently~~', self._parent)
             self.tip.show()
             self.finished.connect(self.__finished_work)
             self.tip.closedSignal.connect(self.quit)

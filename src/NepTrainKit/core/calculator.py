@@ -4,29 +4,76 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import contextlib
+import multiprocessing
 import os
+import traceback
 
 import numpy as np
 from PySide6.QtCore import QObject
+from loguru import logger
+
 from NepTrainKit import utils
 from NepTrainKit.core import Structure
 try:
     from NepTrainKit.nep_cpu import CpuNep
 except ImportError:
     from nep_cpu import CpuNep
-class Nep3Calculator(QObject):
+
+
+class Nep3Calculator( ):
 
     def __init__(self, model_file="nep.txt"):
         super().__init__()
         if not isinstance(model_file, str):
-            model_file=str(model_file,encoding="utf-8")
-        with open(os.devnull, 'w') as devnull:
-            with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
-                self.nep3 = CpuNep(model_file)
-        self.element_list=self.nep3.get_element_list()
-        self.type_dict = {e: i for i, e in enumerate(self.element_list)}
+            model_file = str(model_file, encoding="utf-8")
+        if os.path.exists(model_file):
+            with open(os.devnull, 'w') as devnull:
+                with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
+                    self.nep3 = CpuNep(model_file)
+            self.element_list=self.nep3.get_element_list()
+            self.type_dict = {e: i for i, e in enumerate(self.element_list)}
 
 
+    @utils.timeit
+    def calculate(self,structures:list[Structure]):
+        group_size=[]
+        _types = []
+        _boxs = []
+        _positions = []
+        if isinstance(structures, Structure):
+            structures = [structures]
+        for structure in structures:
+            symbols = structure.elements
+            _type = [self.type_dict[k] for k in symbols]
+            _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
+
+            _position = structure.positions.transpose(1, 0).reshape(-1).tolist()
+            _types.append(_type)
+            _boxs.append(_box)
+            _positions.append(_position)
+            group_size.append(len(_type))
+
+        potentials, forces, virials = self.nep3.calculate(_types, _boxs, _positions)
+
+
+        split_indices = np.cumsum(group_size)[:-1]
+        #
+        potentials=np.hstack(potentials)
+        split_potential_arrays = np.split(potentials, split_indices)
+        potentials_array = np.array(list(map(np.sum, split_potential_arrays)))
+        # print(potentials_array)
+
+        # 处理每个force数组：reshape (3, -1) 和 transpose(1, 0)
+        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
+
+        forces_array = np.vstack(reshaped_forces)
+        # print(forces_array)
+
+        reshaped_virials = np.vstack([np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials])
+
+        virials_array = reshaped_virials[:,[0,4,8,1,5,6]]
+
+        return potentials_array,forces_array,virials_array
 
 
     def get_descriptor(self,structure:Structure):
@@ -62,6 +109,70 @@ class Nep3Calculator(QObject):
 
         return np.array(descriptor)
 
+def _calculate(nep_txt,structures,queue):
+    try:
+        nep3 = Nep3Calculator(nep_txt)
+        result = nep3.calculate(structures)
+        if queue:
+            queue.put(result)  # 将结果通过管道发送给主进程
+
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        result=np.array([])
+        if queue:
+
+            queue.put(result)
+    return result
+
+
+def process_calculate(nep_txt,structures):
+    if len(structures)<1000:
+        return _calculate(nep_txt,structures,None)
+
+
+    queue = multiprocessing.JoinableQueue()
+
+    p = multiprocessing.Process(target=_calculate, args=(nep_txt, structures, queue))
+    # 启动进程
+    p.start()
+
+    queue.join()
+    result = queue.get()
+
+    p.join()
+
+    return result
+def _get_descriptors(nep_txt,structures,queue):
+    try:
+        nep3 = Nep3Calculator(nep_txt)
+        result=nep3.get_descriptors(structures)
+        if queue:
+            queue.put(result )   # 将结果通过管道发送给主进程
+
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        result=np.array([])
+        if queue:
+            queue.put(result)
+    return result
+def process_get_descriptors(nep_txt, structures):
+    if len(structures)<1000:
+        return _get_descriptors(nep_txt, structures, None)
+    queue = multiprocessing.JoinableQueue()
+    p = multiprocessing.Process(target=_get_descriptors, args=(nep_txt, structures, queue))
+    # 启动进程
+    p.start()
+    queue.join()
+    result = queue.get( )
+
+    p.join()
+
+
+    return result
+
+
 
 if __name__ == '__main__':
-    Nep3Calculator("../nep.txt")
+    structures = Structure.read_multiple(r"D:\Desktop\nep\nep-data-main\2023_Zhao_PdCuNiP\train.xyz")
+    nep = Nep3Calculator(r"D:\Desktop\nep\nep-data-main\2023_Zhao_PdCuNiP\nep.txt")
+    nep.calculate(structures)

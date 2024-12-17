@@ -4,7 +4,11 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 from PySide6.QtGui import QBrush, QColor
+from enum import Enum
 
+class ForcesMode(Enum):
+    Row="Row"
+    Norm="Norm"
 
 class Brushes:
     # 基本颜色刷子
