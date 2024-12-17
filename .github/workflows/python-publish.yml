@@ -33,10 +33,10 @@ jobs:
     - name: Clean previous builds
       run: |
  
-        rmdir /s /q build
-        rmdir /s /q dist
-        del /s /q *.egg-info
-        rmdir /s /q *.egg-info
+        rmdir /s   build
+        rmdir /s   dist
+        del /s   *.egg-info
+        rmdir /s  *.egg-info
 
         
 
