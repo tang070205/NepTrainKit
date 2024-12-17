@@ -18,7 +18,7 @@ permissions:
 jobs:
   deploy:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
         pip install build   pybind11 setuptools -U
     - name: Clean previous builds
       run: |
-        rm -rf build/ dist/ *.egg-info
+        rm -rf build/ dist/*.egg-info
 
     - name: Build package
       run: python setup.py sdist
