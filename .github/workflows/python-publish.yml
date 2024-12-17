@@ -32,7 +32,9 @@ jobs:
         pip install build   pybind11 setuptools -U
     - name: Clean previous builds
       run: |
-        rm -rf build/ dist/*.egg-info
+ 
+        rmdir /s /q build
+        for /d %i in (dist\*.egg-info) do rmdir /s /q "%i"
 
     - name: Build package
       run: python setup.py sdist
