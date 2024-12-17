@@ -54,7 +54,10 @@ class Structure():
         self.additional_fields = additional_fields
         if "Config_type" not in self.additional_fields.keys():
             self.additional_fields["Config_type"] = ""
-
+        if "forces" in self.structure_info.keys():
+            self.force_label="forces"
+        else:
+            self.force_label = "force"
 
     def __len__(self):
         return len(self.elements)
@@ -79,6 +82,10 @@ class Structure():
 
 
         return self.additional_fields[ "energy"]/self.num_atoms
+    @property
+    def forces(self):
+        return self.structure_info[self.force_label]
+
 
     @property
     def nep_virial(self):
