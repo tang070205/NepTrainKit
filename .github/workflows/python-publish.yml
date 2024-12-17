@@ -34,7 +34,11 @@ jobs:
       run: |
  
         rmdir /s /q build
-        for /d %i in (dist\*.egg-info) do rmdir /s /q "%i"
+        rmdir /s /q dist
+        del /s /q *.egg-info
+        rmdir /s /q *.egg-info
+
+        
 
     - name: Build package
       run: python setup.py sdist
