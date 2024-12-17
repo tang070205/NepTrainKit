@@ -103,9 +103,9 @@ calculate(const std::vector<std::vector<int>>& type,
 
     // OpenMP 并行化报错
     #if defined(_OPENMP)
-    #pragma omp parallel for
+        #pragma omp parallel for
     #endif
-    for (size_t i = 0; i < type_size; ++i) {
+    for (int i = 0; i < type_size; ++i) {
         std::vector<double> potential_for_structure(type[i].size());
         std::vector<double> force_for_structure(type[i].size() * 3);  // 假设 force 是 3D 向量
         std::vector<double> virial_for_structure(type[i].size() * 9);  // 假设 virial 是 3x3 矩阵
@@ -144,7 +144,7 @@ calculate(const std::vector<std::vector<int>>& type,
         size_t type_size = type.size();
         std::vector<std::vector<double>> all_descriptors(type_size, std::vector<double>(annmb.dim));
 
-        for (size_t i = 0; i < type_size; ++i) {
+        for (int i = 0; i < type_size; ++i) {
             std::vector<double> struct_des(type[i].size() * annmb.dim);
             find_descriptor(type[i], box[i], position[i], struct_des);
 //
