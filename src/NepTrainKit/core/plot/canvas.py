@@ -8,7 +8,31 @@ from abc import abstractmethod
 
 import numpy as np
 from PySide6.QtCore import Signal
-from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem
+from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem, PlotItem
+
+from NepTrainKit.core.types import Brushes, Pens
+
+
+class MyPlotItem(PlotItem):
+    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._scatter=None
+        self.current_point=ScatterPlotItem()
+        self.current_point.setZValue(100)
+    def add_scatter(self, scatter:ScatterPlotItem, **kwargs):
+        self._scatter=scatter
+        self.addItem(scatter,**kwargs)
+
+    def set_current_point(self, x,y):
+
+        self.current_point.setData( x, y,brush=Brushes.Current ,pen=Pens.Current,
+                                      symbol='star',size=15 )
+        if self.current_point not in self.items:
+
+            self.addItem(self.current_point)
+
+
 
 
 
@@ -77,11 +101,13 @@ class LayoutPlotBase(PlotBase):
         self.clear()
 
         for r in range(5):
+            plot = MyPlotItem()
+
             if r==0:
-                plot = self.addPlot(row=r, col=0,colspan=3 )
+                self.addItem(plot,row=r, col=0,colspan=3 )
             else:
 
-                plot = self.addPlot(row=1, col=r-1  )
+                self.addItem(plot,row=1, col=r-1  )
             plot.getViewBox().mouseDoubleClickEvent = self.on_click(plot)
             plot.getViewBox().setMouseEnabled(False, False)
             self.axes_list.append(plot)

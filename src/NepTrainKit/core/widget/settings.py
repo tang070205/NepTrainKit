@@ -30,15 +30,17 @@ class SettingsWidget(QWidget):
              'Personalization' , self)
 
 
-        default_forces = Config.get("widget","forces_data","Row")
-
+        default_forces = Config.get("widget","forces_data","Raw")
+        if default_forces=="Row":
+            #没什么用 替换以前的坑 之前写错单词了
+            default_forces="Raw"
         self.optimization_forces_card = MyComboBoxSettingCard(
             OptionsConfigItem("forces","forces",ForcesMode(default_forces),OptionsValidator(ForcesMode), EnumSerializer(ForcesMode)),
             FIF.BRUSH,
             'Force data format',
             "Streamline data and speed up drawing",
             texts=[
-                "Row","Norm"
+                "Raw","Norm"
             ],
             default=default_forces,
             parent=self.personal_group

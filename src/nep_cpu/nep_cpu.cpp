@@ -86,6 +86,98 @@ public:
     CpuNep(const std::string& potential_filename) : NEP3(potential_filename) {}
 
     // 计算所有结构的 potential, force, virial
+void compute(
+  const std::vector<int>& type,
+  const std::vector<double>& box,
+  const std::vector<double>& position,
+  std::vector<double>& potential,
+  std::vector<double>& force,
+  std::vector<double>& virial)
+{
+  if (paramb.model_type != 0) {
+    std::cout << "Cannot compute potential using a non-potential NEP model.\n";
+    exit(1);
+  }
+
+  const int N = type.size();
+  const int size_x12 = N * MN;
+
+  if (N * 3 != position.size()) {
+    std::cout << "Type and position sizes are inconsistent.\n";
+    exit(1);
+  }
+  if (N != potential.size()) {
+    std::cout << "Type and potential sizes are inconsistent.\n";
+    exit(1);
+  }
+  if (N * 3 != force.size()) {
+    std::cout << "Type and force sizes are inconsistent.\n";
+    exit(1);
+  }
+  if (N * 9 != virial.size()) {
+    std::cout << "Type and virial sizes are inconsistent.\n";
+    exit(1);
+  }
+
+//  allocate_memory(N);
+    int num_atoms = N;
+    std::vector<double> sum_fxyz(N * (paramb.n_max_angular + 1) * NUM_OF_ABC);
+    std::vector<int> NN_radial(N);
+    std::vector<int> NL_radial(N * MN);
+    std::vector<int> NN_angular(N);
+    std::vector<int> NL_angular(N * MN);
+    std::vector<double> r12(N * MN * 6);
+    std::vector<double> Fp(N * annmb.dim);
+    int num_cells[3];
+    double ebox[18];
+  for (int n = 0; n < potential.size(); ++n) {
+    potential[n] = 0.0;
+  }
+  for (int n = 0; n < force.size(); ++n) {
+    force[n] = 0.0;
+  }
+  for (int n = 0; n < virial.size(); ++n) {
+    virial[n] = 0.0;
+  }
+
+  find_neighbor_list_small_box(
+    paramb.rc_radial, paramb.rc_angular, N, box, position, num_cells, ebox, NN_radial, NL_radial,
+    NN_angular, NL_angular, r12);
+
+  find_descriptor_small_box(
+    true, false, false, false, paramb, annmb, N, NN_radial.data(), NL_radial.data(),
+    NN_angular.data(), NL_angular.data(), type.data(), r12.data(), r12.data() + size_x12,
+    r12.data() + size_x12 * 2, r12.data() + size_x12 * 3, r12.data() + size_x12 * 4,
+    r12.data() + size_x12 * 5,
+#ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
+    gn_radial.data(), gn_angular.data(),
+#endif
+    Fp.data(), sum_fxyz.data(), potential.data(), nullptr, nullptr, nullptr);
+
+  find_force_radial_small_box(
+    false, paramb, annmb, N, NN_radial.data(), NL_radial.data(), type.data(), r12.data(),
+    r12.data() + size_x12, r12.data() + size_x12 * 2, Fp.data(),
+#ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
+    gnp_radial.data(),
+#endif
+    force.data(), force.data() + N, force.data() + N * 2, virial.data());
+
+  find_force_angular_small_box(
+    false, paramb, annmb, N, NN_angular.data(), NL_angular.data(), type.data(),
+    r12.data() + size_x12 * 3, r12.data() + size_x12 * 4, r12.data() + size_x12 * 5, Fp.data(),
+    sum_fxyz.data(),
+#ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
+    gn_angular.data(), gnp_angular.data(),
+#endif
+    force.data(), force.data() + N, force.data() + N * 2, virial.data());
+
+  if (zbl.enabled) {
+    find_force_ZBL_small_box(
+      N, paramb, zbl, NN_angular.data(), NL_angular.data(), type.data(), r12.data() + size_x12 * 3,
+      r12.data() + size_x12 * 4, r12.data() + size_x12 * 5, force.data(), force.data() + N,
+      force.data() + N * 2, virial.data(), potential.data());
+  }
+}
 
 
 std::tuple<std::vector<std::vector<double>>,

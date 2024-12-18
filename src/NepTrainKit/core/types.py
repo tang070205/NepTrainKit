@@ -6,14 +6,53 @@
 from PySide6.QtGui import QBrush, QColor
 from enum import Enum
 
+from pyqtgraph import mkPen
+
+
 class ForcesMode(Enum):
-    Row="Row"
+    Raw="Raw"
     Norm="Norm"
 
-class Brushes:
+
+class Base:
+
+    @classmethod
+    def get(cls,name):
+        if hasattr(cls, name):
+            return getattr(cls, name)
+        else:
+            return getattr(cls,"Default")
+
+
+
+
+
+class Pens(Base):
+    Default=mkPen(color="blue", width=0.5)
+    Energy = Default
+    Force = Default
+    Virial = Default
+    Stress = Default
+    Descriptor = Default
+    Current=mkPen(color="red", width=1)
+    def __getattr__(self, item):
+        return getattr(self.Default, item)
+
+class Brushes(Base):
     # 基本颜色刷子
-    RedBrush = QBrush(QColor(255, 0, 0))  # 红色
-    GreenBrush = QBrush(QColor(0, 255, 0))  # 绿色
+
+
+
     BlueBrush = QBrush(QColor(0, 0, 255))  # 蓝色
     YellowBrush = QBrush(QColor(255, 255, 0))  # 黄色
-    TransparentBrush = QBrush(QColor(0, 0, 0,0))  # 黄色
+    Default = QBrush(QColor(0, 0, 0,0))  # 黄色
+    Energy = Default
+    Force =Default
+    Virial =Default
+    Stress = Default
+    Descriptor = Default
+    Show=QBrush(QColor(0, 255, 0))  # 绿色
+    Selected=QBrush(QColor(255, 0, 0))
+    Current=QBrush(QColor(255, 0,0 ))
+    def __getattr__(self, item):
+        return getattr(self.Default, item)

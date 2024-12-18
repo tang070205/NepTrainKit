@@ -9,6 +9,7 @@ import sys
 import numpy as np
 from PySide6.QtGui import QColor
 
+
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
@@ -77,27 +78,15 @@ class StructurePlotWidget(gl.GLViewWidget):
 
     def show_elem(self,numbers,postions):
 
-
-        # colors=np.array([list(QColor(self.table_info[str(n)]["color"]).getRgbF()) for n in numbers ])
-        # print(colors)
-        # sizes=np.array([self.table_info[str(n)]["radii"]//5 for n in numbers])
-        # colors[:,3]=0.3
         for n,p in zip(numbers,postions):
             color=QColor(self.table_info[str(n)]["color"]).getRgbF()
             size=self.table_info[str(n)]["radii"]/100
 
             sphere = gl.MeshData.sphere(rows=20, cols=20,radius=size)
-            m = gl.GLMeshItem(meshdata=sphere, smooth=True, shader='shaded', color=color)
+            m = gl.GLMeshItem(meshdata=sphere, smooth=False, shader='shaded', color=color)
             self.addItem(m)
 
             m.translate(p[0], p[1], p[2])  # 设置球体的位置
-
-
-        # items=gl.GLScatterPlotItem(pos=postions, color=colors ,size=sizes, pxMode=False,
-    # glOptions='opaque')
-        # items.setGLOptions('opaque')  # 确保散点不透明
-
-
 
 
     def show_atoms(self,atoms):

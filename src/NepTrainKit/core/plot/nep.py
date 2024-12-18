@@ -15,7 +15,7 @@ from .. import MessageManager, Config
 from ..custom_widget.dialog import GetIntMessageBox, SparseMessageBox
 from ..io import NepTrainResultData
 from ..io.select import farthest_point_sampling
-from ..types import Brushes
+from ..types import Brushes, Pens
 from NepTrainKit import utils
 
 
@@ -24,10 +24,10 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
         self._parent=parent
-        self.dataset=None
+        self.nep_result_data=None
         self.draw_mode=False
         self.setRenderHint(QPainter.Antialiasing, False)
-        self.setViewportUpdateMode(self.ViewportUpdateMode.BoundingRectViewportUpdate)
+        # self.setViewportUpdateMode(self.ViewportUpdateMode.BoundingRectViewportUpdate)
 
     def set_tool_bar(self, tool):
         self.tool_bar: NepDisplayGraphicsToolBar = tool
@@ -134,7 +134,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         self.select_index(index,False)
 
     def sparse_point(self):
-        if  self.dataset is None:
+        if  self.nep_result_data is None:
             return
         box= SparseMessageBox(self._parent,"Please specify the maximum number of structures and minimum distance")
         n_samples = Config.getint("widget","sparse_num_value",10)
@@ -151,7 +151,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         Config.set("widget","sparse_num_value",n_samples)
         Config.set("widget","sparse_distance_value",distance)
 
-        dataset = self.dataset.descriptor
+        dataset = self.nep_result_data.descriptor
         indices_to_remove = farthest_point_sampling(dataset.now_data,n_samples=n_samples,min_dist=distance)
 
         # 获取所有索引（从 0 到 len(arr)-1）
@@ -162,7 +162,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         structures = dataset.group_array[remaining_indices]
         self.select_index(structures.tolist(),False)
     def set_dataset(self,dataset):
-        self.dataset:NepTrainResultData=dataset
+        self.nep_result_data:NepTrainResultData=dataset
         self.subplot(2,3)
         self.plot_all()
 
@@ -179,18 +179,22 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         y_pos = y_range[0] + y_percent * (y_range[1] - y_range[0])  # 根据百分比计算实际位置
         return x_pos,y_pos
 
+    def get_plot_dataset(self,plot):
+        plot_index = self.axes_list.index(plot)
+        return self.nep_result_data.dataset[plot_index]
+
+
+
+
     def get_current_dataset(self):
         if self.current_plot is None:
             return None
-        plot_index = self.axes_list.index(self.current_plot)
-        return self.dataset.dataset[plot_index]
+        return self.get_plot_dataset(self.current_plot)
     @utils.timeit
     def plot_all(self):
-        self.dataset.select_index.clear()
-        _pen = mkPen(None)
-        # import time
-        # start = time.time()
-        for index,_dataset in enumerate(self.dataset.dataset):
+        self.nep_result_data.select_index.clear()
+
+        for index,_dataset in enumerate(self.nep_result_data.dataset):
             plot=self.axes_list[index]
             plot.disableAutoRange()
             plot.clear()
@@ -201,19 +205,18 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
             plot.setTitle(_dataset.title)
 
             scatter = ScatterPlotItem(_dataset.x,_dataset.y,data=_dataset.structure_index,
-                                      brush=Brushes.TransparentBrush ,pen=mkPen(color="blue", width=0.5),
+                                      brush=Brushes.get(_dataset.title.upper()) ,pen=Pens.get(_dataset.title.upper()),
                                       symbol='o',size=7,
 
                                       )
 
 
             scatter.sigClicked.connect(self.item_clicked)
-            plot.scatter=scatter
-            # plot.setDownsampling(auto=True, mode='peak')
+            plot.add_scatter(scatter)
 
-            plot.addItem(scatter)
 
-            # 优化抗锯齿设置
+
+
 
             # 设置视图框更新模式
             plot.autoRange()
@@ -234,22 +237,35 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
 
             self.structureIndexChanged.emit(item.data())
 
-    def delete(self):
-        if self.dataset is not None and self.dataset.select_index:
+    def plot_current_point(self,structure_index):
 
-            self.dataset.delete_selected()
+        for plot in  self.axes_list :
+            dataset=self.get_plot_dataset(plot)
+            array_index=dataset.convert_index(structure_index)
+
+            data=dataset.now_data[array_index,: ]
+            plot.set_current_point(data[:,dataset.cols:].flatten(),
+                                   data[:, :dataset.cols].flatten(),
+                                   )
+
+
+
+    def delete(self):
+        if self.nep_result_data is not None and self.nep_result_data.select_index:
+
+            self.nep_result_data.delete_selected()
             self.plot_all()
 
 
     def select_point_from_polygon(self,polygon_xy,reverse ):
-        index=self.is_point_in_polygon(np.column_stack([self.current_plot.scatter.data["x"],self.current_plot.scatter.data["y"]]),polygon_xy)
+        index=self.is_point_in_polygon(np.column_stack([self.current_plot._scatter.data["x"],self.current_plot._scatter.data["y"]]),polygon_xy)
         index = np.where(index)[0]
-        select_index=self.current_plot.scatter.data[index]["data"].tolist()
+        select_index=self.current_plot._scatter.data[index]["data"].tolist()
         self.select_index(select_index,reverse)
 
 
     def select_point(self,pos,reverse):
-        items=self.current_plot.scatter.pointsAt(pos)
+        items=self.current_plot._scatter.pointsAt(pos)
         if len(items):
 
             item=items[0]
@@ -267,31 +283,31 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         if not structure_index:
             return
         if reverse:
-            self.dataset.uncheck(structure_index)
-            self.update_axes_color(structure_index, Brushes.TransparentBrush)
+            self.nep_result_data.uncheck(structure_index)
+            self.update_axes_color(structure_index, Brushes.Default)
 
         else:
 
-            self.dataset.select(structure_index)
+            self.nep_result_data.select(structure_index)
 
-            self.update_axes_color(structure_index, Brushes.RedBrush)
+            self.update_axes_color(structure_index, Brushes.Selected)
 
 
-    def update_axes_color(self,structure_index,color=Brushes.RedBrush):
+    def update_axes_color(self,structure_index,color=Brushes.Selected):
 
 
         for i,plot in enumerate(self.axes_list):
 
-            if not hasattr(plot,"scatter"):
+            if not plot._scatter:
                 continue
             structure_index_set= set(structure_index)
-            index_list = [i for i, val in enumerate(plot.scatter.data["data"]) if val in structure_index_set]
+            index_list = [i for i, val in enumerate(plot._scatter.data["data"]) if val in structure_index_set]
 
-            plot.scatter.data["brush"][index_list]=   color
-            plot.scatter.data['sourceRect'][index_list] = (0, 0, 0, 0)
+            plot._scatter.data["brush"][index_list]=   color
+            plot._scatter.data['sourceRect'][index_list] = (0, 0, 0, 0)
 
 
-            plot.scatter.updateSpots(  )
+            plot._scatter.updateSpots( )
 
 
 
@@ -303,8 +319,8 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         :return:
         """
 
-        if self.dataset and  self.dataset.is_revoke:
-            self.dataset.revoke()
+        if self.nep_result_data and  self.nep_result_data.is_revoke:
+            self.nep_result_data.revoke()
             self.plot_all()
 
         else:

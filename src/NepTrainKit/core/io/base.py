@@ -161,15 +161,15 @@ class NepPlotData(NepData):
 
 
 
-    @property
-    def colors(self):
-        structure_index=self.structure_index
-        colors = np.full(structure_index.shape[0], self.normal_color)  # 初始颜色为蓝色
-        # print(colors)
-        return colors
-    @property
-    def selected_color(self):
-        return Brushes.RedBrush
+    # @property
+    # def colors(self):
+    #     structure_index=self.structure_index
+    #     colors = np.full(structure_index.shape[0], self.normal_color)  # 初始颜色为蓝色
+    #     # print(colors)
+    #     return colors
+    # @property
+    # def selected_color(self):
+    #     return Brushes.RedBrush
     @property
     def normal_color(self):
         return Brushes.TransparentBrush

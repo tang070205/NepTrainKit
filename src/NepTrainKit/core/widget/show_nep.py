@@ -9,11 +9,13 @@ import threading
 import time
 from io import StringIO
 
-from PySide6.QtCore import QUrl, QThread
+import numpy as np
+from PySide6.QtCore import QUrl, QThread, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSizePolicy
 
-from qfluentwidgets import HyperlinkLabel, MessageBox, SubtitleLabel, PlainTextEdit, CaptionLabel, SpinBox
+from qfluentwidgets import HyperlinkLabel, MessageBox, SubtitleLabel, PlainTextEdit, CaptionLabel, SpinBox, \
+    TransparentToolButton
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager
@@ -38,7 +40,7 @@ class ShowNepWidget(QWidget):
         self._parent = parent
         self.setObjectName("ShowNepWidget")
         self.setAcceptDrops(True)
-        self.dataset=None
+        self.nep_result_data=None
         self.init_ui()
 
     def init_ui(self):
@@ -60,10 +62,26 @@ class ShowNepWidget(QWidget):
         self.struct_index_label.setText("Current structure (original file index):")
 
         self.struct_index_spinbox = SpinBox(self.struct_index_widget)
+
+        self.struct_index_spinbox.upButton.clicked.disconnect(self.struct_index_spinbox.stepUp)
+        self.struct_index_spinbox.downButton.clicked.disconnect(self.struct_index_spinbox.stepDown)
+        self.struct_index_spinbox.downButton.clicked.connect(self.to_last_structure)
+        self.struct_index_spinbox.upButton.clicked.connect(self.to_next_structure)
         self.struct_index_spinbox.setMinimum(0)
         self.struct_index_spinbox.setMaximum(0)
+
+        self.play_timer=QTimer(self)
+        self.play_timer.timeout.connect(self.play_show_structures)
+
+        self.auto_switch_button = TransparentToolButton(QIcon(':/images/src/images/play.svg') ,self.struct_index_widget)
+        self.auto_switch_button.clicked.connect(self.start_play)
+        self.auto_switch_button.setCheckable(True)
+
+
         self.struct_index_widget_layout.addWidget(self.struct_index_label)
         self.struct_index_widget_layout.addWidget(self.struct_index_spinbox)
+
+        self.struct_index_widget_layout.addWidget(self.auto_switch_button)
         self.struct_index_spinbox.valueChanged.connect(self.show_current_structure)
 
         self.struct_widget_layout.addWidget(self.show_struct_widget, 0, 0, 1, 1)
@@ -75,10 +93,6 @@ class ShowNepWidget(QWidget):
         self.struct_widget_layout.setRowStretch(2, 0)
 
         self.struct_widget_layout.setContentsMargins(0, 0, 0, 0)
-
-
-
-
 
         self.plot_widget = QWidget(self)
 
@@ -103,7 +117,7 @@ class ShowNepWidget(QWidget):
         self.plot_widget_layout.addWidget(self.search_lineEdit)
         self.plot_widget_layout.addWidget(self.graph_widget)
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
-        # self.search_widget.hide()
+
 
 
 
@@ -147,13 +161,13 @@ class ShowNepWidget(QWidget):
             self.set_work_path(path)
 
     def export_file(self):
-        if self.dataset is None:
+        if self.nep_result_data is None:
             MessageManager.send_info_message("NEP data has not been loaded yet!")
             return
         path=utils.call_path_dialog(self,"Choose a file save location","directory")
         if path:
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
-            thread.start_work(self.dataset.export_model_xyz,path)
+            thread.start_work(self.nep_result_data.export_model_xyz, path)
 
 
 
@@ -187,59 +201,102 @@ class ShowNepWidget(QWidget):
 
         # self.check_nep_result(path)
     def set_dataset(self):
-        if self.dataset is None:
+        if self.nep_result_data is None:
             return
-        self.struct_index_spinbox.setMaximum(self.dataset.num)
+        self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
 
+        self.graph_widget.set_dataset(self.nep_result_data)
+        self.search_lineEdit.setCompleterKeyWord(self.nep_result_data.structure.get_all_config())
         self.struct_index_spinbox.valueChanged.emit(0)
-        self.graph_widget.set_dataset(self.dataset)
-        self.search_lineEdit.setCompleterKeyWord(self.dataset.structure.get_all_config())
+
     def check_nep_result(self,path):
         """
         检查输出文件都有什么
         然后设置窗口布局
         :return:
         """
-        self.dataset = NepTrainResultData.from_path(path)
-        if self.dataset is None:
+        self.nep_result_data = NepTrainResultData.from_path(path)
+        if self.nep_result_data is None:
             return
 
         self.path_label.setText(f"Current working directory: {path}")
         self.path_label.setUrl(QUrl.fromLocalFile(path))
         # self.graph_widget.set_dataset(self.dataset)
+
+    def to_last_structure(self):
+        if self.nep_result_data is None:
+            return None
+        current_index = self.struct_index_spinbox.value()
+        sort_index = np.sort(self.nep_result_data.structure.group_array.now_data, axis=0)
+        index = np.searchsorted(sort_index, current_index, side='left')
+
+        self.struct_index_spinbox.setValue(int(sort_index[index-1 if index>0 else index]))
+    # @utils.timeit
+    def to_next_structure(self):
+        if self.nep_result_data is None:
+            return None
+        current_index=self.struct_index_spinbox.value()
+        sort_index= np.sort(self.nep_result_data.structure.group_array.now_data,axis=0)
+        index = np.searchsorted(sort_index, current_index, side='right')
+        if index>=sort_index.shape[0]:
+            return False
+        self.struct_index_spinbox.setValue(int(sort_index[index]))
+
+        if index==sort_index.shape[0]-1:
+
+            return True
+        else:
+
+            return False
+    def start_play(self):
+        if self.auto_switch_button.isChecked():
+            self.auto_switch_button.setIcon(QIcon(':/images/src/images/pause.svg'))
+            self.play_timer.start(50)
+        else:
+            self.auto_switch_button.setIcon(QIcon(':/images/src/images/play.svg'))
+            self.play_timer.stop()
+    def play_show_structures(self):
+        if   self.to_next_structure():
+
+            self.auto_switch_button.click()
+    # @utils.timeit
     def show_current_structure(self,current_index):
 
         try:
-            atoms=self.dataset.get_atoms(current_index)
+            atoms=self.nep_result_data.get_atoms(current_index)
         except:
             MessageManager.send_message_box("The index is invalid, perhaps the structure has been deleted")
             return
+
+        self.graph_widget.plot_current_point(current_index)
+
         self.show_struct_widget.show_atoms(atoms)
+
         text_io=StringIO()
         atoms.write(text_io)
 
         text_io.seek(0)
         # comm=text.readlines()[1]
         comm=text_io.read()
-
         self.struct_info_edit.setPlainText(comm)
         text_io.close()
 
 
     def search_config_type(self,config):
-        indexs= self.dataset.structure.search_config(config)
 
-        self.graph_widget.update_axes_color(indexs,Brushes.GreenBrush)
+        indexs= self.nep_result_data.structure.search_config(config)
+
+        self.graph_widget.update_axes_color(indexs,Brushes.Show)
 
 
     def checked_config_type(self, config):
 
-        indexs = self.dataset.structure.search_config(config)
+        indexs = self.nep_result_data.structure.search_config(config)
 
         self.graph_widget.select_index(indexs,  False)
 
     def uncheck_config_type(self, config):
 
-        indexs = self.dataset.structure.search_config(config)
+        indexs = self.nep_result_data.structure.search_config(config)
 
         self.graph_widget.select_index(indexs,True )

@@ -239,7 +239,7 @@ class Structure():
         return parsed_properties
 
     @staticmethod
-    @utils.timeit
+    # @utils.timeit
     def read_multiple(filename ):
         """
         Read a multi-structure XYZ file and return a list of Structure objects.

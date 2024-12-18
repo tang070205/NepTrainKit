@@ -18,6 +18,8 @@
     <file>src/images/search.svg</file>
     <file>src/images/check.svg</file>
     <file>src/images/uncheck.svg</file>
+    <file>src/images/play.svg</file>
+    <file>src/images/pause.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

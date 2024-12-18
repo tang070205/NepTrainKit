@@ -16,7 +16,8 @@ from loguru import logger
 from NepTrainKit.core import MessageManager, Structure, Config
 from .base import NepPlotData, StructureData
 from .utils import read_nep_out_file, read_atom_num_from_xyz, check_fullbatch, read_nep_in
-from ..calculator import  process_calculate,process_get_descriptors
+from ..calculator import  process_calculate,process_get_descriptors,_calculate,_get_descriptors,Nep3Calculator
+import pyqtgraph.multiprocess as mp
 
 
 def pca(X, k):
@@ -63,9 +64,16 @@ class NepTrainResultData(QObject):
         self.virial_out_path = virial_out_path
 
         atoms_num_list = read_atom_num_from_xyz(self.data_xyz_path)
+        proc = mp.QtProcess( )
 
-        structures=Structure.read_multiple(self.data_xyz_path  )
+        structures=proc.callObj(Structure.read_multiple,(self.data_xyz_path,),{} ,_timeout=60*60 ,_returnType="value" )
+
+
+
         self._atoms_dataset=StructureData(structures)
+        proc_structures = proc.transfer(structures)
+
+        nep3 = proc.callObj(Nep3Calculator, (self.nep_txt_path.as_posix(),), {}, timeout=60 * 60)
 
         nep_in= read_nep_in(self.nep_txt_path.with_name("nep.in"))
 
@@ -77,7 +85,12 @@ class NepTrainResultData(QObject):
                     not self.virial_out_path.exists()
 
         ])):
-                nep_potentials_array,nep_forces_array,nep_virials_array = process_calculate(self.nep_txt_path.as_posix(), structures)
+
+
+                nep_potentials_array,nep_forces_array,nep_virials_array  = nep3.calculate(proc_structures ,_returnType='value',_timeout=60*60 )
+
+
+                # nep_potentials_array,nep_forces_array,nep_virials_array = process_calculate(self.nep_txt_path.as_posix(), structures)
                 energy_array=np.column_stack([nep_potentials_array/atoms_num_list,[structure.per_atom_energy for structure in structures]])
                 try:
 
@@ -146,7 +159,8 @@ class NepTrainResultData(QObject):
             self._virial_dataset = NepPlotData([],title="virial")
 
 
-        desc_array = process_get_descriptors(self.nep_txt_path.as_posix(),structures)
+        desc_array = nep3.get_descriptors(structures,_returnType='value',_timeout=60*60 )
+
 
 
         desc_array = pca(desc_array,2)
