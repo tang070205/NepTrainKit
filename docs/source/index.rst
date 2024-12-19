@@ -9,7 +9,7 @@ NepTrainKit is a toolkit focused on the operation and visualization of neural ne
 
 .. toctree::
    :maxdepth: 2
-   :caption: Modules:
+   :caption: Documentation:
 
-   NEP dataset display  <NEP-dataset-display.md>
-
+   module    <module/index>
+   example    <example/index>

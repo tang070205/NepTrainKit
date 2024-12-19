@@ -8,8 +8,9 @@
 
 
 project = 'NepTrainKit'
-copyright = '2024, ChengBing Chen,YuTong Li'
-author = 'ChengBing Chen'
+copyright = '2024, NepTrain Team'
+author = ",".join(['ChengBing Chen','YuTong Li'])
+
 release = '1.4.9'
 
 # -- General configuration ---------------------------------------------------
@@ -47,7 +48,9 @@ language = 'en'
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
-
+html_context = {
+    "author_name": author,
+}
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',
