@@ -1,7 +1,7 @@
 import os
 
 from PySide6.QtSql import QSqlDatabase, QSqlDriver, QSqlQuery,QSql
-
+import platform
 from NepTrainKit import module_path
 
 import shutil
@@ -27,9 +27,20 @@ class Config:
     def connect_db(self):
         self.db=QSqlDatabase.addDatabase("QSQLITE","config")
         user_config_path=os.path.expanduser("~/.config/NepTrainKit")
+
+        if platform.system() == 'Windows':
+            # Windows 系统通常使用 AppData 路径存放应用数据
+            local_path = os.getenv('LOCALAPPDATA', None)
+            if local_path is None:
+                local_path = os.getenv('USERPROFILE', '') + '\\AppData\\Local '
+            user_config_path=os.path.join(local_path,'NepTrainKit')
+        else:
+            user_config_path=os.path.expanduser("~/.config/NepTrainKit")
+
+
         if not os.path.exists(f"{user_config_path}/config.sqlite"):
             if not os.path.exists(user_config_path):
-                os.mkdir(user_config_path)
+                os.makedirs(user_config_path)
 
             shutil.copy(os.path.join(module_path,'Config/config.sqlite'),f"{user_config_path}/config.sqlite")
         self.db.setDatabaseName(f"{user_config_path}/config.sqlite")
