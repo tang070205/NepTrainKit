@@ -242,11 +242,11 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         for plot in  self.axes_list :
             dataset=self.get_plot_dataset(plot)
             array_index=dataset.convert_index(structure_index)
-
-            data=dataset.now_data[array_index,: ]
-            plot.set_current_point(data[:,dataset.cols:].flatten(),
-                                   data[:, :dataset.cols].flatten(),
-                                   )
+            if dataset.now_data.size!=0:
+                data=dataset.now_data[array_index,: ]
+                plot.set_current_point(data[:,dataset.cols:].flatten(),
+                                       data[:, :dataset.cols].flatten(),
+                                       )
 
 
 
