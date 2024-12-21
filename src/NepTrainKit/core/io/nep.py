@@ -22,8 +22,10 @@ import pyqtgraph.multiprocess as mp
 
 def pca(X, k):
     # 1. 标准化数据（去均值和方差标准化）
+
     mean = np.mean(X, axis=0)
     X_centered = X - mean
+
 
     # 2. 计算协方差矩阵
     cov_matrix = np.cov(X_centered.T)
@@ -81,7 +83,11 @@ class NepTrainResultData(QObject):
 
 
                 nep_potentials_array,nep_forces_array,nep_virials_array = process_calculate(self.nep_txt_path.as_posix(), structures)
-                energy_array=np.column_stack([nep_potentials_array/atoms_num_list,[structure.per_atom_energy for structure in structures]])
+                try:
+                    energy_array=np.column_stack([nep_potentials_array/atoms_num_list,[structure.per_atom_energy for structure in structures]])
+                except:
+                    pass
+                    energy_array=np.array([])
                 try:
 
                     forces_array=np.column_stack([nep_forces_array,
@@ -149,6 +155,9 @@ class NepTrainResultData(QObject):
             self._virial_dataset = NepPlotData([],title="virial")
 
         desc_array=process_get_descriptors(self.nep_txt_path.as_posix(), structures)
+        # desc_array=np.array([structure.positions for structure in structures if structure.num_atoms==90])
+        #
+        # desc_array=desc_array.reshape((204,-1))
         desc_array = pca(desc_array,2)
 
         # desc_array=np.array([])

@@ -20,6 +20,7 @@
     <file>src/images/uncheck.svg</file>
     <file>src/images/play.svg</file>
     <file>src/images/pause.svg</file>
+    <file>src/images/make.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

@@ -8,7 +8,7 @@ from abc import abstractmethod
 
 import numpy as np
 from PySide6.QtCore import Signal
-from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem, PlotItem
+from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem, PlotItem,GraphicsView
 
 from NepTrainKit.core.types import Brushes, Pens
 
@@ -32,14 +32,7 @@ class MyPlotItem(PlotItem):
 
             self.addItem(self.current_point)
 
-
-
-
-
-
 class PlotBase:
-
-
 
     def __init__(self):
         self.current_plot=self
@@ -78,6 +71,8 @@ class PlotBase:
             p1x, p1y = p2x, p2y
 
         return inside
+
+
 
 
 
@@ -159,3 +154,8 @@ class CustomGraphicsLayoutWidget(LayoutPlotBase,GraphicsLayoutWidget):
         GraphicsLayoutWidget.__init__(self,*args,**kwargs)
 
 
+class CustomGraphicsWidget(PlotBase,GraphicsView):
+    def __init__(self,*args,**kwargs):
+        super().__init__( )
+
+        GraphicsView.__init__(self,*args,**kwargs)
