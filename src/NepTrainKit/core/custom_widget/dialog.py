@@ -20,7 +20,7 @@ class GetIntMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.intSpinBox)
 
-        self.widget.setMinimumWidth(100)
+        self.widget.setMinimumWidth(1000000)
 class SparseMessageBox(MessageBoxBase):
     """用于最远点取样的弹窗 """
 

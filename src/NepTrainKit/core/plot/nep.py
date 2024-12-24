@@ -39,10 +39,35 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         self.tool_bar.sparseSignal.connect(self.sparse_point)
         self.tool_bar.penSignal.connect(self.pen)
 
-    def auto_range(self):
-        if self.current_plot:
-            self.current_plot.getViewBox().autoRange()
+    def auto_range(self,plot=None):
+        if plot is None:
+            plot=self.current_plot
+        if plot:
 
+            view = plot.getViewBox()
+
+            x_range=[10000,-10000]
+            y_range=[10000,-10000]
+            for item in view.addedItems:
+                if isinstance(item, ScatterPlotItem):
+
+                    x=item.data["x"]
+                    y=item.data["y"]
+
+                    x_min = np.min(x[x>-10000])
+                    x_max = np.max(x[x>-10000])
+                    y_min = np.min(y[y > -10000])
+                    y_max = np.max(y[y > -10000])
+                    if x_min < x_range[0]:
+                        x_range[0]=x_min
+                    if x_max > x_range[1]:
+                        x_range[1]=x_max
+                    if y_min <y_range[0]:
+                        y_range[0]=y_min
+                    if y_max > y_range[1]:
+                        y_range[1]=y_max
+
+            view.setRange(xRange=x_range,yRange=y_range)
     def pan(self, checked):
 
         if self.current_plot:
@@ -219,7 +244,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
 
 
             # 设置视图框更新模式
-            plot.autoRange()
+            self.auto_range(plot)
             if _dataset.title not in ["descriptor"]:
 
                 pos=self.convert_pos(plot,(0 ,1))

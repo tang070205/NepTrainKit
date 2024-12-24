@@ -17,9 +17,12 @@ from NepTrainKit.core import Structure,MessageManager
 try:
     from NepTrainKit.nep_cpu import CpuNep
 except ImportError:
+    logger.debug(traceback.format_exc())
     try:
         from nep_cpu import CpuNep
     except ImportError:
+        logger.debug(traceback.format_exc())
+
         CpuNep=None
 
 class Nep3Calculator( ):
@@ -28,9 +31,11 @@ class Nep3Calculator( ):
         super().__init__()
         if not isinstance(model_file, str):
             model_file = str(model_file, encoding="utf-8")
+
         if CpuNep is None:
             MessageManager.send_message_box("import nep_cpu error!","Error")
             return None
+
         if os.path.exists(model_file):
             with open(os.devnull, 'w') as devnull:
                 with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
