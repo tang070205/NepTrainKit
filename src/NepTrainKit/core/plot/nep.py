@@ -54,10 +54,16 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
                     x=item.data["x"]
                     y=item.data["y"]
 
-                    x_min = np.min(x[x>-10000])
-                    x_max = np.max(x[x>-10000])
-                    y_min = np.min(y[y > -10000])
-                    y_max = np.max(y[y > -10000])
+                    x=x[x>-10000]
+                    y=y[y>-10000]
+                    if x.size==0:
+                        x_range=[0,1]
+                        y_range=[0,1]
+                        continue
+                    x_min = np.min(x )
+                    x_max = np.max(x )
+                    y_min = np.min(y )
+                    y_max = np.max(y )
                     if x_min < x_range[0]:
                         x_range[0]=x_min
                     if x_max > x_range[1]:
