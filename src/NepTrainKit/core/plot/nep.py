@@ -10,7 +10,7 @@ from PySide6.QtGui import QPainter
 from pyqtgraph import mkPen, ScatterPlotItem, TextItem, ViewBox,PlotDataItem
 
 from .toolbar import NepDisplayGraphicsToolBar
-from .canvas import CustomGraphicsLayoutWidget
+from ..canvas  import CustomGraphicsLayoutWidget
 from .. import MessageManager, Config
 from ..custom_widget.dialog import GetIntMessageBox, SparseMessageBox
 from ..io import NepTrainResultData
@@ -39,62 +39,7 @@ class NepResultGraphicsLayoutWidget(CustomGraphicsLayoutWidget):
         self.tool_bar.sparseSignal.connect(self.sparse_point)
         self.tool_bar.penSignal.connect(self.pen)
 
-    def auto_range(self,plot=None):
-        if plot is None:
-            plot=self.current_plot
-        if plot:
 
-            view = plot.getViewBox()
-
-            x_range=[10000,-10000]
-            y_range=[10000,-10000]
-            for item in view.addedItems:
-                if isinstance(item, ScatterPlotItem):
-
-                    x=item.data["x"]
-                    y=item.data["y"]
-
-                    x=x[x>-10000]
-                    y=y[y>-10000]
-                    if x.size==0:
-                        x_range=[0,1]
-                        y_range=[0,1]
-                        continue
-                    x_min = np.min(x )
-                    x_max = np.max(x )
-                    y_min = np.min(y )
-                    y_max = np.max(y )
-                    if x_min < x_range[0]:
-                        x_range[0]=x_min
-                    if x_max > x_range[1]:
-                        x_range[1]=x_max
-                    if y_min <y_range[0]:
-                        y_range[0]=y_min
-                    if y_max > y_range[1]:
-                        y_range[1]=y_max
-
-            view.setRange(xRange=x_range,yRange=y_range)
-    def pan(self, checked):
-
-        if self.current_plot:
-
-            self.current_plot.setMouseEnabled(checked, checked)
-            self.current_plot.getViewBox().setMouseMode(ViewBox.PanMode)
-    def pen(self, checked):
-        if self.current_plot is None:
-
-            return False
-
-        if checked:
-            self.draw_mode=True
-            # 初始化鼠标状态和轨迹数据
-            self.is_drawing = False
-            self.x_data = []
-            self.y_data = []
-
-        else:
-            self.draw_mode=False
-            pass
     def mousePressEvent(self, event):
         if not self.draw_mode:
             return super().mousePressEvent(event)
