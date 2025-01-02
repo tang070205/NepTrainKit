@@ -198,15 +198,14 @@ calculate(const std::vector<std::vector<int>>& type,
         #pragma omp parallel for
     #endif
     for (int i = 0; i < type_size; ++i) {
-        std::vector<double> potential_for_structure(type[i].size());
-        std::vector<double> force_for_structure(type[i].size() * 3);  // 假设 force 是 3D 向量
-        std::vector<double> virial_for_structure(type[i].size() * 9);  // 假设 virial 是 3x3 矩阵
-        compute(type[i], box[i], position[i], potential_for_structure, force_for_structure, virial_for_structure );
 
-        potentials[i] = potential_for_structure;
-        forces[i] = force_for_structure;
-        virials[i] = virial_for_structure;
+        potentials[i].resize(type[i].size());
+        forces[i].resize(type[i].size() * 3);  // 假设 force 是 3D 向量
+        virials[i].resize(type[i].size() * 9);  // 假设 virial 是 3x3 矩阵
 
+        // 调用计算函数
+        compute(type[i], box[i], position[i],
+                potentials[i], forces[i], virials[i]);
 
     }
 

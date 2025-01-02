@@ -26,24 +26,28 @@ pybind11_include = pybind11.get_include()
 
 # 设定编译选项
 
-extra_link_args = []
-
+extra_link_args = ["-O3"]
+extra_compile_args=["-O3"]
 # 检查平台并设置相应的 OpenMP 编译标志
 
 if sys.platform == "win32":
     # 对于 Windows 使用 MSVC 编译器时，需要使用 /openmp
-    extra_compile_args = ['/openmp' ]
+    extra_compile_args.append('/openmp' )
 
 
 elif sys.platform == "darwin":
     # 对于 macOS 和 Clang 使用 -fopenmp 编译标志
-    extra_compile_args = ['-fopenmp' ]
+
+    extra_compile_args.append('-fopenmp' )
+
     extra_link_args.append('-fopenmp')
 
 
 else:
     # 对于 Linux 和 GCC 使用 -fopenmp 编译标志
-    extra_compile_args = ['-fopenmp']
+
+    extra_compile_args.append('-fopenmp' )
+
     extra_link_args.append('-fopenmp')
 
 
