@@ -95,7 +95,7 @@ class NepTrainResultData(QObject):
 
                         ])
                 except:
-                    logger.error(traceback.format_exc())
+                    logger.debug(traceback.format_exc())
 
                     forces_array=np.column_stack([nep_forces_array,
                         nep_forces_array
@@ -113,7 +113,7 @@ class NepTrainResultData(QObject):
                     stress_array = virials_array*coefficient*160.21766208
 
                 except:
-                    logger.error(traceback.format_exc())
+                    logger.debug(traceback.format_exc())
 
                     virials_array =  np.column_stack([nep_virials_array,
                                                       nep_virials_array
