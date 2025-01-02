@@ -87,7 +87,7 @@ class NepTrainResultData(QObject):
                     energy_array=np.column_stack([nep_potentials_array/atoms_num_list,[structure.per_atom_energy for structure in structures]])
                 except:
                     pass
-                    energy_array=np.array([])
+                    energy_array=np.column_stack([nep_potentials_array/atoms_num_list,nep_potentials_array/atoms_num_list])
                 try:
 
                     forces_array=np.column_stack([nep_forces_array,
@@ -97,23 +97,30 @@ class NepTrainResultData(QObject):
                 except:
                     logger.error(traceback.format_exc())
 
-                    forces_array=np.array([])
+                    forces_array=np.column_stack([nep_forces_array,
+                        nep_forces_array
+
+                        ])
+                coefficient=(atoms_num_list/np.array([structure.volume for structure in structures]))[:, np.newaxis]
+
                 try:
                     virials_array = np.column_stack([nep_virials_array,
                         np.vstack([structure.nep_virial  for structure in structures]),
 
                         ])
 
-                    coefficient=(atoms_num_list/np.array([structure.volume for structure in structures]))[:, np.newaxis]
 
                     stress_array = virials_array*coefficient*160.21766208
 
                 except:
                     logger.error(traceback.format_exc())
-                    virials_array = np.array([])
-                    stress_array=np.array([])
 
+                    virials_array =  np.column_stack([nep_virials_array,
+                                                      nep_virials_array
 
+                        ])
+
+                    stress_array = virials_array * coefficient * 160.21766208
 
                 # MessageManager.send_message_box("Detected that the current mode is not full batch. Please make predictions first, then load!")
                 # raise ValueError("Detected that the current mode is not full batch. Please make predictions first, then load!")
