@@ -18,7 +18,8 @@ from vispy.color import ColorArray
 
 from NepTrainKit import utils
 from PySide6.QtCore import Signal, QObject
-
+#不要去掉
+from vispy.app.backends import _pyside6
 from vispy import scene
 
 from vispy.app import use_app
