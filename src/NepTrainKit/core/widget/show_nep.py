@@ -23,7 +23,7 @@ from NepTrainKit.core.custom_widget.search_widget import   ConfigTypeSearchLineE
 from NepTrainKit.core.io import NepTrainResultData
 
 
-from NepTrainKit.core.plot import NepResultGraphicsLayoutWidget,NepDisplayGraphicsToolBar,StructurePlotWidget
+from NepTrainKit.core.plot import NepResultPlotWidget,NepDisplayGraphicsToolBar,StructurePlotWidget
 from NepTrainKit.core.types import Brushes
 
 
@@ -98,9 +98,9 @@ class ShowNepWidget(QWidget):
 
         self.plot_widget_layout = QGridLayout(self.plot_widget)
 
-        self.graph_widget = NepResultGraphicsLayoutWidget(self  )
+        self.graph_widget = NepResultPlotWidget(self  )
 
-        self.graph_widget.structureIndexChanged.connect(self.struct_index_spinbox.setValue)
+        self.graph_widget.canvas.structureIndexChanged.connect(self.struct_index_spinbox.setValue)
 
         self.graph_toolbar = NepDisplayGraphicsToolBar(  self.plot_widget)
         self.graph_widget.set_tool_bar(self.graph_toolbar)
@@ -268,7 +268,7 @@ class ShowNepWidget(QWidget):
             MessageManager.send_message_box("The index is invalid, perhaps the structure has been deleted")
             return
 
-        self.graph_widget.plot_current_point(current_index)
+        self.graph_widget.canvas.plot_current_point(current_index)
 
         self.show_struct_widget.show_atoms(atoms)
 
@@ -286,17 +286,17 @@ class ShowNepWidget(QWidget):
 
         indexs= self.nep_result_data.structure.search_config(config)
 
-        self.graph_widget.update_axes_color(indexs,Brushes.Show)
+        self.graph_widget.canvas.update_scatter_color(indexs,Brushes.Show)
 
 
     def checked_config_type(self, config):
 
         indexs = self.nep_result_data.structure.search_config(config)
 
-        self.graph_widget.select_index(indexs,  False)
+        self.graph_widget.canvas.select_index(indexs,  False)
 
     def uncheck_config_type(self, config):
 
         indexs = self.nep_result_data.structure.search_config(config)
 
-        self.graph_widget.select_index(indexs,True )
+        self.graph_widget.canvas.select_index(indexs,True )

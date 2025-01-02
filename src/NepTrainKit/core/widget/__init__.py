@@ -5,4 +5,4 @@
 # @email    : 1747193328@qq.com
 from .show_nep import ShowNepWidget
 from .settings import SettingsWidget
-from .makedata import MakeDataWidget
+# from .makedata import MakeDataWidget

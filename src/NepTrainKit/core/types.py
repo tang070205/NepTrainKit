@@ -13,6 +13,10 @@ class ForcesMode(Enum):
     Raw="Raw"
     Norm="Norm"
 
+class CanvasMode(Enum):
+    vispy="vispy"
+    pyqtgraph="pyqtgraph"
+
 
 class Base:
 
@@ -43,9 +47,9 @@ class Brushes(Base):
 
 
 
-    BlueBrush = QBrush(QColor(0, 0, 255))  # 蓝色
+    BlueBrush = QBrush(QColor(0, 0, 255))   # 蓝色
     YellowBrush = QBrush(QColor(255, 255, 0))  # 黄色
-    Default = QBrush(QColor(0, 0, 0,0))  # 黄色
+    Default = QBrush(QColor(255, 255, 255,0))  # 黄色
     Energy = Default
     Force =Default
     Virial =Default

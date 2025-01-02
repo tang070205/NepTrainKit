@@ -7,16 +7,18 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QObject
+
+from NepTrainKit.core.types import Brushes
 
 
 class CanvasBase(ABC):
     def __init__(self):
-        self.current_plot = None
+        self.current_axes = None
 
         self.tool_bar=None
     @abstractmethod
-    def pan(self ):
+    def pan(self ,*args,**kwargs):
         """
         平移画布
         """
@@ -32,17 +34,15 @@ class CanvasBase(ABC):
         实现对坐标轴的区间自动适应
         """
         pass
-    @abstractmethod
-    def select(self,*args,**kwargs):
-        pass
+
     @abstractmethod
     def delete(self,*args,**kwargs):
         pass
 
-
-
-    def select_point_from_polygon(self,polygon_x,polygon_y):
+    def select_point_from_polygon(self,*args,**kwargs):
         pass
+
+
     @staticmethod
     def is_point_in_polygon(points, polygon):
         """
@@ -68,11 +68,16 @@ class CanvasBase(ABC):
             p1x, p1y = p2x, p2y
 
         return inside
-
+class CombinedMeta(type(CanvasBase), type(QObject) ):
+    pass
 class CanvasLayoutBase(CanvasBase):
     CurrentAxesChanged=Signal()
+    structureIndexChanged=Signal(int)
+
     def __init__(self):
-        super().__init__()
+        CanvasBase.__init__(self)
+        self.draw_mode = False
+
         self.axes_list=[]
         self.CurrentAxesChanged.connect(self.set_view_layout)
     @abstractmethod
@@ -85,24 +90,65 @@ class CanvasLayoutBase(CanvasBase):
 
     @abstractmethod
 
-    def init_axes(self):
+    def init_axes(self,*args,**kwargs):
         """
         初始化子图对象
         """
         pass
-    def set_current_plot(self,plot):
+    def set_current_axes(self, axes):
 
-        if self.current_plot != plot:
+        if self.current_axes != axes:
 
-            self.current_plot=plot
+            self.current_axes=axes
             if self.tool_bar is not None:
                 self.tool_bar.reset()
             self.CurrentAxesChanged.emit()
             return True
         return False
-
+    def get_axes_dataset(self,axes):
+        if axes is None or self.nep_result_data is None:
+            return None
+        axes_index = self.axes_list.index(axes)
+        return self.nep_result_data.dataset[axes_index]
     def clear(self):
         """
         清空逻辑
         """
         self.axes_list.clear()
+    def delete(self):
+        if self.nep_result_data is not None and self.nep_result_data.select_index:
+            self.nep_result_data.delete_selected()
+            self.plot_nep_result()
+    def revoke(self):
+        """
+        如果有删除的结构  撤销上一次删除的
+        :return:
+        """
+
+        if self.nep_result_data and  self.nep_result_data.is_revoke:
+            self.nep_result_data.revoke()
+            self.plot_nep_result()
+
+        else:
+            MessageManager.send_info_message("No undoable deletion!")
+    def select_index(self,structure_index,reverse):
+        if isinstance(structure_index,int):
+            structure_index=[structure_index]
+        elif isinstance(structure_index,np.ndarray):
+            structure_index=structure_index.tolist()
+
+        if not structure_index:
+            return
+        if reverse:
+            self.nep_result_data.uncheck(structure_index)
+            self.update_scatter_color(structure_index, Brushes.Default)
+
+        else:
+
+            self.nep_result_data.select(structure_index)
+
+            self.update_scatter_color(structure_index, Brushes.Selected)
+class VispyCanvasLayoutBase(CanvasLayoutBase,QObject,metaclass=CombinedMeta):
+    def __init__(self,*args,**kwargs):
+        QObject.__init__(self)
+        CanvasLayoutBase.__init__(self)

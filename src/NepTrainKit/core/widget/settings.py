@@ -18,7 +18,7 @@ from NepTrainKit.core import MessageManager, Config
 from NepTrainKit.core.custom_widget.settingscard import MyComboBoxSettingCard
 from NepTrainKit.core.update import UpdateWoker
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR, RELEASES_URL
-from NepTrainKit.core.types import ForcesMode
+from NepTrainKit.core.types import ForcesMode,CanvasMode
 class SettingsWidget(QWidget):
     def __init__(self,parent):
 
@@ -45,7 +45,19 @@ class SettingsWidget(QWidget):
             default=default_forces,
             parent=self.personal_group
         )
+        canvas_type = Config.get("widget","canvas_type","pyqtgraph")
 
+        self.canvas_card = MyComboBoxSettingCard(
+            OptionsConfigItem("canvas","canvas",CanvasMode(canvas_type),OptionsValidator(CanvasMode), EnumSerializer(CanvasMode)),
+            FIF.BRUSH,
+            'Canvas Engine',
+            "Choose GPU with vispy",
+            texts=[
+                "pyqtgraph","vispy"
+            ],
+            default=canvas_type,
+            parent=self.personal_group
+        )
 
 
         self.about_group = SettingCardGroup("About", self)
@@ -86,9 +98,10 @@ class SettingsWidget(QWidget):
 
 
         self.personal_group.addSettingCard(self.optimization_forces_card)
-
+        self.personal_group.addSettingCard(self.canvas_card)
 
     def init_signal(self):
+        self.canvas_card.optionChanged.connect(lambda option:Config.set("widget","canvas_type",option ))
 
         self.optimization_forces_card.optionChanged.connect(lambda option:Config.set("widget","forces_data",option ))
         self.about_card.clicked.connect(self.check_update)

@@ -11,7 +11,7 @@ from PySide6.QtGui import QPainter
 from pyqtgraph import mkPen, ScatterPlotItem, TextItem, ViewBox,PlotDataItem
 
 
-from .canvas import CustomGraphicsWidget
+# from .canvas import CustomGraphicsWidget
 from .. import MessageManager, Config
 from ..custom_widget.dialog import GetIntMessageBox, SparseMessageBox
 from ..io import NepTrainResultData
