@@ -110,6 +110,8 @@ class ViewBoxWidget(scene.Widget):
             return
 
         pos = self._scatter._data["a_position"]
+        if pos.size==0:
+            return
         x_range = [10000, -10000]
         y_range = [10000, -10000]
 
@@ -120,8 +122,9 @@ class ViewBoxWidget(scene.Widget):
         x = x[x > -10000]
         y = y[y > -10000]
         if x.size == 0:
-            x_range = [0, 1]
-            y_range = [0, 1]
+            x_range =None
+            y_range = None
+
         else:
 
             x_min = np.min(x)
@@ -138,6 +141,7 @@ class ViewBoxWidget(scene.Widget):
                 y_range[1] = y_max
         # self._view.camera.set_range( )
         #
+
         self._view.camera.set_range( x_range,  y_range)
     def set_current_point(self, x,y):
         if self.current_point is None:
@@ -375,6 +379,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
         for index,_dataset in enumerate(self.nep_result_data.dataset):
             plot=self.axes_list[index]
+            if _dataset.x.size==0:
+                continue
             plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=Brushes.get(_dataset.title.upper()) ,pen=Pens.get(_dataset.title.upper()),
                                       symbol='o',size=7,
