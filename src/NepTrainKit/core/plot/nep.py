@@ -35,7 +35,7 @@ class NepResultPlotWidget(QWidget):
 
         self.swith_canvas(canvas_type)
     def swith_canvas(self,canvas_type="pyqtgraph"):
-        print(canvas_type)
+
         if canvas_type == "pyqtgraph":
             self.canvas = PyqtgraphCanvas(self)
             self._layout.addWidget(self.canvas)
