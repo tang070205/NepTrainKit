@@ -32,7 +32,7 @@ jobs:
           include-package: NepTrainKit
           output-file: NepTrainKit.exe
           mode: standalone
-          windows-console-mode: disable
+#          windows-console-mode: disable
           include-qt-plugins: sqldrivers
           include-package-data: vispy
           upx-binary: ${{ github.workspace }}/src/NepTrainKit/upx${{ runner.os == 'Windows' && '.exe' || '' }}
