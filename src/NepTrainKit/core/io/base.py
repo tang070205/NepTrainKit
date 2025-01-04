@@ -7,7 +7,6 @@ import re
 from functools import cached_property
 
 import numpy as np
-from ase.gui.surfaceslab import structures
 
 from NepTrainKit import utils
 from NepTrainKit.core.types import Brushes

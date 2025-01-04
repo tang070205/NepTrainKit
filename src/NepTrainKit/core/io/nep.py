@@ -272,7 +272,7 @@ class NepTrainResultData(QObject):
             dataset.revoke( )
 
     def delete_selected(self ):
-
+        print("delete_selected",self.select_index)
         self.remove(list(self.select_index))
         self.select_index.clear()
     @classmethod

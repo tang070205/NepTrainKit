@@ -15,6 +15,7 @@ import numpy as np
 from PySide6.QtGui import QBrush, QColor, QPen, Qt
 from select import select
 from vispy.color import ColorArray
+from vispy.visuals.filters import MarkerPickingFilter
 
 from NepTrainKit import utils
 from PySide6.QtCore import Signal, QObject
@@ -85,7 +86,9 @@ class ViewBoxWidget(scene.Widget):
         self.text.font_size = 8
 
 
-        self.data=[]
+        self.data=np.array([])
+        self.picking_filter = MarkerPickingFilter()
+
         self._scatter=None
         self._diagonal=None
         self.current_point=None
@@ -159,13 +162,14 @@ class ViewBoxWidget(scene.Widget):
         if self._scatter is None:
             self._scatter = scene.visuals.Markers()
             self._scatter.order=1
-
+            self._scatter.attach(self.picking_filter)
 
             self._view.add(self._scatter)
 
 
 
         self.data=data
+
         if brush is not None:
 
             kwargs["face_color"]=self.convert_color(brush)
@@ -204,18 +208,7 @@ class ViewBoxWidget(scene.Widget):
         return self._view
 
 
-    def point_at(self,x,y):
-        if self._scatter is None:
-            return
 
-        xy=[x,y]
-        distances = np.linalg.norm(self._scatter._data["a_position"][:,:2] - xy, axis=1)
-        nearest_index = np.argmin(distances)
-
-        # 如果点击范围在散点范围内
-        if distances[nearest_index] < 0.2:  # 距离阈值，适当调整
-            return int(nearest_index)
-        return None
 class CombinedMeta(type(VispyCanvasLayoutBase), type(scene.SceneCanvas) ):
     pass
 
@@ -238,17 +231,50 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
         self.events.mouse_double_click.connect(self.switch_view_box)
         self.path_line = scene.visuals.Line(color='red', method='gl' )
+        # Use filters to affect the rendering of the mesh.
+
     def set_nep_result_data(self,dataset):
         self.nep_result_data:NepTrainResultData=dataset
+    def point_at(self,pos):
+        # adjust the event position for hidpi screens
+        render_size = tuple(d * self.pixel_scale for d in self.size)
+        x_pos = pos[0] * self.pixel_scale
+        y_pos = render_size[1] - (pos[1] * self.pixel_scale)
+        # print(canvas.pixel_scale)
+        # render a small patch around the mouse cursor
+        restore_state = not self.current_axes.picking_filter.enabled
+        self.current_axes.picking_filter.enabled = True
+        self.current_axes._scatter.update_gl_state(blend=False)
+        picking_render = self.render(
+            crop=(x_pos - 2, y_pos - 2, 5, 5),
+            bgcolor=(0, 0, 0, 0),
+            alpha=True,
+        )
+        if restore_state:
+            self.current_axes.picking_filter.enabled = False
+        self.current_axes._scatter.update_gl_state(blend=not self.current_axes.picking_filter.enabled)
 
+        # unpack the face index from the color in the center pixel
+        marker_idx = (picking_render.view(np.uint32) - 1)[2, 2, 0]
+        if self.current_axes.data.size!=0:
+
+            if marker_idx>=self.current_axes.data.size:
+                return None
+        else:
+            return None
+        return marker_idx
     def on_mouse_press(self, event):
         """鼠标按下事件，开始记录轨迹"""
 
         if not self.draw_mode:
-            tr = self.scene.node_transform(self.current_axes.view.scene)
 
-            x, y, _, _ = tr.map(event.pos)
-            index = self.current_axes.point_at(x, y)
+            index = self.point_at(event.pos)
+
+            # tr = self.scene.node_transform(self.current_axes.view.scene)
+            #
+            # x, y, _, _ = tr.map(event.pos)
+
+            # index = self.current_axes.point_at(x, y)
 
             if index is not None:
                 structure_index=self.current_axes.data[index]
@@ -297,10 +323,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             else:
                 # 右键的话  选中单个点
 
-                tr = self.scene.node_transform(self.current_axes.view.scene)
-                x, y, _, _ = tr.map(event.pos)
 
-                index = self.current_axes.point_at(x, y)
+                index = self.point_at(event.pos)
+
+
 
                 if index is not None:
                     structure_index = self.current_axes.data[index]
@@ -384,8 +410,9 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
         for index,_dataset in enumerate(self.nep_result_data.dataset):
             plot=self.axes_list[index]
-            if _dataset.x.size==0:
-                continue
+            # if _dataset.x.size==0:
+            #
+            #     continue
             plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=Brushes.get(_dataset.title.upper()) ,pen=Pens.get(_dataset.title.upper()),
                                       symbol='o',size=7,
