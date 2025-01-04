@@ -150,9 +150,7 @@ class NepData:
         rmse_max_ids = np.argsort(-error)
         structure_index =self.group_array.now_data[rmse_max_ids]
         index,indices=np.unique(structure_index,return_index=True)
-        print(rmse_max_ids)
-        print(structure_index)
-        print(structure_index[np.sort(indices)])
+
         return   structure_index[np.sort(indices)][:nmax].tolist()
 
 
