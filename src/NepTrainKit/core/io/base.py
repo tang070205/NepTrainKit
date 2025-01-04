@@ -7,6 +7,7 @@ import re
 from functools import cached_property
 
 import numpy as np
+from ase.gui.surfaceslab import structures
 
 from NepTrainKit import utils
 from NepTrainKit.core.types import Brushes
@@ -147,8 +148,12 @@ class NepData:
     def get_max_error_index(self,nmax):
         error = np.sum(np.abs(self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]), axis=1)
         rmse_max_ids = np.argsort(-error)
-
-        return   self.group_array.now_data[rmse_max_ids[:nmax]].tolist()
+        structure_index =self.group_array.now_data[rmse_max_ids]
+        index,indices=np.unique(structure_index,return_index=True)
+        print(rmse_max_ids)
+        print(structure_index)
+        print(structure_index[np.sort(indices)])
+        return   structure_index[np.sort(indices)][:nmax].tolist()
 
 
 
