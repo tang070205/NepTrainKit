@@ -120,6 +120,16 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
                                       )
             # 设置视图框更新模式
             self.auto_range(plot)
+            if _dataset.group_array.num !=0:
+                #更新结构
+                if self.structure_index not in _dataset.group_array.now_data:
+                    self.structure_index=_dataset.group_array.now_data[0]
+                    self.structureIndexChanged.emit(self.structure_index)
+
+            else:
+                plot.set_current_point([], [])
+
+
             if _dataset.title not in ["descriptor"]:
             #
                 pos=self.convert_pos(plot,(0 ,1))
@@ -130,6 +140,7 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
 
 
     def plot_current_point(self,structure_index):
+        self.structure_index=structure_index
 
         for plot in  self.axes_list :
             dataset=self.get_axes_dataset(plot)

@@ -77,7 +77,7 @@ class CanvasLayoutBase(CanvasBase):
     def __init__(self):
         CanvasBase.__init__(self)
         self.draw_mode = False
-
+        self.structure_index=0
         self.axes_list=[]
         self.CurrentAxesChanged.connect(self.set_view_layout)
     @abstractmethod

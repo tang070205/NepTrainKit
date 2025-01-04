@@ -148,6 +148,12 @@ class ViewBoxWidget(scene.Widget):
 
         self._view.camera.set_range( x_range,  y_range)
     def set_current_point(self, x,y):
+        if np.array(x).size == 0:
+            if self.current_point is not None:
+                self.current_point.parent=None
+                self.current_point=None
+
+            return
         if self.current_point is None:
             self.current_point=scene.visuals.Markers()
             self.current_point.order=0
@@ -419,7 +425,14 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
                                       )
 
+            if _dataset.group_array.num !=0:
+                #更新结构
+                if self.structure_index not in _dataset.group_array.now_data:
+                    self.structure_index=_dataset.group_array.now_data[0]
+                    self.structureIndexChanged.emit(self.structure_index)
 
+            else:
+                plot.set_current_point([], [])
 
             if _dataset.title not in ["descriptor"]:
             #
@@ -440,7 +453,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         y_pos = y_range[0] + y_percent * (y_range[1] - y_range[0])  # 根据百分比计算实际位置
         return x_pos,y_pos
     def plot_current_point(self,structure_index):
-
+        self.structure_index=structure_index
         for plot in  self.axes_list :
             dataset=self.get_axes_dataset(plot)
             array_index=dataset.convert_index(structure_index)
