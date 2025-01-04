@@ -213,7 +213,7 @@ class ViewBoxWidget(scene.Widget):
         nearest_index = np.argmin(distances)
 
         # 如果点击范围在散点范围内
-        if distances[nearest_index] < 0.005:  # 距离阈值，适当调整
+        if distances[nearest_index] < 0.2:  # 距离阈值，适当调整
             return int(nearest_index)
         return None
 class CombinedMeta(type(VispyCanvasLayoutBase), type(scene.SceneCanvas) ):
@@ -251,7 +251,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             index = self.current_axes.point_at(x, y)
 
             if index is not None:
-                self.structureIndexChanged.emit(index)
+                structure_index=self.current_axes.data[index]
+                self.structureIndexChanged.emit(structure_index)
 
             return False
 
@@ -298,10 +299,13 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
                 tr = self.scene.node_transform(self.current_axes.view.scene)
                 x, y, _, _ = tr.map(event.pos)
-                index = self.current_axes.point_at(x, y)
-                if index is not None:
 
-                    self.select_index(index,reverse)
+                index = self.current_axes.point_at(x, y)
+
+                if index is not None:
+                    structure_index = self.current_axes.data[index]
+
+                    self.select_index(structure_index,reverse)
 
             self.mouse_path = []
 
@@ -312,8 +316,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if isinstance(view,scene.ViewBox) and self.current_axes.view!=view:
             for axes  in self.axes_list:
                 if axes.view==view:
-                    self.current_axes =axes
 
+                    self.set_current_axes(axes)
                     break
 
             self.set_view_layout()

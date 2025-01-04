@@ -101,6 +101,7 @@ class CanvasLayoutBase(CanvasBase):
 
             self.current_axes=axes
             if self.tool_bar is not None:
+
                 self.tool_bar.reset()
             self.CurrentAxesChanged.emit()
             return True
@@ -132,7 +133,7 @@ class CanvasLayoutBase(CanvasBase):
         else:
             MessageManager.send_info_message("No undoable deletion!")
     def select_index(self,structure_index,reverse):
-        if isinstance(structure_index,int):
+        if isinstance(structure_index,(int,np.int64)):
             structure_index=[structure_index]
         elif isinstance(structure_index,np.ndarray):
             structure_index=structure_index.tolist()

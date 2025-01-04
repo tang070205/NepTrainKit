@@ -212,7 +212,7 @@ class NepTrainResultData(QObject):
         return i in self.select_index
 
     def select(self,_list):
-        if isinstance(_list,int):
+        if isinstance(_list,(int,np.int_,np.int64)):
             _list=[_list]
 
         for i in _list:
