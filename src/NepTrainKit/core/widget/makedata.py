@@ -4,30 +4,13 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import numpy as np
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSizePolicy,QVBoxLayout
-from ..plot.makedata import MakeDataGraphicsWidget
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSizePolicy,QVBoxLayout,QGroupBox
+
 from .. import Structure
-def pca(X, k):
-    # 1. 标准化数据（去均值和方差标准化）
+from qfluentwidgets import HeaderCardWidget
 
-    mean = np.mean(X, axis=0)
-    X_centered = X - mean
+from ..custom_widget.card_widget import CheckableHeaderCardWidget
 
-
-    # 2. 计算协方差矩阵
-    cov_matrix = np.cov(X_centered.T)
-
-    # 3. 特征值分解协方差矩阵
-    eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
-
-    # 4. 对特征值进行排序，选择前k个特征值和对应的特征向量
-    sorted_indices = np.argsort(eigenvalues)[::-1]  # 从大到小排序
-    top_k_eigenvectors = eigenvectors[:, sorted_indices[:k]]
-
-    # 5. 投影到前k个主成分
-    X_pca = X_centered.dot(top_k_eigenvectors)
-
-    return X_pca
 
 class MakeDataWidget(QWidget):
     """
@@ -54,8 +37,8 @@ class MakeDataWidget(QWidget):
         if urls:
             # 获取第一个文件路径
             file_path = urls[0].toLocalFile()
-            print(file_path)
-            self.test(file_path)
+
+
 
     def init_ui(self):
 
@@ -64,14 +47,15 @@ class MakeDataWidget(QWidget):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.left_widget = QWidget(self)
         self.left_layout = QVBoxLayout(self.left_widget)
-        self.plot_widget = MakeDataGraphicsWidget(self.left_widget)
-        self.left_layout.addWidget(self.plot_widget)
+
+
 
         self.gridLayout.addWidget(self.left_widget , 0, 0, 1, 1)
-
+        self.card_widget = CheckableHeaderCardWidget(self)
+        self.card_widget.setObjectName("card_widget")
+        self.card_widget.setFixedSize(400, 200)
+        self.card_widget.setTitle("不同晶胞结构")
+        self.left_layout.addWidget(self.card_widget)
         self.setLayout(self.gridLayout)
 
-    def test(self,path):
-        structures = Structure.read_multiple(path)
-        desc_array=[structure.positions for structure in structures if structure.num_atoms==90]
-        desc_array = pca(np.array(desc_array), 2)
+

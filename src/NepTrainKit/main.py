@@ -92,7 +92,7 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_navigation(self):
         self.navigationInterface.setReturnButtonVisible(False)
         self.navigationInterface.setExpandWidth(200)
-        # self.navigationInterface.addSeparator()
+        self.navigationInterface.addSeparator()
         # self.addSubInterface(self.make_data_widget, QIcon(':/images/src/images/make.svg'), 'Make Data' )
 
         self.addSubInterface(self.show_nep_interface, QIcon(':/images/src/images/show_nep.svg'), 'NEP Dataset Display')

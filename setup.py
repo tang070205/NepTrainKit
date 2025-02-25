@@ -37,11 +37,11 @@ if sys.platform == "win32":
 
 elif sys.platform == "darwin":
     # 对于 macOS 和 Clang 使用 -fopenmp 编译标志
-
-    extra_compile_args.append('-fopenmp' )
-
-    extra_link_args.append('-fopenmp')
-
+    # Clang 好像不支持openmp 先注释掉
+    # extra_compile_args.append('-fopenmp' )
+    # 
+    # extra_link_args.append('-fopenmp')
+    pass
 
 else:
     # 对于 Linux 和 GCC 使用 -fopenmp 编译标志

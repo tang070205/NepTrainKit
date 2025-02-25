@@ -186,7 +186,7 @@ class Structure():
         """
         Parse global properties from the second line of an XYZ block.
         """
-        pattern = r'(\w+)="([^"]+)"|(\w+)=([\S]+)'
+        pattern = r'(\w+)=\s*"([^"]+)"|(\w+)=\s*([\S]+)'
         matches = re.findall(pattern, line)
         properties = []
         lattice = None
