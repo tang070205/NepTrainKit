@@ -32,7 +32,7 @@ heat transport, Phys. Rev. B. 104, 104309 (2021).
 #include <stdlib.h>
 #include <string>
 #include <vector>
-
+#include <cctype>
 #if defined(_OPENMP)
 #include <omp.h>
 #endif
