@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time    : 2025/1/1 15:06
 # @Author  : 兵
@@ -8,10 +8,12 @@
 # @Time    : 2024/10/17 13:03
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import time
-from abc import abstractmethod
+
+
+
 
 import numpy as np
+import vispy
 from PySide6.QtGui import QBrush, QColor, QPen, Qt
 from select import select
 from vispy.color import ColorArray
@@ -31,12 +33,13 @@ from NepTrainKit.core.canvas.base.canvas import CanvasLayoutBase, VispyCanvasLay
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.types import Brushes, Pens
 
-use_app('pyside6')
 
+vispy.use("PySide6", "gl2")
 
 class ViewBoxWidget(scene.Widget):
     def __init__(self, title, *args, **kwargs):
         super(ViewBoxWidget, self).__init__(*args, **kwargs)
+
         self.unfreeze()
         self.grid = self.add_grid(margin=0)
         self._title=title
@@ -59,10 +62,6 @@ class ViewBoxWidget(scene.Widget):
 
         self.xaxis = scene.AxisWidget(orientation='bottom',
                                  axis_width=1,
-
-                                 # axis_label='X Axis',
-                                 # axis_font_size=12,
-                                 # axis_label_margin=10,
                                  tick_label_margin=10,
                                  axis_color="black",
                                  text_color="black"
@@ -195,6 +194,8 @@ class ViewBoxWidget(scene.Widget):
         self.view.add(line)
         return line
     def add_diagonal(self,**kwargs):
+
+
         x_domain = self.xaxis.axis.domain
         line_data = np.linspace(*x_domain,num=100)
         self._diagonal=self.line(line_data,line_data,**kwargs)
@@ -203,6 +204,7 @@ class ViewBoxWidget(scene.Widget):
     def update_diagonal(self):
         if self._diagonal is None:
             return None
+
         x_domain = self.xaxis.axis.domain
 
         line_data = np.linspace(*x_domain,num=100)
@@ -226,14 +228,14 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         VispyCanvasLayoutBase.__init__(self)
 
         scene.SceneCanvas.__init__(self, *args, **kwargs)
+
         self.unfreeze()
         self.nep_result_data = None
         self.grid = self.central_widget.add_grid(margin=0, spacing=0)
         self.grid.spacing = 0
-        self.events.mouse_press.connect(self.on_mouse_press)
-        self.events.mouse_move.connect(self.on_mouse_move)
-        self.events.mouse_release.connect(self.on_mouse_release)
-
+        # self.events.mouse_press.connect(self.on_mouse_press)
+        # self.events.mouse_move.connect(self.on_mouse_move)
+        # self.events.mouse_release.connect(self.on_mouse_release)
 
         self.events.mouse_double_click.connect(self.switch_view_box)
         self.path_line = scene.visuals.Line(color='red', method='gl' )
@@ -242,6 +244,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
     def set_nep_result_data(self,dataset):
         self.nep_result_data:NepTrainResultData=dataset
     def point_at(self,pos):
+        if self.nep_result_data is None:
+            return None
         # adjust the event position for hidpi screens
         render_size = tuple(d * self.pixel_scale for d in self.size)
         x_pos = pos[0] * self.pixel_scale
@@ -362,9 +366,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             self.axes_list.append(plot)
             if title[r]!="descriptor":
                 plot.add_diagonal( color="red",width=3,antialias=True, method='gl')
-
-
-
 
         self.set_view_layout()
 

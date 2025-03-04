@@ -5,9 +5,10 @@
 # @email    : 1747193328@qq.com
 import json
 import os.path
-import sys
+
 import numpy as np
-from PySide6.QtGui import QColor, QMatrix4x4
+from PySide6 import QtOpenGL
+from PySide6.QtGui import QColor
 
 from OpenGL.GL import *  # noqa
 
@@ -22,41 +23,15 @@ class StructurePlotWidget(gl.GLViewWidget):
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
 
+
         # 创建 PyQtGraph 的 3D 窗口
         self.setBackgroundColor('w')
         # self.projectionMatrix()
         self.setCameraPosition(distance=30, elevation=30, azimuth=30)
         with open(os.path.join(module_path,"Config/ptable.json"), "r",encoding="utf-8") as f:
             self.table_info=json.loads(f.read())
-        # self.setAntialiasing(True)
 
-    # def projectionMatrix(self, region=None, projection='ortho'):
-    #     assert projection in ['ortho', 'frustum']
-    #     if region is None:
-    #         dpr = self.devicePixelRatio()
-    #         region = (0, 0, self.width() * dpr, self.height() * dpr)
-    #
-    #     x0, y0, w, h = self.getViewport()
-    #     dist = self.opts['distance']
-    #     fov = self.opts['fov']
-    #     nearClip = dist * 0.001
-    #     farClip = dist * 1000.
-    #
-    #     r = nearClip * np.tan(fov * 0.5 * np.pi / 180.)
-    #     t = r * h / w
-    #
-    #     ## Note that X0 and width in these equations must be the values used in viewport
-    #     left = r * ((region[0] - x0) * (2.0 / w) - 1)
-    #     right = r * ((region[0] + region[2] - x0) * (2.0 / w) - 1)
-    #     bottom = t * ((region[1] - y0) * (2.0 / h) - 1)
-    #     top = t * ((region[1] + region[3] - y0) * (2.0 / h) - 1)
-    #
-    #     tr = QMatrix4x4()
-    #     if projection == 'ortho':
-    #         tr.ortho(left, right, bottom, top, nearClip, farClip)
-    #     elif projection == 'frustum':
-    #         tr.frustum(left, right, bottom, top, nearClip, farClip)
-    #     return tr
+
 
     def show_lattice(self,lattice_matrix):
 

@@ -7,7 +7,6 @@ import os
 import sys
 import traceback
 
-import pyqtgraph as pg
 from PySide6.QtCore import Qt, QFile, QTextStream
 from PySide6.QtGui import QIcon, QFont
 
@@ -23,11 +22,8 @@ from NepTrainKit.core.widget import *
 
 from NepTrainKit import utils,src_rc
 
-# pg.setConfigOptions(antialias=False )
 
-pg.setConfigOption('background', 'w')  # 设置背景为白色
-pg.setConfigOption('foreground', 'k')  # 设置前景元素为黑色（如坐标轴）
-pg.setConfigOptions(antialias=False,useOpenGL=True)
+
 class NepTrainKitMainWindow(FluentWindow):
 
     def __init__(self):
@@ -156,10 +152,13 @@ def main():
     app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
     w.show()
+    print("--- %s seconds ---" % (time.time() - start_time))
 
+    # w.close()
     app.exec()
 
 
 if __name__ == '__main__':
+    import time
+    start_time = time.time()
     main()
-

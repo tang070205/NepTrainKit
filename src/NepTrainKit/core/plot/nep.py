@@ -5,15 +5,13 @@
 # @email    : 1747193328@qq.com
 
 import numpy as np
-from PySide6.QtCore import Signal, Qt
-from PySide6.QtGui import QPainter
+from PySide6.QtCore import QTimer
+
 from PySide6.QtWidgets import QHBoxLayout,QWidget
-from pyqtgraph import mkPen, ScatterPlotItem, TextItem, ViewBox,PlotDataItem
 
 
 from .toolbar import NepDisplayGraphicsToolBar
-from ..canvas.pyqtgraph.canvas  import PyqtgraphCanvas
-from ..canvas.vispy.canvas import VispyCanvas
+
 from .. import MessageManager, Config
 from ..custom_widget.dialog import GetIntMessageBox, SparseMessageBox
 from ..io import NepTrainResultData
@@ -35,16 +33,23 @@ class NepResultPlotWidget(QWidget):
 
         self.swith_canvas(canvas_type)
     def swith_canvas(self,canvas_type="pyqtgraph"):
-
         if canvas_type == "pyqtgraph":
+            from ..canvas.pyqtgraph.canvas import PyqtgraphCanvas
+
             self.canvas = PyqtgraphCanvas(self)
             self._layout.addWidget(self.canvas)
         elif canvas_type == "vispy":
+            from ..canvas.vispy.canvas import VispyCanvas
+
+
             self.canvas = VispyCanvas(self, bgcolor='white')
             self._layout.addWidget(self.canvas.native)
-
         title=["energy","force","stress","virial", "descriptor"]
-        self.canvas.init_axes(5,title)
+        # QTimer.singleShot(100, lambda :self.canvas.init_axes(5,title))
+
+        self.canvas.init_axes(5, title)
+
+
 
     def set_tool_bar(self, tool):
         self.tool_bar: NepDisplayGraphicsToolBar = tool

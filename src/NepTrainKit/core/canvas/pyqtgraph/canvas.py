@@ -17,7 +17,11 @@ from functools import partial
 
 from ... import MessageManager
 from ...io import NepTrainResultData
+import pyqtgraph as pg
 
+pg.setConfigOption('background', 'w')  # 设置背景为白色
+pg.setConfigOption('foreground', 'k')  # 设置前景元素为黑色（如坐标轴）
+pg.setConfigOptions(antialias=False,useOpenGL=False)
 
 class MyPlotItem(PlotItem):
     pass
