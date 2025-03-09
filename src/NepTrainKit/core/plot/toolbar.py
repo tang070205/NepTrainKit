@@ -20,7 +20,7 @@ class NepDisplayGraphicsToolBar(QToolBar):
     undoSignal=Signal()
     deleteSignal=Signal()
     revokeSignal=Signal()
-
+    exportSignal=Signal()
     def __init__(self,  parent=None):
         super().__init__(parent)
         self._parent = parent
@@ -61,6 +61,8 @@ class NepDisplayGraphicsToolBar(QToolBar):
         revoke_action=self.add_action("Undo",QIcon(":/images/src/images/revoke.svg"),self.revokeSignal)
 
         delete_action=self.add_action("Delete Selected Items",QIcon(":/images/src/images/delete.svg"),self.deleteSignal)
+        self.addSeparator()
+        export_action=self.add_action("Export structure descriptor",QIcon(":/images/src/images/export.svg"),self.exportSignal)
 
     def reset(self):
         if self.action_group.checkedAction():

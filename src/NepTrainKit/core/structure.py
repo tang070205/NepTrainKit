@@ -93,9 +93,11 @@ class Structure():
         vir=np.array(self.virial.split(" "),dtype=float)
 
         return vir[[0,4,8,1,5,6]]/self.num_atoms
+    @property
+    def nep_polarizability(self):
+        vir = np.array(self.pol.split(" "), dtype=float)
 
-
-
+        return vir[[0,4,8,1,5,6]] / self.num_atoms
 
 
     @property

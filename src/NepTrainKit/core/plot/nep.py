@@ -44,10 +44,10 @@ class NepResultPlotWidget(QWidget):
 
             self.canvas = VispyCanvas(self, bgcolor='white')
             self._layout.addWidget(self.canvas.native)
-        title=["energy","force","stress","virial", "descriptor"]
+
         # QTimer.singleShot(100, lambda :self.canvas.init_axes(5,title))
 
-        self.canvas.init_axes(5, title)
+        self.canvas.init_axes(5)
 
 
 
@@ -58,7 +58,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.deleteSignal.connect(self.canvas.delete)
         self.tool_bar.revokeSignal.connect(self.canvas.revoke)
         self.tool_bar.penSignal.connect(self.canvas.pen)
-
+        self.tool_bar.exportSignal.connect(self.export_descriptor_data)
         self.tool_bar.findMaxSignal.connect(self.find_max_error_point)
         self.tool_bar.sparseSignal.connect(self.sparse_point)
         self.canvas.tool_bar=self.tool_bar
@@ -101,6 +101,9 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget","sparse_distance_value",distance)
 
         dataset = self.canvas.nep_result_data.descriptor
+        if dataset.now_data.size ==0:
+            MessageManager.send_message_box("No descriptor data available","Error")
+            return
         indices_to_remove = farthest_point_sampling(dataset.now_data,n_samples=n_samples,min_dist=distance)
 
         # 获取所有索引（从 0 到 len(arr)-1）
@@ -110,6 +113,30 @@ class NepResultPlotWidget(QWidget):
         remaining_indices = np.setdiff1d(all_indices, indices_to_remove)
         structures = dataset.group_array[remaining_indices]
         self.canvas.select_index(structures.tolist(),False)
+
+    def export_descriptor_data(self):
+        if self.canvas.nep_result_data is None:
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        path = utils.call_path_dialog(self, "Choose a file save ", "file",default_filename="export_descriptor_data.out")
+        if path:
+            thread = utils.LoadingThread(self, show_tip=True, title="Exporting descriptor data")
+            thread.start_work(self._export_descriptor_data, path)
+    def _export_descriptor_data(self,path):
+
+        if len(self.canvas.nep_result_data.select_index) == 0:
+            MessageManager.send_info_message("No data selected!")
+            return
+        select_index=list(self.canvas.nep_result_data.select_index)
+        descriptor_data = self.canvas.nep_result_data.descriptor.now_data[select_index,:]
+        if hasattr(self.canvas.nep_result_data,"energy"):
+
+            energy_data = self.canvas.nep_result_data.energy.now_data[select_index,1]
+            descriptor_data = np.column_stack((descriptor_data,energy_data))
+
+        with open(path, "w") as f:
+            np.savetxt(f,descriptor_data,fmt='%.6g',delimiter='\t')
+
     def set_dataset(self,dataset):
 
         self.canvas.set_nep_result_data(dataset)

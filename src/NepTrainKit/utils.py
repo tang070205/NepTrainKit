@@ -31,7 +31,28 @@ def timeit(func):
 
 
 
+import os
 
+def check_path_type(path):
+    """
+    判断路径是文件夹还是文件，即使路径不存在。
+
+    参数:
+        path (str): 路径字符串。
+
+    返回:
+        str: "folder"（文件夹）、"file"（文件）或 "unknown"（未知或不存在）。
+    """
+    if os.path.isdir(path):
+        return "folder"
+    elif os.path.isfile(path):
+        return "file"
+    else:
+        # 如果路径不存在，进一步检查是否有文件扩展名
+        if os.path.splitext(path)[1]:  # 如果有扩展名，可能是文件
+            return "file"
+        else:  # 否则可能是文件夹
+            return "folder"
 
 
 def call_path_dialog(self, title, dialog_type="file", default_filename="", file_filter="", selected_filter=""):
@@ -59,10 +80,11 @@ def call_path_dialog(self, title, dialog_type="file", default_filename="", file_
         return None
 
     # 提取目录并保存到配置
-    if os.path.isfile(path):
+    if check_path_type(path)=="file":
         last_dir = os.path.dirname(path)
     else:
         last_dir = path
+
     Config.set("setting", "last_path", last_dir)
     return path
 

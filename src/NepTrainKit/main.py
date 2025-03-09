@@ -6,7 +6,7 @@
 import os
 import sys
 import traceback
-
+import time
 from PySide6.QtCore import Qt, QFile, QTextStream
 from PySide6.QtGui import QIcon, QFont
 
@@ -152,13 +152,13 @@ def main():
     app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
     w.show()
-    print("--- %s seconds ---" % (time.time() - start_time))
+    # print("--- %s seconds ---" % (time.time() - start_time))
 
     # w.close()
     app.exec()
 
 
 if __name__ == '__main__':
-    import time
-    start_time = time.time()
+    #
+    # start_time = time.time()
     main()

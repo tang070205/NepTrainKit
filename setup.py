@@ -89,8 +89,15 @@ class BuildExt(build_ext):
         opts = [ ]
         for ext in self.extensions:
             ext.extra_compile_args = opts + ext.extra_compile_args
-        build_ext.build_extensions(self)
-
+        try:
+            # 尝试构建扩展模块
+            build_ext.build_extensions(self)
+        except Exception as e:
+            # 捕获编译错误并打印警告
+            print(f"WARNING: Failed to build extension module: {e}")
+            print("WARNING: Skipping nep_cpu module build. The package will be installed without it.")
+            # 清空 ext_modules，跳过扩展模块的构建
+            self.ext_modules = []
 
 
 setup(

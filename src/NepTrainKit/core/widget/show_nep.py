@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 from io import StringIO
+from venv import logger
 
 import numpy as np
 from PySide6.QtCore import QUrl, QThread, QTimer
@@ -21,7 +22,8 @@ from NepTrainKit import utils
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.custom_widget.search_widget import   ConfigTypeSearchLineEdit
 from NepTrainKit.core.io import NepTrainResultData
-
+from NepTrainKit.core.io.nep import NepPolarizabilityResultData
+from NepTrainKit.core.io.utils import get_nep_type
 
 from NepTrainKit.core.plot import NepResultPlotWidget,NepDisplayGraphicsToolBar,StructurePlotWidget
 from NepTrainKit.core.types import Brushes
@@ -215,7 +217,18 @@ class ShowNepWidget(QWidget):
         然后设置窗口布局
         :return:
         """
-        self.nep_result_data = NepTrainResultData.from_path(path)
+
+        model_type=get_nep_type(os.path.join(path,"nep.txt"))
+        logger.info(f"NEP model type: {model_type}")
+        if model_type==0:
+            self.nep_result_data=NepTrainResultData.from_path(path)
+        elif model_type==1:
+            self.nep_result_data=None
+        elif model_type==2:
+            self.nep_result_data=NepPolarizabilityResultData.from_path(path)
+        else:
+            self.nep_result_data=None
+
         if self.nep_result_data is None:
             return
 

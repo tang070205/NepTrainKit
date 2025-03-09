@@ -140,6 +140,10 @@ class NepData:
         elif self.title =="stress":
             unit="MPa"
             rmse*=1000
+        elif "Polar" in self.title:
+            unit="(a.u./atom)"
+            # rmse*=1000
+
         else:
             return ""
         return f"{rmse:.2f}{unit}"

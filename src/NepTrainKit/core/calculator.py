@@ -6,6 +6,7 @@
 import contextlib
 import multiprocessing
 import os
+import sys
 import traceback
 
 import numpy as np
@@ -33,19 +34,24 @@ class Nep3Calculator( ):
             model_file = str(model_file, encoding="utf-8")
 
         if CpuNep is None:
-            MessageManager.send_message_box("import nep_cpu error!","Error")
+            MessageManager.send_message_box("Failed to import nep_cpu.\n To use the display functionality normally, please prepare the *_train.out and descriptor.out files.","Error")
+            self.initialized = False
             return None
 
         if os.path.exists(model_file):
+
+            model_file = model_file.encode("utf-8")
             with open(os.devnull, 'w') as devnull:
                 with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
                     self.nep3 = CpuNep(model_file)
             self.element_list=self.nep3.get_element_list()
             self.type_dict = {e: i for i, e in enumerate(self.element_list)}
 
-
+        self.initialized = True
     @utils.timeit
     def calculate(self,structures:list[Structure]):
+        if not self.initialized:
+            return np.array([]),np.array([]),np.array([])
         group_size=[]
         _types = []
         _boxs = []
@@ -87,6 +93,8 @@ class Nep3Calculator( ):
 
 
     def get_descriptor(self,structure:Structure):
+        if not self.initialized:
+            return np.array([])
         symbols = structure.elements
         _type = [self.type_dict[k] for k in symbols]
         _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
@@ -99,7 +107,9 @@ class Nep3Calculator( ):
 
         return descriptors_per_atom
     @utils.timeit
-    def get_descriptors(self,structures:list[Structure]):
+    def get_structures_descriptor(self,structures:list[Structure]):
+        if not self.initialized:
+            return np.array([])
         _types=[]
         _boxs=[]
         _positions=[]
@@ -115,9 +125,32 @@ class Nep3Calculator( ):
             _boxs.append(_box)
             _positions.append(_position)
 
-        descriptor = self.nep3.get_descriptors(_types, _boxs, _positions)
+        descriptor = self.nep3.get_structures_descriptor(_types, _boxs, _positions)
 
         return np.array(descriptor)
+
+    @utils.timeit
+    def get_structures_polarizability(self,structures:list[Structure]):
+        if not self.initialized:
+            return np.array([])
+        _types=[]
+        _boxs=[]
+        _positions=[]
+        if isinstance(structures, Structure):
+            structures=[structures]
+        for structure in structures:
+            symbols = structure.elements
+            _type = [self.type_dict[k] for k in symbols]
+            _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
+
+            _position = structure.positions.transpose(1, 0).reshape(-1).tolist()
+            _types.append(_type)
+            _boxs.append(_box)
+            _positions.append(_position)
+
+        polarizability = self.nep3.get_structures_polarizability(_types, _boxs, _positions)
+
+        return np.array(polarizability)
 
 def _calculate(nep_txt,structures,queue):
     try:
@@ -155,10 +188,9 @@ def process_calculate(nep_txt,structures):
 def _get_descriptors(nep_txt,structures,queue):
     try:
         nep3 = Nep3Calculator(nep_txt)
-        result=nep3.get_descriptors(structures)
+        result=nep3.get_structures_descriptor(structures)
         if queue:
             queue.put(result )   # 将结果通过管道发送给主进程
-
     except Exception as e:
         logger.error(traceback.format_exc())
         result=np.array([])
@@ -180,7 +212,32 @@ def process_get_descriptors(nep_txt, structures):
 
     return result
 
+def _get_polarizability(nep_txt,structures,queue):
+    try:
+        nep3 = Nep3Calculator(nep_txt)
+        result=nep3.get_structures_polarizability(structures)
+        if queue:
+            queue.put(result )   # 将结果通过管道发送给主进程
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        result=np.array([])
+        if queue:
+            queue.put(result)
+    return result
+def process_get_polarizability(nep_txt, structures):
+    if len(structures)<1000:
+        return _get_polarizability(nep_txt, structures, None)
+    queue = multiprocessing.JoinableQueue()
+    p = multiprocessing.Process(target=_get_polarizability, args=(nep_txt, structures, queue))
+    # 启动进程
+    p.start()
+    queue.join()
+    result = queue.get( )
 
+    p.join()
+
+
+    return result
 
 if __name__ == '__main__':
     structures = Structure.read_multiple(r"D:\Desktop\nep\nep-data-main\2023_Zhao_PdCuNiP\train.xyz")

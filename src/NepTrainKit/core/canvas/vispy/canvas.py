@@ -42,11 +42,11 @@ class ViewBoxWidget(scene.Widget):
 
         self.unfreeze()
         self.grid = self.add_grid(margin=0)
-        self._title=title
+
         self.grid.spacing = 0
-        title = scene.Label(title, color='black',font_size=8)
-        title.height_max = 30
-        self.grid.add_widget(title, row=0, col=0, col_span=3)
+        self.title_label = scene.Label(title, color='black',font_size=8)
+        self.title_label.height_max = 30
+        self.grid.add_widget(self.title_label, row=0, col=0, col_span=3)
 
         self.yaxis = scene.AxisWidget(orientation='left',
                                  axis_width=1,
@@ -215,8 +215,18 @@ class ViewBoxWidget(scene.Widget):
     def view(self):
         return self._view
 
+    @property
+    def title(self):
+        return self.title_label._text_visual.text
 
+    @title.setter
+    def title(self, t):
 
+        if t==self.title:
+            return
+        self.title_label._text_visual.text = t
+        if t != "descriptor":
+            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
 class CombinedMeta(type(VispyCanvasLayoutBase), type(scene.SceneCanvas) ):
     pass
 
@@ -357,15 +367,14 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                     break
 
             self.set_view_layout()
-    def init_axes(self,axes_num,title:list  ):
+    def init_axes(self,axes_num   ):
         self.clear()
         for r in range(axes_num):
-            plot = ViewBoxWidget(title=title[r])
+            plot = ViewBoxWidget(title="")
 
 
             self.axes_list.append(plot)
-            if title[r]!="descriptor":
-                plot.add_diagonal( color="red",width=3,antialias=True, method='gl')
+
 
         self.set_view_layout()
 
@@ -420,6 +429,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             # if _dataset.x.size==0:
             #
             #     continue
+            plot.title= _dataset.title
             plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=Brushes.get(_dataset.title.upper()) ,pen=Pens.get(_dataset.title.upper()),
                                       symbol='o',size=7,
@@ -472,11 +482,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             if not plot._scatter:
                 continue
             structure_index_set=np.array( list(set(structure_index)))
-
-
-
             mask = np.isin(plot.data, structure_index_set)
 
+            if mask.size == 0:
+                continue
             # 使用 where 函数找到满足条件的索引，并转换为列表
             index_list = np.where(mask)[0].tolist()
 

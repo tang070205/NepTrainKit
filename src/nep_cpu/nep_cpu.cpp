@@ -228,7 +228,7 @@ calculate(const std::vector<std::vector<int>>& type,
     }
 
     // 获取所有结构的 descriptor
-    std::vector<std::vector<double>> get_descriptors(const std::vector<std::vector<int>>& type,
+    std::vector<std::vector<double>> get_structures_descriptor(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
 
@@ -249,6 +249,23 @@ calculate(const std::vector<std::vector<int>>& type,
 
         return all_descriptors;
     }
+    // 获取所有结构的 polarizability
+    std::vector<std::vector<double>> get_structures_polarizability(const std::vector<std::vector<int>>& type,
+                                                     const std::vector<std::vector<double>>& box,
+                                                     const std::vector<std::vector<double>>& position) {
+
+        size_t type_size = type.size();
+        std::vector<std::vector<double>> all_polarizability(type_size, std::vector<double>(6));
+
+        for (int i = 0; i < type_size; ++i) {
+            std::vector<double> struct_des(6);
+            find_polarizability(type[i], box[i], position[i], struct_des);
+
+            all_polarizability[i] = struct_des;
+        }
+
+        return all_polarizability;
+    }
 };
 
 // pybind11 模块绑定
@@ -259,6 +276,10 @@ PYBIND11_MODULE(nep_cpu, m) {
         .def(py::init<const std::string &>(), py::arg("potential_filename"))
         .def("calculate", &CpuNep::calculate)
         .def("get_descriptor", &CpuNep::get_descriptor)
+
         .def("get_element_list", &CpuNep::get_element_list)
-        .def("get_descriptors", &CpuNep::get_descriptors);
+        .def("get_structures_polarizability", &CpuNep::get_structures_polarizability)
+
+        .def("get_structures_descriptor", &CpuNep::get_structures_descriptor);
+
 }

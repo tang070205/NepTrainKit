@@ -61,6 +61,21 @@ class MyPlotItem(PlotItem):
             item=items[0]
 
             self.structureIndexChanged.emit(item.data())
+
+    @property
+    def title(self):
+        return self.titleLabel.text
+
+    @title.setter
+    def title(self, t):
+        if t == self.title:
+            return
+        self.setTitle(  t)
+        if t != "descriptor":
+            self.add_diagonal()
+
+
+
 class CombinedMeta(type(CanvasLayoutBase), type(GraphicsLayoutWidget)):
     pass
 
@@ -75,16 +90,15 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
         self.nep_result_data:NepTrainResultData=dataset
 
 
-    def init_axes(self,axes_num,title:list  ):
+    def init_axes(self,axes_num   ):
         self.clear()
         for r in range(axes_num):
-            plot = MyPlotItem(title=title[r])
+            plot = MyPlotItem(title="")
             self.addItem(plot)
             plot.getViewBox().mouseDoubleClickEvent = partial(self.view_on_double_clicked,plot=plot)
             plot.getViewBox().setMouseEnabled(False, False)
             self.axes_list.append(plot)
-            if title[r]!="descriptor":
-                plot.add_diagonal()
+
             plot._scatter.sigClicked.connect(self.item_clicked)
 
         self.set_view_layout()
@@ -117,6 +131,7 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
 
         for index,_dataset in enumerate(self.nep_result_data.dataset):
             plot=self.axes_list[index]
+            plot.title= _dataset.title
             plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=Brushes.get(_dataset.title.upper()) ,pen=Pens.get(_dataset.title.upper()),
                                       symbol='o',size=7,

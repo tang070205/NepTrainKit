@@ -21,14 +21,14 @@ class MessageManager(QObject):
 
     """
     _instance = None
-    show_message = Signal(  InfoBarIcon,str,str )
-    show_box= Signal(   str,str )
+    showMessageSignal = Signal(InfoBarIcon, str, str)
+    showBoxSignal= Signal(str, str)
 
     def __init__(self,parent=None):
         super().__init__()
         self._parent = parent
-        self.show_message.connect(self._show_message)
-        self.show_box.connect(self._show_box)
+        self.showMessageSignal.connect(self._show_message)
+        self.showBoxSignal.connect(self._show_box)
 
     @classmethod
     def _createInstance(cls,parent=None):
@@ -47,26 +47,26 @@ class MessageManager(QObject):
     def send_info_message(cls,message,title="Tip"):
         cls._createInstance()
 
-        cls._instance.show_message.emit(InfoBarIcon.INFORMATION,message,title)
+        cls._instance.showMessageSignal.emit(InfoBarIcon.INFORMATION, message, title)
     @classmethod
     def send_success_message(cls,message,title="Success"):
         cls._createInstance()
-        cls._instance.show_message.emit(InfoBarIcon.SUCCESS,message,title)
+        cls._instance.showMessageSignal.emit(InfoBarIcon.SUCCESS, message, title)
     @classmethod
     def send_warning_message(cls,message,title="Warning"):
         cls._createInstance()
-        cls._instance.show_message.emit(InfoBarIcon.WARNING,message,title)
+        cls._instance.showMessageSignal.emit(InfoBarIcon.WARNING, message, title)
 
     @classmethod
     def send_error_message(cls, message,title="Error"):
         cls._createInstance()
-        cls._instance.show_message.emit(InfoBarIcon.ERROR, message,title)
+        cls._instance.showMessageSignal.emit(InfoBarIcon.ERROR, message, title)
 
     @classmethod
 
     def send_message_box(cls,message,title="Tip"):
         cls._createInstance()
-        cls._instance.show_box.emit( message,title)
+        cls._instance.showBoxSignal.emit(message, title)
 
     def _show_box(self,message,title ):
         w = MessageBox(title, message, self._parent)
