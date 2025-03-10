@@ -229,8 +229,8 @@ class NepTrainResultData(ResultData):
             return None
         nep_txt_path = path.joinpath(f"nep.txt")
         if not nep_txt_path.exists():
-            MessageManager.send_message_box(f"nep.txt not found in the current working directory.")
-            return None
+            MessageManager.send_warning_message(f"nep.txt not found in the current working directory.")
+
 
         energy_out_path = path.joinpath(f"energy_{model}.out")
         force_out_path = path.joinpath(f"force_{model}.out")

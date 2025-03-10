@@ -83,18 +83,18 @@ def get_nep_type(file_path):
         "nep5": 0,
         "nep5_zbl": 0
     }
-
+    model_type=0
     try:
         with open(file_path, 'r') as file:
             # 读取第一行
             first_line = file.readline().strip()
             parts = first_line.split()
             nep_type=parts[0]
-            model_type = nep_type_to_model_type.get(nep_type, 0)
+            model_type = nep_type_to_model_type.get(nep_type )
     except FileNotFoundError:
-        print(f"错误: 文件 {file_path} 未找到。")
+        logger.warning(f"错误: 文件 {file_path} 未找到。默认model_type为0")
     except Exception as e:
-        print(f"解析文件时发生错误: {e}")
+        logger.warning(f"解析文件时发生错误: {e}")
 
     return model_type
 
