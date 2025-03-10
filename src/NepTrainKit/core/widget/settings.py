@@ -7,10 +7,10 @@ import traceback
 
 
 from PySide6.QtCore import QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QWidget
 from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, MessageBox, \
-    OptionsSettingCard, OptionsConfigItem, OptionsValidator, EnumSerializer
+    OptionsSettingCard, OptionsConfigItem, OptionsValidator, EnumSerializer, SwitchSettingCard
 from qfluentwidgets import FluentIcon as FIF
 
 from NepTrainKit import utils
@@ -60,6 +60,17 @@ class SettingsWidget(QWidget):
         )
 
 
+        auto_load_config = Config.getboolean("widget","auto_load",False)
+
+        self.auto_load_card = SwitchSettingCard(
+            QIcon(":/images/src/images/auto_load.svg"),
+            self.tr('Auto loading'),
+            self.tr('Detect startup path data and load'),
+
+            parent=self.personal_group
+        )
+        self.auto_load_card.setValue(auto_load_config)
+
         self.about_group = SettingCardGroup("About", self)
         self.help_card = HyperlinkCard(
             HELP_URL,
@@ -99,13 +110,14 @@ class SettingsWidget(QWidget):
 
         self.personal_group.addSettingCard(self.optimization_forces_card)
         self.personal_group.addSettingCard(self.canvas_card)
+        self.personal_group.addSettingCard(self.auto_load_card)
 
     def init_signal(self):
         self.canvas_card.optionChanged.connect(lambda option:Config.set("widget","canvas_type",option ))
 
         self.optimization_forces_card.optionChanged.connect(lambda option:Config.set("widget","forces_data",option ))
         self.about_card.clicked.connect(self.check_update)
-
+        self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         # self.about_card.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(RELEASES_URL)))
         self.feedback_card.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(FEEDBACK_URL)))

@@ -8,10 +8,10 @@ import sys
 import traceback
 import time
 from PySide6.QtCore import Qt, QFile, QTextStream
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtGui import QIcon, QFont, QPixmap
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from PySide6.QtWidgets import QApplication, QMenuBar, QWidget, QGridLayout, QMainWindow
+from PySide6.QtWidgets import QApplication, QMenuBar, QWidget, QGridLayout, QMainWindow, QSplashScreen
 from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge,
                             ToolButton, TransparentToolButton, SearchLineEdit)
 from qfluentwidgets import FluentIcon as FIF
@@ -144,6 +144,13 @@ def main():
     if os.path.exists("update.zip") or os.path.exists("update.tar.gz"):
         utils.unzip()
     app = QApplication(sys.argv)
+
+    splash = QSplashScreen()
+    splash.setPixmap(QPixmap(':/images/src/images/logo.png'))
+    splash.setFont(QFont("Arial", 16))  # 设置字体
+    splash.showMessage("Please wait...", Qt.AlignBottom | Qt.AlignHCenter, Qt.white)
+    splash.show()
+
     font = QFont("Arial", 12)  # 设置字体为 Arial，字号为 12
     app.setFont(font)
     theme_file = QFile(":/theme/src/qss/theme.qss")
@@ -151,6 +158,7 @@ def main():
     theme=theme_file.readAll().data().decode("utf-8")
     app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
+    splash.finish(w)
     w.show()
     # print("--- %s seconds ---" % (time.time() - start_time))
 

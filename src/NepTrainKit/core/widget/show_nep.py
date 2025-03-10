@@ -19,7 +19,7 @@ from qfluentwidgets import HyperlinkLabel, MessageBox, SubtitleLabel, PlainTextE
     TransparentToolButton
 
 from NepTrainKit import utils
-from NepTrainKit.core import MessageManager
+from NepTrainKit.core import MessageManager, Config
 from NepTrainKit.core.custom_widget.search_widget import   ConfigTypeSearchLineEdit
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.io.nep import NepPolarizabilityResultData
@@ -44,6 +44,16 @@ class ShowNepWidget(QWidget):
         self.setAcceptDrops(True)
         self.nep_result_data=None
         self.init_ui()
+        self.first_show=False
+    def showEvent(self, event):
+        auto_load_config = Config.getboolean("widget","auto_load",False)
+        if not auto_load_config:
+            return
+
+        if not self.first_show:
+            self.first_show=True
+            if os.path.exists("./train.xyz") and os.path.exists("./nep.txt"):
+                self.set_work_path(os.getcwd())
 
     def init_ui(self):
         self.gridLayout = QGridLayout(self)
