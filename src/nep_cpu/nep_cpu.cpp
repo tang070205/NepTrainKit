@@ -2,7 +2,9 @@
 #include <pybind11/stl.h>
 #include "nep.h"
 #include "nep.cpp"
-
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include <tuple>
 
 namespace py = pybind11;
@@ -81,9 +83,35 @@ void transpose(const std::vector<std::vector<double>>& input, std::vector<std::v
     }
 }
 
+// 转换函数：UTF-8 到系统编码
+std::string convert_path(const std::string& utf8_path) {
+#ifdef _WIN32
+    // Windows：将 UTF-8 转换为 ANSI（例如 GBK）
+    int wstr_size = MultiByteToWideChar(CP_UTF8, 0, utf8_path.c_str(), -1, nullptr, 0);
+    std::wstring wstr(wstr_size, 0);
+    MultiByteToWideChar(CP_UTF8, 0, utf8_path.c_str(), -1, &wstr[0], wstr_size);
+
+    int ansi_size = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    std::string ansi_path(ansi_size, 0);
+    WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, &ansi_path[0], ansi_size, nullptr, nullptr);
+    return ansi_path;
+#else
+    // Linux/macOS：直接返回 UTF-8
+    return utf8_path;
+#endif
+}
+
+
 class CpuNep : public NEP3 {
 public:
-    CpuNep(const std::string& potential_filename) : NEP3(potential_filename) {}
+    CpuNep(const std::string& potential_filename)  {
+
+
+    std::string utf8_path  = convert_path(potential_filename);
+
+
+    init_from_file(utf8_path, false);
+    }
 
     // 计算所有结构的 potential, force, virial
 void compute(
@@ -273,7 +301,7 @@ PYBIND11_MODULE(nep_cpu, m) {
     m.doc() = "A pybind11 module for NEP";
 
     py::class_<CpuNep>(m, "CpuNep")
-        .def(py::init<const std::string &>(), py::arg("potential_filename"))
+        .def(py::init<const std::string&>(), py::arg("potential_filename"))
         .def("calculate", &CpuNep::calculate)
         .def("get_descriptor", &CpuNep::get_descriptor)
 

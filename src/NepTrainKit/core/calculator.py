@@ -31,7 +31,7 @@ class Nep3Calculator( ):
     def __init__(self, model_file="nep.txt"):
         super().__init__()
         if not isinstance(model_file, str):
-            model_file = str(model_file, encoding="utf-8")
+            model_file = str(model_file )
 
         if CpuNep is None:
             MessageManager.send_message_box("Failed to import nep_cpu.\n To use the display functionality normally, please prepare the *_train.out and descriptor.out files.","Error")
@@ -40,7 +40,9 @@ class Nep3Calculator( ):
 
         if os.path.exists(model_file):
 
-            model_file = model_file.encode("utf-8")
+            # model_file = model_file.encode("utf-8")
+            print(model_file )
+
             with open(os.devnull, 'w') as devnull:
                 with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
                     self.nep3 = CpuNep(model_file)
