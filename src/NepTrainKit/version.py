@@ -8,7 +8,7 @@ __version__="1.7.2"
 
 OWNER="aboys-cb"
 REPO="NepTrainKit"
-HELP_URL=f"https://github.com/{OWNER}/{REPO}"
+HELP_URL=f"https://neptrainkit.readthedocs.io/en/latest/index.html"
 FEEDBACK_URL=f"https://github.com/{OWNER}/{REPO}/issues"
 RELEASES_URL=f"https://github.com/{OWNER}/{REPO}/releases"
 

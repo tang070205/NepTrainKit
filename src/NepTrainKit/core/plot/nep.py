@@ -127,9 +127,11 @@ class NepResultPlotWidget(QWidget):
         if len(self.canvas.nep_result_data.select_index) == 0:
             MessageManager.send_info_message("No data selected!")
             return
-        select_index=list(self.canvas.nep_result_data.select_index)
+        select_index=self.canvas.nep_result_data.descriptor.convert_index(list(self.canvas.nep_result_data.select_index))
         descriptor_data = self.canvas.nep_result_data.descriptor.now_data[select_index,:]
         if hasattr(self.canvas.nep_result_data,"energy"):
+            select_index = self.canvas.nep_result_data.energy.convert_index(
+                list(self.canvas.nep_result_data.select_index))
 
             energy_data = self.canvas.nep_result_data.energy.now_data[select_index,1]
             descriptor_data = np.column_stack((descriptor_data,energy_data))

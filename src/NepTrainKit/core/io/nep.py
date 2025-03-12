@@ -162,7 +162,8 @@ class ResultData(QObject):
                 # 结构描述符
                 pass
         if desc_array.size != 0:
-            desc_array = pca(desc_array, 2)
+            if desc_array.shape[1] > 2:
+                desc_array = pca(desc_array, 2)
 
         self._descriptor_dataset = NepPlotData(desc_array, title="descriptor")
 
