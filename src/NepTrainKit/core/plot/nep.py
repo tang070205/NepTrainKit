@@ -30,7 +30,7 @@ class NepResultPlotWidget(QWidget):
         self._layout = QHBoxLayout(self)
         self.setLayout(self._layout)
         canvas_type = Config.get("widget","canvas_type","pyqtgraph")
-
+        self.last_figure_num=None
         self.swith_canvas(canvas_type)
     def swith_canvas(self,canvas_type="pyqtgraph"):
         if canvas_type == "pyqtgraph":
@@ -47,7 +47,7 @@ class NepResultPlotWidget(QWidget):
 
         # QTimer.singleShot(100, lambda :self.canvas.init_axes(5,title))
 
-        self.canvas.init_axes(5)
+        # self.canvas.init_axes(3)
 
 
 
@@ -141,6 +141,9 @@ class NepResultPlotWidget(QWidget):
 
     def set_dataset(self,dataset):
 
+        if self.last_figure_num !=len(dataset.dataset):
+            self.canvas.init_axes(len(dataset.dataset))
+            self.last_figure_num = len(dataset.dataset)
         self.canvas.set_nep_result_data(dataset)
         self.canvas.plot_nep_result()
 

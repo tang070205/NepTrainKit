@@ -251,34 +251,44 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self.path_line = scene.visuals.Line(color='red', method='gl' )
         # Use filters to affect the rendering of the mesh.
 
+    def clear_axes(self):
+        for widget in self.axes_list:
+            widget._stretch = (None, None)
+            widget.parent=None
+            self.grid.remove_widget(widget)
+
+        super().clear_axes()
+
+
     def set_nep_result_data(self,dataset):
         self.nep_result_data:NepTrainResultData=dataset
     def point_at(self,pos):
         if self.nep_result_data is None:
             return None
+        current_axes=self._get_clicked_axes(pos)
         # adjust the event position for hidpi screens
         render_size = tuple(d * self.pixel_scale for d in self.size)
         x_pos = pos[0] * self.pixel_scale
         y_pos = render_size[1] - (pos[1] * self.pixel_scale)
         # print(canvas.pixel_scale)
         # render a small patch around the mouse cursor
-        restore_state = not self.current_axes.picking_filter.enabled
-        self.current_axes.picking_filter.enabled = True
-        self.current_axes._scatter.update_gl_state(blend=False)
+        restore_state = not current_axes.picking_filter.enabled
+        current_axes.picking_filter.enabled = True
+        current_axes._scatter.update_gl_state(blend=False)
         picking_render = self.render(
             crop=(x_pos - 2, y_pos - 2, 5, 5),
             bgcolor=(0, 0, 0, 0),
             alpha=True,
         )
         if restore_state:
-            self.current_axes.picking_filter.enabled = False
-        self.current_axes._scatter.update_gl_state(blend=not self.current_axes.picking_filter.enabled)
+            current_axes.picking_filter.enabled = False
+        current_axes._scatter.update_gl_state(blend=not current_axes.picking_filter.enabled)
 
         # unpack the face index from the color in the center pixel
         marker_idx = (picking_render.view(np.uint32) - 1)[2, 2, 0]
-        if self.current_axes.data.size!=0:
+        if current_axes.data.size!=0:
 
-            if marker_idx>=self.current_axes.data.size:
+            if marker_idx>=current_axes.data.size:
                 return None
         else:
             return None
@@ -295,9 +305,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             # x, y, _, _ = tr.map(event.pos)
 
             # index = self.current_axes.point_at(x, y)
+            current_axes = self._get_clicked_axes(event.pos)
 
             if index is not None:
-                structure_index=self.current_axes.data[index]
+                structure_index=current_axes.data[index]
                 self.structureIndexChanged.emit(structure_index)
 
             return False
@@ -355,20 +366,25 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             self.mouse_path = []
 
+    def _get_clicked_axes(self,pos):
+        view = self.visual_at(pos)
+
+        if isinstance(view, scene.ViewBox)  :
+            for axes in self.axes_list:
+                if axes.view == view:
+                    return axes
+
+        return None
     def switch_view_box(self,event ):
         mouse_pos = event.pos
-        view =self.visual_at(mouse_pos)
-
-        if isinstance(view,scene.ViewBox) and self.current_axes.view!=view:
-            for axes  in self.axes_list:
-                if axes.view==view:
-
-                    self.set_current_axes(axes)
-                    break
-
+        axes=self._get_clicked_axes(mouse_pos)
+        if axes is None:
+            return
+        if self.current_axes != axes:
+            self.set_current_axes(axes)
             self.set_view_layout()
     def init_axes(self,axes_num   ):
-        self.clear()
+        self.clear_axes()
         for r in range(axes_num):
             plot = ViewBoxWidget(title="")
 
@@ -387,12 +403,13 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             return
 
         i = 0
+        row_0_col_span=len(self.axes_list)-1
         for widget in self.axes_list:
             widget._stretch = (None, None)
             self.grid.remove_widget(widget)
 
             if widget == self.current_axes:
-                self.grid.add_widget(widget, row=0, col=0, row_span=6, col_span=4)
+                self.grid.add_widget(widget, row=0, col=0, row_span=6, col_span=row_0_col_span)
             else:
                 self.grid.add_widget(widget, row=6, col=i, row_span=2, col_span=1)
 

@@ -22,7 +22,7 @@ from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
 from NepTrainKit.core.custom_widget.search_widget import   ConfigTypeSearchLineEdit
 from NepTrainKit.core.io import NepTrainResultData
-from NepTrainKit.core.io.nep import NepPolarizabilityResultData
+from NepTrainKit.core.io.nep import NepPolarizabilityResultData, NepDipoleResultData
 from NepTrainKit.core.io.utils import get_nep_type
 
 from NepTrainKit.core.plot import NepResultPlotWidget,NepDisplayGraphicsToolBar,StructurePlotWidget
@@ -233,7 +233,7 @@ class ShowNepWidget(QWidget):
         if model_type==0:
             self.nep_result_data=NepTrainResultData.from_path(path)
         elif model_type==1:
-            self.nep_result_data=None
+            self.nep_result_data=NepDipoleResultData.from_path(path)
         elif model_type==2:
             self.nep_result_data=NepPolarizabilityResultData.from_path(path)
         else:

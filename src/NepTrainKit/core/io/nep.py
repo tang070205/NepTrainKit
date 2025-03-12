@@ -17,8 +17,7 @@ from loguru import logger
 from NepTrainKit.core import MessageManager, Structure, Config
 from .base import NepPlotData, StructureData
 from .utils import read_nep_out_file, read_atom_num_from_xyz, check_fullbatch, read_nep_in, parse_array_by_atomnum
-from ..calculator import process_calculate, process_get_descriptors, _calculate, _get_descriptors, Nep3Calculator, \
-    process_get_polarizability
+from ..calculator import run_nep3_calculator_process
 
 
 def pca(X, k):
@@ -149,7 +148,7 @@ class ResultData(QObject):
 
         if desc_array.size == 0:
 
-            desc_array = process_get_descriptors(self.nep_txt_path.as_posix(), self.structure.now_data)
+            desc_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(), self.structure.now_data,"descriptor")
             if desc_array.size != 0:
                 np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
         else:
@@ -253,12 +252,12 @@ class NepTrainResultData(ResultData):
                     not self.virial_out_path.exists()
 
                 ])):
-            nep_potentials_array, nep_forces_array, nep_virials_array = process_calculate(self.nep_txt_path.as_posix(),
-                                                                                          self.structure.now_data)
+            nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+                                                                                          self.structure.now_data,"calculate")
             try:
                 energy_array = np.column_stack(
                     [nep_potentials_array / atoms_num_list, [structure.per_atom_energy for structure in self.structure.now_data]])
-                np.savetxt(self.energy_out_path, energy_array, fmt='%10.5f')
+                np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
 
             except:
                 pass
@@ -271,7 +270,7 @@ class NepTrainResultData(ResultData):
                                                 np.vstack([structure.forces for structure in self.structure.now_data]),
 
                                                 ])
-                np.savetxt(self.force_out_path, forces_array, fmt='%10.5f')
+                np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
 
             except:
                 logger.debug(traceback.format_exc())
@@ -289,8 +288,8 @@ class NepTrainResultData(ResultData):
                                                  ])
 
                 stress_array = virials_array * coefficient * 160.21766208
-                np.savetxt(self.virial_out_path, virials_array, fmt='%10.5f')
-                np.savetxt(self.stress_out_path, stress_array, fmt='%10.5f')
+                np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
+                np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
 
             except:
                 logger.debug(traceback.format_exc())
@@ -349,14 +348,11 @@ class NepPolarizabilityResultData(ResultData):
 
         self._load_descriptors()
 
-        self._atoms_polarizability_diagonal_dataset = NepPlotData([], title="")
-        self._atoms_polarizability_no_diagonal_dataset = NepPlotData([], title="")
-
 
     @property
     def dataset(self):
 
-        return [self.polarizability_diagonal,self.polarizability_no_diagonal,self.atoms_polarizability_diagonal,self.atoms_polarizability_no_diagonal, self.descriptor]
+        return [self.polarizability_diagonal,self.polarizability_no_diagonal, self.descriptor]
 
     @property
     def num(self):
@@ -372,12 +368,7 @@ class NepPolarizabilityResultData(ResultData):
     def polarizability_no_diagonal(self):
         return self._polarizability_no_diagonal_dataset
 
-    @property
-    def atoms_polarizability_diagonal(self):
-        return self._atoms_polarizability_diagonal_dataset
-    @property
-    def atoms_polarizability_no_diagonal(self):
-        return self._atoms_polarizability_no_diagonal_dataset
+
 
     @property
     def descriptor(self):
@@ -413,7 +404,7 @@ class NepPolarizabilityResultData(ResultData):
                 ])):
 
             try:
-                nep_polarizability_array = process_get_polarizability(self.nep_txt_path.as_posix(),self.structure.now_data)
+                nep_polarizability_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),self.structure.now_data,"polarizability")
 
                 nep_polarizability_array=nep_polarizability_array/(atoms_num_list[:, np.newaxis])
                 polarizability_array = np.column_stack([nep_polarizability_array,
@@ -422,7 +413,7 @@ class NepPolarizabilityResultData(ResultData):
                                                 ])
 
 
-                np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%10.5f')
+                np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%10.8f')
 
             except:
                 logger.debug(traceback.format_exc())
@@ -431,15 +422,103 @@ class NepPolarizabilityResultData(ResultData):
                                                 nep_polarizability_array
 
                                                 ])
-
-
-
-
         else:
             polarizability_array = read_nep_out_file(self.polarizability_out_path)
-
-
 
         self._polarizability_diagonal_dataset = NepPlotData(polarizability_array[:, [0,1,2,6,7,8]], title="Polar Diag")
 
         self._polarizability_no_diagonal_dataset = NepPlotData(polarizability_array[:, [3,4,5,9,10,11]], title="Polar NoDiag")
+
+
+class NepDipoleResultData(ResultData):
+    def __init__(self,
+                 nep_txt_path,
+                 data_xyz_path,
+                 dipole_out_path,
+
+                 descriptor_path
+                 ):
+        super().__init__(nep_txt_path, data_xyz_path, descriptor_path)
+
+        self.dipole_out_path = dipole_out_path
+
+        self._load_dataset()
+
+        self._load_descriptors()
+
+    @property
+    def dataset(self):
+
+        return [self.dipole , self.descriptor]
+
+    @property
+    def num(self):
+        return self._atoms_dataset.num
+
+    @property
+    def structure(self):
+        return self._atoms_dataset
+
+    @property
+    def dipole(self):
+        return self._dipole_dataset
+
+
+
+    @property
+    def descriptor(self):
+        return self._descriptor_dataset
+
+    @classmethod
+    def from_path(cls, path, model="train"):
+        path = Path(path)
+        dataset_path = path.joinpath(f"{model}.xyz")
+        if not dataset_path.exists():
+            MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
+            return None
+        nep_txt_path = path.joinpath(f"nep.txt")
+        if not nep_txt_path.exists():
+            MessageManager.send_message_box(f"nep.txt not found in the current working directory.")
+            return None
+
+        polarizability_out_path = path.joinpath(f"dipole_{model}.out")
+
+        descriptor_path = path.joinpath(f"descriptor.out")
+
+        return cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
+
+    def _load_dataset(self):
+        nep_in = read_nep_in(self.nep_txt_path.with_name("nep.in"))
+        atoms_num_list = np.array([len(structure) for structure in self.structure.now_data])
+        if (not check_fullbatch(nep_in, len(atoms_num_list))
+                or all([
+                    not self.dipole_out_path.exists(),
+
+                ])):
+
+            try:
+                nep_dipole_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+                                                                       self.structure.now_data, "dipole")
+
+                nep_dipole_array = nep_dipole_array / (atoms_num_list[:, np.newaxis])
+                dipole_array = np.column_stack([nep_dipole_array,
+                                                        np.vstack([structure.nep_dipole for structure in
+                                                                   self.structure.now_data]),
+
+                                                        ])
+
+                np.savetxt(self.dipole_out_path, dipole_array, fmt='%10.8f')
+
+            except:
+                logger.debug(traceback.format_exc())
+
+                dipole_array = np.column_stack([nep_dipole_array,
+                                                        nep_dipole_array
+
+                                                        ])
+        else:
+            dipole_array = read_nep_out_file(self.dipole_out_path)
+
+        self._dipole_dataset = NepPlotData(dipole_array,
+                                                            title="dipole")
+

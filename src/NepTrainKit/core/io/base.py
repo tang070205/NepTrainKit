@@ -143,7 +143,9 @@ class NepData:
         elif "Polar" in self.title:
             unit="(m.a.u./atom)"
             rmse*=1000
-
+        elif "dipole" == self.title:
+            unit="(m.a.u./atom)"
+            rmse*=1000
         else:
             return ""
         return f"{rmse:.2f}{unit}"

@@ -86,13 +86,18 @@ class Structure():
     def forces(self):
         return self.structure_info[self.force_label]
 
-
     @property
     def nep_virial(self):
 
         vir=np.array(self.virial.split(" "),dtype=float)
 
         return vir[[0,4,8,1,5,6]]/self.num_atoms
+    @property
+    def nep_dipole(self):
+
+        dipole=np.array(self.dipole.split(" "),dtype=float)
+
+        return dipole/self.num_atoms
     @property
     def nep_polarizability(self):
         vir = np.array(self.pol.split(" "), dtype=float)

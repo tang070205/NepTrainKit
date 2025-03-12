@@ -111,11 +111,14 @@ class CanvasLayoutBase(CanvasBase):
             return None
         axes_index = self.axes_list.index(axes)
         return self.nep_result_data.dataset[axes_index]
-    def clear(self):
+    def clear_axes(self):
         """
         清空逻辑
         """
+
         self.axes_list.clear()
+
+
     def delete(self):
         if self.nep_result_data is not None and self.nep_result_data.select_index:
             self.nep_result_data.delete_selected()

@@ -286,13 +286,31 @@ calculate(const std::vector<std::vector<int>>& type,
         std::vector<std::vector<double>> all_polarizability(type_size, std::vector<double>(6));
 
         for (int i = 0; i < type_size; ++i) {
-            std::vector<double> struct_des(6);
-            find_polarizability(type[i], box[i], position[i], struct_des);
+            std::vector<double> struct_pol(6);
+            find_polarizability(type[i], box[i], position[i], struct_pol);
 
-            all_polarizability[i] = struct_des;
+            all_polarizability[i] = struct_pol;
         }
 
         return all_polarizability;
+    }
+
+        // 获取所有结构的 polarizability
+    std::vector<std::vector<double>> get_structures_dipole(const std::vector<std::vector<int>>& type,
+                                                     const std::vector<std::vector<double>>& box,
+                                                     const std::vector<std::vector<double>>& position) {
+
+        size_t type_size = type.size();
+        std::vector<std::vector<double>> all_dipole(type_size, std::vector<double>(3));
+
+        for (int i = 0; i < type_size; ++i) {
+            std::vector<double> struct_dipole(3);
+            find_dipole(type[i], box[i], position[i], struct_dipole);
+
+            all_dipole[i] = struct_dipole;
+        }
+
+        return all_dipole;
     }
 };
 
@@ -307,6 +325,7 @@ PYBIND11_MODULE(nep_cpu, m) {
 
         .def("get_element_list", &CpuNep::get_element_list)
         .def("get_structures_polarizability", &CpuNep::get_structures_polarizability)
+        .def("get_structures_dipole", &CpuNep::get_structures_dipole)
 
         .def("get_structures_descriptor", &CpuNep::get_structures_descriptor);
 

@@ -89,9 +89,16 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
     def set_nep_result_data(self,dataset):
         self.nep_result_data:NepTrainResultData=dataset
 
+    def clear_axes(self):
+        self.clear()
+
+        super().clear_axes()
+
+
 
     def init_axes(self,axes_num   ):
-        self.clear()
+        self.clear_axes()
+
         for r in range(axes_num):
             plot = MyPlotItem(title="")
             self.addItem(plot)
