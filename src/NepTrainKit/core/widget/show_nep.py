@@ -12,11 +12,11 @@ from venv import logger
 
 import numpy as np
 from PySide6.QtCore import QUrl, QThread, QTimer
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSizePolicy
 
 from qfluentwidgets import HyperlinkLabel, MessageBox, SubtitleLabel, PlainTextEdit, CaptionLabel, SpinBox, \
-    TransparentToolButton
+    TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
@@ -27,6 +27,7 @@ from NepTrainKit.core.io.utils import get_nep_type
 
 from NepTrainKit.core.plot import NepResultPlotWidget,NepDisplayGraphicsToolBar,StructurePlotWidget
 from NepTrainKit.core.types import Brushes
+from NepTrainKit.core.structure import table_info, atomic_numbers
 
 
 class ShowNepWidget(QWidget):
@@ -143,6 +144,18 @@ class ShowNepWidget(QWidget):
 
         # 将状态栏添加到布局的底部
         self.gridLayout.addWidget(self.path_label, 1, 0, 1, 1)
+
+        self.bond_label=StrongBodyLabel(self)
+        self.bond_label.setFont(getFont(20, QFont.DemiBold))
+        # self.bond_label.setFixedHeight(30)  # 设置状态栏的高度
+        self.bond_label.setWordWrap(True)
+        # 添加到布局的底部
+        self.gridLayout.addWidget(self.bond_label, 1, 1, 1, 1)
+        # self.bond_label.setStyleSheet("QLabel { background-color: #f3f3f3; color: black; padding: 5px; }")
+        self.bond_label.setToolTip('The Tip is the minimum distance between atoms in the current structure, in Å.')
+
+        self.bond_label.installEventFilter(ToolTipFilter(self.bond_label, 300, ToolTipPosition.TOP))
+
         # self.gridLayout.setHorizontalSpacing( 0)
 
         self.gridLayout.setColumnStretch(0, 3)
@@ -294,7 +307,7 @@ class ShowNepWidget(QWidget):
         self.graph_widget.canvas.plot_current_point(current_index)
 
         self.show_struct_widget.show_atoms(atoms)
-
+        self.update_structure_bond_info(atoms)
         text_io=StringIO()
         atoms.write(text_io)
 
@@ -303,8 +316,23 @@ class ShowNepWidget(QWidget):
         comm=text_io.read()
         self.struct_info_edit.setPlainText(comm)
         text_io.close()
+    def update_structure_bond_info(self,atoms):
+        bond_length=atoms.get_bond_info()
+        bond_text=""
+        radius_coefficient_config=Config.getfloat("widget","radius_coefficient",0.9)
 
+        for elems,bond_length in bond_length.items():
+            elem0_info=table_info[str(atomic_numbers[elems[0]])]
+            elem1_info=table_info[str(atomic_numbers[elems[1]])]
+            bond_text+=f"{elems[0]}-{elems[1]}:"
+            # bond_text+=f'<font color="{elem0_info["color"]}">{elems[0]}</font>-<font color="{elem1_info["color"]}">{elems[1]}</font>:'
+            if (elem0_info["radii"]+elem1_info["radii"])*radius_coefficient_config < bond_length*100:
+                bond_text+=f'<font color="red">{bond_length:.2f}</font> Å | '
+            else:
+                bond_text+=f'<font color="green">{bond_length:.2f}</font> Å | '
+             # '<font color="red">原子1</font>-<font color="blue">原子2</font>: {dist:.2f} Å'
 
+        self.bond_label.setText(bond_text )
     def search_config_type(self,config):
 
         indexs= self.nep_result_data.structure.search_config(config)

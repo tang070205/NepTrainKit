@@ -17,7 +17,9 @@ import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 
 from NepTrainKit.core import MessageManager
-from NepTrainKit import module_path
+
+from NepTrainKit.core.structure import table_info
+
 
 class StructurePlotWidget(gl.GLViewWidget):
     def __init__(self,*args,**kwargs):
@@ -28,8 +30,7 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.setBackgroundColor('w')
         # self.projectionMatrix()
         self.setCameraPosition(distance=30, elevation=30, azimuth=30)
-        with open(os.path.join(module_path,"Config/ptable.json"), "r",encoding="utf-8") as f:
-            self.table_info=json.loads(f.read())
+ 
 
 
 
@@ -84,8 +85,8 @@ class StructurePlotWidget(gl.GLViewWidget):
     def show_elem(self,numbers,postions):
 
         for n,p in zip(numbers,postions):
-            color=QColor(self.table_info[str(n)]["color"]).getRgbF()
-            size=self.table_info[str(n)]["radii"]/100
+            color=QColor(table_info[str(n)]["color"]).getRgbF()
+            size=table_info[str(n)]["radii"]/100
 
             sphere = gl.MeshData.sphere(rows=20, cols=20,radius=size)
             m = gl.GLMeshItem(meshdata=sphere, smooth=False, shader='shaded', color=color)
@@ -100,8 +101,10 @@ class StructurePlotWidget(gl.GLViewWidget):
 
         self.show_lattice(atoms.cell )
         self.show_elem(atoms.numbers,atoms.positions)
+
+
 if __name__ == '__main__':
     app = QApplication([])
-    view = AtomsPlotWidget()
+    view = StructurePlotWidget()
     view.show()
     QApplication.instance().exec_()

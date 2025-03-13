@@ -7,7 +7,8 @@ from typing import Union
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QIcon, Qt
-from qfluentwidgets import SettingCard, OptionsConfigItem, FluentIconBase, ComboBox
+
+from qfluentwidgets import SettingCard, OptionsConfigItem, FluentIconBase, ComboBox,SettingCard,DoubleSpinBox
 
 
 class MyComboBoxSettingCard(SettingCard):
@@ -61,3 +62,44 @@ class MyComboBoxSettingCard(SettingCard):
             return
 
         self.comboBox.setCurrentText(self.optionToText[value])
+
+
+
+
+
+class DoubleSpinBoxSettingCard(SettingCard):
+    """ Setting card with a push button """
+
+    valueChanged = Signal(float)
+
+    def __init__(self,   icon: Union[str, QIcon, FluentIconBase], title, content=None, parent=None):
+        """
+        Parameters
+        ----------
+        text: str
+            the text of push button
+
+        icon: str | QIcon | FluentIconBase
+            the icon to be drawn
+
+        title: str
+            the title of card
+
+        content: str
+            the content of card
+
+        parent: QWidget
+            parent widget
+        """
+        super().__init__(icon, title, content, parent)
+        self.doubleSpinBox = DoubleSpinBox(  self)
+        self.doubleSpinBox.setDecimals(2)
+        self.doubleSpinBox.setSingleStep(0.1)
+        self.doubleSpinBox.setMinimumWidth(200)
+        self.hBoxLayout.addWidget(self.doubleSpinBox, 0, Qt.AlignRight)
+        self.hBoxLayout.addSpacing(16)
+        self.doubleSpinBox.valueChanged.connect(self.valueChanged)
+    def setValue(self, value):
+        self.doubleSpinBox.setValue(value)
+    def setRange(self, min, max):
+        self.doubleSpinBox.setRange(min, max)

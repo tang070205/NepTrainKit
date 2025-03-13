@@ -3,7 +3,9 @@
 # @Time    : 2024/11/21 14:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import json
 import multiprocessing
+import os
 import re
 import threading
 import time
@@ -13,7 +15,7 @@ import numpy as np
 from PySide6.QtCore import QThread, QObject
 from PySide6.QtWidgets import QApplication
 
-from NepTrainKit import utils
+from NepTrainKit import utils, module_path
 from NepTrainKit.utils import timeit
 
 atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
@@ -42,7 +44,8 @@ atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
                  'Rf': 104, 'Db': 105, 'Sg': 106, 'Bh': 107, 'Hs': 108,
                  'Mt': 109, 'Ds': 110, 'Rg': 111, 'Cn': 112, 'Nh': 113,
                  'Fl': 114, 'Mc': 115, 'Lv': 116, 'Ts': 117, 'Og': 118}
-
+with open(os.path.join(module_path, "Config/ptable.json"), "r", encoding="utf-8") as f:
+    table_info = json.loads(f.read())
 
 
 class Structure():
@@ -136,6 +139,7 @@ class Structure():
             return self.structure_info[item]
         else:
             raise AttributeError
+
 
     @classmethod
     def read(cls, lines):
@@ -322,3 +326,81 @@ class Structure():
                 elif prop["type"] == 'R':  # 浮点数类型
                     line += " ".join([f"{x:.10g}" for x in values]) + " "
             file.write(line.strip() + "\n")
+
+
+
+    def get_bond_info(self):
+
+        dist_matrix = calculate_pairwise_distances(self.cell, self.positions,False)
+        symbols=self.elements
+        # 提取上三角矩阵（排除对角线）
+        i, j = np.triu_indices(len(self), k=1)
+        # 用字典来存储每种元素对的最小键长
+        bond_lengths = {}
+        # 遍历所有原子对，计算每一对元素的最小键长
+        for idx in range(len(i)):
+            atom_i, atom_j = symbols[i[idx]], symbols[j[idx]]
+            # if atom_i==atom_j:
+            #     continue
+            # 获取当前键长
+            bond_length = dist_matrix[i[idx], j[idx]]
+            # if bond_length>5:
+            #     continue
+            # 确保元素对按字母顺序排列，避免 Cs-Ag 和 Ag-Cs 视为不同
+            element_pair = tuple(sorted([atom_i, atom_j]))
+            # 如果该元素对尚未存在于字典中，初始化其最小键长
+            if element_pair not in bond_lengths:
+                bond_lengths[element_pair] = bond_length
+            else:
+                # 更新最小键长
+                bond_lengths[element_pair] = min(bond_lengths[element_pair], bond_length)
+
+        return bond_lengths
+def calculate_pairwise_distances(lattice_params, atom_coords, fractional=True):
+    """
+    计算晶体中所有原子对之间的距离，考虑周期性边界条件
+
+    参数:
+    lattice_params: 晶格参数，3x3 numpy array 表示晶格向量 (a, b, c)
+    atom_coords: 原子坐标，Nx3 numpy array
+    fractional: 是否为分数坐标 (True) 或笛卡尔坐标 (False)
+
+    返回:
+    distances: NxN numpy array，所有原子对之间的距离
+    """
+
+    # 如果输入是分数坐标，转换为笛卡尔坐标
+    if fractional:
+        atom_coords = np.dot(atom_coords, lattice_params)
+
+    # 获取原子数量
+    n_atoms = len(atom_coords)
+
+    # 生成所有可能的周期性镜像偏移
+    # 这里考虑 [-1, 0, 1] 的基本周期性平移
+    shifts = np.array(np.meshgrid([-1, 0, 1], [-1, 0, 1], [-1, 0, 1])).T.reshape(-1, 3)
+
+    # 计算晶格向量的周期性平移
+    lattice_shifts = np.dot(shifts, lattice_params)
+
+    # 初始化距离矩阵
+    distances = np.zeros((n_atoms, n_atoms))
+
+    # 计算每对原子之间的最小距离
+    for i in range(n_atoms):
+        for j in range(i + 1, n_atoms):
+            # 计算基本向量差
+            diff = atom_coords[j] - atom_coords[i]
+
+            # 计算所有周期性镜像的距离
+            all_diffs = diff + lattice_shifts
+            all_distances = np.sqrt(np.sum(all_diffs ** 2, axis=1))
+
+            # 取最小距离（考虑周期性）
+            min_dist = np.min(all_distances)
+
+            # 对称填充距离矩阵
+            distances[i, j] = min_dist
+            distances[j, i] = min_dist
+
+    return distances
