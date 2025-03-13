@@ -317,22 +317,23 @@ class ShowNepWidget(QWidget):
         self.struct_info_edit.setPlainText(comm)
         text_io.close()
     def update_structure_bond_info(self,atoms):
-        bond_length=atoms.get_bond_info()
-        bond_text=""
-        radius_coefficient_config=Config.getfloat("widget","radius_coefficient",0.9)
-
+        bond_length = atoms.get_bond_info()
+        bond_text = ""
+        radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.9)
+        unreasonable = False
         for elems,bond_length in bond_length.items():
-            elem0_info=table_info[str(atomic_numbers[elems[0]])]
-            elem1_info=table_info[str(atomic_numbers[elems[1]])]
-            bond_text+=f"{elems[0]}-{elems[1]}:"
-            # bond_text+=f'<font color="{elem0_info["color"]}">{elems[0]}</font>-<font color="{elem1_info["color"]}">{elems[1]}</font>:'
-            if (elem0_info["radii"]+elem1_info["radii"])*radius_coefficient_config < bond_length*100:
-                bond_text+=f'<font color="red">{bond_length:.2f}</font> Å | '
+            elem0_info = table_info[str(atomic_numbers[elems[0]])]
+            elem1_info = table_info[str(atomic_numbers[elems[1]])]
+            bond_text += f"{elems[0]}-{elems[1]}:"
+            #相邻原子距离小于共价半径之和×系数就标红
+            if (elem0_info["radii"] + elem1_info["radii"]) * radius_coefficient_config > bond_length*100:
+                bond_text += f'<font color="red">{bond_length:.2f}</font> Å | '
+                unreasonable = True
             else:
                 bond_text+=f'<font color="green">{bond_length:.2f}</font> Å | '
-             # '<font color="red">原子1</font>-<font color="blue">原子2</font>: {dist:.2f} Å'
-
         self.bond_label.setText(bond_text )
+        if unreasonable:
+            MessageManager.send_info_message("The distance between atoms is too small, and the structure may be unreasonable.")
     def search_config_type(self,config):
 
         indexs= self.nep_result_data.structure.search_config(config)
