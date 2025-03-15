@@ -327,9 +327,10 @@ class Structure():
                     line += " ".join([f"{x:.10g}" for x in values]) + " "
             file.write(line.strip() + "\n")
 
+    def get_all_distances(self):
+        return  calculate_pairwise_distances(self.cell, self.positions,False)
 
-
-    def get_bond_info(self):
+    def get_mini_distance_info(self):
 
         dist_matrix = calculate_pairwise_distances(self.cell, self.positions,False)
         symbols=self.elements

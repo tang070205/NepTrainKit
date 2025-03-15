@@ -306,7 +306,7 @@ class ShowNepWidget(QWidget):
 
         self.graph_widget.canvas.plot_current_point(current_index)
 
-        self.show_struct_widget.show_atoms(atoms)
+        self.show_struct_widget.show_structure(atoms)
         self.update_structure_bond_info(atoms)
         text_io=StringIO()
         atoms.write(text_io)
@@ -317,7 +317,7 @@ class ShowNepWidget(QWidget):
         self.struct_info_edit.setPlainText(comm)
         text_io.close()
     def update_structure_bond_info(self,atoms):
-        bond_length = atoms.get_bond_info()
+        bond_length = atoms.get_mini_distance_info()
         bond_text = ""
         radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.9)
         unreasonable = False
