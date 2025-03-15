@@ -139,7 +139,7 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
 
 def main():
     setTheme(Theme.LIGHT)
-    # 设置全局异常捕获
+    # 设置全局异常捕获 k 
     sys.excepthook = global_exception_handler
     if os.path.exists("update.zip") or os.path.exists("update.tar.gz"):
         utils.unzip()
