@@ -357,6 +357,27 @@ class Structure():
                 bond_lengths[element_pair] = min(bond_lengths[element_pair], bond_length)
 
         return bond_lengths
+    def get_bond_pairs(self):
+        i, j = np.triu_indices(len(self), k=1)
+        pos = np.array(self.positions)
+        diff = pos[i] - pos[j]
+        upper_distances = np.linalg.norm(diff, axis=1)
+        covalent_radii = np.array([table_info[str(n)]["radii"] / 100 for n in self.numbers])
+        radius_sum = covalent_radii[i] + covalent_radii[j]
+        bond_mask = (upper_distances < radius_sum * 1.15)
+        bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
+        return bond_pairs
+
+    def get_bad_bond_pairs(self, cutoff=0.8):
+        i, j = np.triu_indices(len(self), k=1)
+        distances = self.get_all_distances()
+        upper_distances = distances[i, j]
+        covalent_radii = np.array([table_info[str(n)]["radii"] / 100 for n in self.numbers])
+        radius_sum = covalent_radii[i] + covalent_radii[j]
+        bond_mask = (upper_distances < radius_sum * cutoff)
+
+        bad_bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
+        return bad_bond_pairs
 def calculate_pairwise_distances(lattice_params, atom_coords, fractional=True):
     """
     计算晶体中所有原子对之间的距离，考虑周期性边界条件

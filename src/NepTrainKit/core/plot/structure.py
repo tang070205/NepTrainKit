@@ -42,16 +42,7 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.opts['center'] = pg.Vector(center[0], center[1], center[2])
         self.addItem(lattice_lines)
 
-    def get_bond_pairs(self, structure):
-        i, j = np.triu_indices(len(structure), k=1)
-        pos = np.array(structure.positions)
-        diff = pos[i] - pos[j]
-        upper_distances = np.linalg.norm(diff, axis=1)
-        covalent_radii = np.array([table_info[str(n)]["radii"] / 100 for n in structure.numbers])
-        radius_sum = covalent_radii[i] + covalent_radii[j]
-        bond_mask = (upper_distances < radius_sum * 1.15)
-        bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
-        return bond_pairs
+
 
     def show_bond(self, pos1, pos2, color1, color2, radius1, radius2, bond_radius=0.12):
         """使用圆柱体绘制两个原子之间的化学键，从球体表面开始"""
@@ -97,29 +88,30 @@ class StructurePlotWidget(gl.GLViewWidget):
             self.atom_items.append({"mesh": m, "position": p, "original_color": color, "size": size, "halo": None})
 
         radius_coefficient_config = Config.getfloat("widget", "radius_coefficient", 0.9)
-        bond_pairs = self.get_bond_pairs(structure)
+        bond_pairs = structure.get_bad_bond_pairs( radius_coefficient_config)
         for pair in bond_pairs:
-            elem0_info = table_info[str(structure.numbers[pair[0]])]
-            elem1_info = table_info[str(structure.numbers[pair[1]])]
-            pos1 = structure.positions[pair[0]]
-            pos2 = structure.positions[pair[1]]
-            bond_length = np.linalg.norm(pos1 - pos2)
-            if (elem0_info["radii"] + elem1_info["radii"]) * radius_coefficient_config > bond_length * 100:
-                # color1 = (1.0, 0.0, 0.0, 0.7)
-                # color2 = (1.0, 0.0, 0.0, 0.7)
-                # bond_radius = 0.3
-                self.highlight_atom(pair[0])
-                self.highlight_atom(pair[1])
 
-
-            else:
-                pass
-            # color1 = QColor(elem0_info["color"]).getRgbF()
-            # color2 = QColor(elem1_info["color"]).getRgbF()
-            # bond_radius = 0.15
-            # radius1 = table_info[str(structure.numbers[pair[0]])]["radii"] / 150
-            # radius2 = table_info[str(structure.numbers[pair[1]])]["radii"] / 150
-            # self.show_bond(pos1, pos2, color1, color2, radius1, radius2, bond_radius=bond_radius)
+            self.highlight_atom(pair[0])
+            self.highlight_atom(pair[1])
+        # bond_pairs = structure.get_bond_pairs()
+        # for pair in bond_pairs:
+        #
+        #     elem0_info = table_info[str(structure.numbers[pair[0]])]
+        #     elem1_info = table_info[str(structure.numbers[pair[1]])]
+        #     pos1 = structure.positions[pair[0]]
+        #     pos2 = structure.positions[pair[1]]
+        #     bond_length = np.linalg.norm(pos1 - pos2)
+        #     if (elem0_info["radii"] + elem1_info["radii"]) * radius_coefficient_config > bond_length * 100:
+        #         color1 = (1.0, 0.0, 0.0, 0.7)
+        #         color2 = (1.0, 0.0, 0.0, 0.7)
+        #         bond_radius = 0.3
+        #     else:
+        #         color1 = QColor(elem0_info["color"]).getRgbF()
+        #         color2 = QColor(elem1_info["color"]).getRgbF()
+        #         bond_radius = 0.15
+        #     radius1 = table_info[str(structure.numbers[pair[0]])]["radii"] / 150
+        #     radius2 = table_info[str(structure.numbers[pair[1]])]["radii"] / 150
+        #     self.show_bond(pos1, pos2, color1, color2, radius1, radius2, bond_radius=bond_radius)
 
     def highlight_atom(self, atom_index):
         """高亮指定的原子并添加光晕"""
