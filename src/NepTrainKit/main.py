@@ -8,7 +8,7 @@ import sys
 import traceback
 import time
 from PySide6.QtCore import Qt, QFile, QTextStream
-from PySide6.QtGui import QIcon, QFont, QPixmap
+from PySide6.QtGui import QIcon, QFont, QPixmap, QPalette, QColor
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from PySide6.QtWidgets import QApplication, QMenuBar, QWidget, QGridLayout, QMainWindow, QSplashScreen
@@ -137,6 +137,27 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
     # 写入日志
     logger.error(error_message)
 
+
+def set_light_theme(app):
+    # 创建一个自定义调色板
+    palette = QPalette()
+
+    # 设置亮色主题的颜色
+    palette.setColor(QPalette.Window, QColor(240, 240, 240))  # 窗口背景色（浅灰）
+    palette.setColor(QPalette.WindowText, Qt.black)  # 文本颜色
+    palette.setColor(QPalette.Base, Qt.white)  # 输入框等背景色
+    palette.setColor(QPalette.AlternateBase, QColor(245, 245, 245))  # 交替颜色
+    palette.setColor(QPalette.Text, Qt.black)  # 输入框文字颜色
+    palette.setColor(QPalette.Button, QColor(230, 230, 230))  # 按钮背景色
+    palette.setColor(QPalette.ButtonText, Qt.black)  # 按钮文字颜色
+    palette.setColor(QPalette.Highlight, QColor(0, 120, 215))  # 高亮颜色（选中状态）
+    palette.setColor(QPalette.HighlightedText, Qt.white)  # 高亮文字颜色
+
+    # 应用调色板
+    app.setPalette(palette)
+
+    # 禁用系统主题（可选，视平台而定）
+    app.setStyle("Fusion")  # 使用 Fusion 样式，确保一致性
 def main():
     setTheme(Theme.LIGHT)
     # 设置全局异常捕获 k 
@@ -144,7 +165,7 @@ def main():
     if os.path.exists("update.zip") or os.path.exists("update.tar.gz"):
         utils.unzip()
     app = QApplication(sys.argv)
-
+    set_light_theme(app)
     splash = QSplashScreen()
     splash.setPixmap(QPixmap(':/images/src/images/logo.png'))
     splash.setFont(QFont("Arial", 16))  # 设置字体

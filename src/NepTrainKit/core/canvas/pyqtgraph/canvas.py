@@ -3,8 +3,7 @@
 # @Time    : 2024/10/17 13:03
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import time
-from abc import abstractmethod
+
 
 import numpy as np
 from NepTrainKit import utils
@@ -24,7 +23,9 @@ pg.setConfigOption('foreground', 'k')  # 设置前景元素为黑色（如坐标
 pg.setConfigOptions(antialias=False,useOpenGL=False)
 
 class MyPlotItem(PlotItem):
-    pass
+    """
+    自定义Item 实例化即可创建一个axes
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.disableAutoRange()
@@ -80,7 +81,9 @@ class CombinedMeta(type(CanvasLayoutBase), type(GraphicsLayoutWidget)):
     pass
 
 class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedMeta):
-
+    """
+    pyqtgraph 绘图类
+    """
     def __init__(self,*args, **kwargs):
         GraphicsLayoutWidget.__init__(self,*args,**kwargs)
 
@@ -134,6 +137,9 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
 
     @utils.timeit
     def plot_nep_result(self):
+        """
+        画图函数 每次数据变动（删除、撤销等）均通过此函数重新绘图
+        """
         self.nep_result_data.select_index.clear()
 
         for index,_dataset in enumerate(self.nep_result_data.dataset):
@@ -166,6 +172,9 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
 
 
     def plot_current_point(self,structure_index):
+        """
+        鼠标点击后 在所有子图上绘制五角星标记当前点
+        """
         self.structure_index=structure_index
 
         for plot in  self.axes_list :
@@ -189,6 +198,7 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
 
 
     def select_point_from_polygon(self,polygon_xy,reverse ):
+
         index=self.is_point_in_polygon(np.column_stack([self.current_axes._scatter.data["x"],self.current_axes._scatter.data["y"]]),polygon_xy)
         index = np.where(index)[0]
         select_index=self.current_axes._scatter.data[index]["data"].tolist()
@@ -196,6 +206,9 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
 
 
     def select_point(self,pos,reverse):
+        """
+        鼠标单击选择结构
+        """
         items=self.current_axes._scatter.pointsAt(pos)
         if len(items):
             item=items[0]
@@ -206,7 +219,9 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
 
 
     def update_scatter_color(self,structure_index,color=Brushes.Selected):
-
+        """
+        当结构点的状态发生变化的时候 通过该函数更改axes中散点的颜色
+        """
 
         for i,plot in enumerate(self.axes_list):
 
@@ -234,6 +249,7 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
         y_pos = y_range[0] + y_percent * (y_range[1] - y_range[0])  # 根据百分比计算实际位置
         return x_pos,y_pos
     def auto_range(self,plot=None):
+
         if plot is None:
             plot=self.current_axes
         if plot:

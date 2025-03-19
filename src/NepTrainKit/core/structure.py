@@ -331,7 +331,9 @@ class Structure():
         return  calculate_pairwise_distances(self.cell, self.positions,False)
 
     def get_mini_distance_info(self):
-
+        """
+        返回原子对之间的最小距离
+        """
         dist_matrix = calculate_pairwise_distances(self.cell, self.positions,False)
         symbols=self.elements
         # 提取上三角矩阵（排除对角线）
@@ -358,6 +360,9 @@ class Structure():
 
         return bond_lengths
     def get_bond_pairs(self):
+        """
+        返回在范围内的所有键长
+        """
         i, j = np.triu_indices(len(self), k=1)
         pos = np.array(self.positions)
         diff = pos[i] - pos[j]
@@ -369,6 +374,10 @@ class Structure():
         return bond_pairs
 
     def get_bad_bond_pairs(self, cutoff=0.8):
+        """
+        根据键长阈值判断
+        返回所有的非物理键长
+        """
         i, j = np.triu_indices(len(self), k=1)
         distances = self.get_all_distances()
         upper_distances = distances[i, j]
@@ -391,38 +400,15 @@ def calculate_pairwise_distances(lattice_params, atom_coords, fractional=True):
     distances: NxN numpy array，所有原子对之间的距离
     """
 
-    # 如果输入是分数坐标，转换为笛卡尔坐标
+
     if fractional:
         atom_coords = np.dot(atom_coords, lattice_params)
 
-    # 获取原子数量
-    n_atoms = len(atom_coords)
-
-    # 生成所有可能的周期性镜像偏移
-    # 这里考虑 [-1, 0, 1] 的基本周期性平移
+    diff = atom_coords[np.newaxis, :, :] - atom_coords[:, np.newaxis, :]
     shifts = np.array(np.meshgrid([-1, 0, 1], [-1, 0, 1], [-1, 0, 1])).T.reshape(-1, 3)
-
-    # 计算晶格向量的周期性平移
     lattice_shifts = np.dot(shifts, lattice_params)
-
-    # 初始化距离矩阵
-    distances = np.zeros((n_atoms, n_atoms))
-
-    # 计算每对原子之间的最小距离
-    for i in range(n_atoms):
-        for j in range(i + 1, n_atoms):
-            # 计算基本向量差
-            diff = atom_coords[j] - atom_coords[i]
-
-            # 计算所有周期性镜像的距离
-            all_diffs = diff + lattice_shifts
-            all_distances = np.sqrt(np.sum(all_diffs ** 2, axis=1))
-
-            # 取最小距离（考虑周期性）
-            min_dist = np.min(all_distances)
-
-            # 对称填充距离矩阵
-            distances[i, j] = min_dist
-            distances[j, i] = min_dist
-
+    all_diffs = diff[:, :, np.newaxis, :] + lattice_shifts[np.newaxis, np.newaxis, :, :]
+    all_distances = np.sqrt(np.sum(all_diffs ** 2, axis=-1))
+    distances = np.min(all_distances, axis=-1)
+    np.fill_diagonal(distances, 0)
     return distances

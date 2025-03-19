@@ -3,9 +3,12 @@
 # @Time    : 2024/11/28 22:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-from PySide6.QtWidgets import QVBoxLayout,QHBoxLayout,QFrame,QGridLayout
-from qfluentwidgets import MessageBoxBase, SubtitleLabel, LineEdit,SpinBox,CaptionLabel,DoubleSpinBox
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QGridLayout, QLabel
+from qfluentwidgets import MessageBoxBase, SubtitleLabel, LineEdit, SpinBox, CaptionLabel, DoubleSpinBox, ProgressBar, \
+    FluentStyleSheet
+from qframelesswindow import FramelessDialog
 
+from NepTrainKit.utils import LoadingThread
 
 
 class GetIntMessageBox(MessageBoxBase):
@@ -57,3 +60,41 @@ class SparseMessageBox(MessageBoxBase):
 
         self.widget.setMinimumWidth(200)
 
+class ProgressDialog(FramelessDialog):
+    """进度条弹窗"""
+    def __init__(self,parent=None,title=""):
+        pass
+        super().__init__(parent)
+        self.setStyleSheet('ProgressDialog{background:white}')
+
+
+        FluentStyleSheet.DIALOG.apply(self)
+
+
+        self.setWindowTitle(title)
+        self.setFixedSize(300,100)
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0,0,0,0)
+        self.progressBar = ProgressBar(self)
+        self.progressBar.setRange(0,100)
+        self.progressBar.setValue(0)
+        self.layout.addWidget(self.progressBar)
+        self.setLayout(self.layout)
+        self.thread = LoadingThread(self,show_tip=False)
+        self.thread.finished.connect(self.close)
+
+        self.thread.progressSignal.connect(self.progressBar.setValue)
+    def closeEvent(self,event):
+        if self.thread.isRunning():
+            self.thread.stop_work()
+    def run_task(self,task_function,*args,**kwargs):
+        self.thread.start_work(task_function,*args,**kwargs)
+
+if __name__ == '__main__':
+    from PySide6.QtWidgets import QApplication
+    import sys
+    app = QApplication(sys.argv)
+
+    progress_dialog = ProgressDialog()
+    progress_dialog.show()
+    app.exec_()

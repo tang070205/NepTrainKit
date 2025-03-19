@@ -34,12 +34,6 @@ def check_fullbatch(run_in,structure_num):
     return False
 
 
-def read_atom_num_from_xyz(path):
-    with open(path, 'r') as file:
-
-        nums=re.findall("^(\d+)$",file.read(),re.MULTILINE)
-
-        return [int(num) for num in nums]
 
 
 
@@ -55,6 +49,16 @@ def read_nep_out_file(file_path):
         return np.array([])
 
 def parse_array_by_atomnum(array,atoms_num_list,map_func=np.linalg.norm,axis=0):
+    """
+    根据一个映射列表，将原数组按照原子数列表拆分，
+    这个主要是处理文件中原子数不一致的情况，比如力 描述符等文件是按照原子数的 把他们转换成结构的
+    :param array: 原数组
+    :param atoms_num_list: 原子数列表
+    :param map_func: 需要对每个结构的数据进行处理的函数 比如求平均 求和等
+    :param axis: 映射轴
+    :return: 映射后的数组
+
+    """
     if len(array)==0:
         return array
     # 使用 np.cumsum() 计算每个分组的结束索引

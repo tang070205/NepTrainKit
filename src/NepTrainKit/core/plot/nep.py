@@ -3,12 +3,13 @@
 # @Time    : 2024/10/20 22:22
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import time
 
 import numpy as np
 from PySide6.QtCore import QTimer
 
-from PySide6.QtWidgets import QHBoxLayout,QWidget
-
+from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
+from pyqtgraph import ProgressDialog
 
 from .toolbar import NepDisplayGraphicsToolBar
 
@@ -16,6 +17,7 @@ from .. import MessageManager, Config
 from ..custom_widget.dialog import GetIntMessageBox, SparseMessageBox
 from ..io import NepTrainResultData
 from ..io.select import farthest_point_sampling
+from ..structure import table_info, atomic_numbers
 from ..types import Brushes, Pens
 from NepTrainKit import utils
 
@@ -45,9 +47,7 @@ class NepResultPlotWidget(QWidget):
             self.canvas = VispyCanvas(self, bgcolor='white')
             self._layout.addWidget(self.canvas.native)
 
-        # QTimer.singleShot(100, lambda :self.canvas.init_axes(5,title))
 
-        # self.canvas.init_axes(3)
 
 
 
@@ -60,9 +60,44 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.penSignal.connect(self.canvas.pen)
         self.tool_bar.exportSignal.connect(self.export_descriptor_data)
         self.tool_bar.findMaxSignal.connect(self.find_max_error_point)
+        self.tool_bar.discoverySignal.connect(self.find_non_physical_structures)
         self.tool_bar.sparseSignal.connect(self.sparse_point)
         self.canvas.tool_bar=self.tool_bar
+    def __find_non_physical_structures(self):
+        structure_list = self.canvas.nep_result_data.structure.now_data
+        group_array = self.canvas.nep_result_data.structure.group_array.now_data
+        radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.9)
+        unreasonable_index=[]
+        for structure,index in zip(structure_list,group_array):
 
+            distance_info=structure.get_mini_distance_info()
+            for elems, bond_length in distance_info.items():
+                elem0_info = table_info[str(atomic_numbers[elems[0]])]
+                elem1_info = table_info[str(atomic_numbers[elems[1]])]
+
+                # 相邻原子距离小于共价半径之和×系数就选中
+                if (elem0_info["radii"] + elem1_info["radii"]) * radius_coefficient_config > bond_length * 100:
+                    unreasonable_index.append(index)
+                    break
+
+
+            yield 1
+        self.canvas.select_index(unreasonable_index,False)
+
+
+    def find_non_physical_structures(self):
+
+        if self.canvas.nep_result_data is None:
+            return
+        progress_diag = QProgressDialog(f"" ,"Cancel",0,self.canvas.nep_result_data.structure.num,self._parent)
+        thread=utils.LoadingThread(self._parent,show_tip=False )
+        progress_diag.setFixedSize(300, 100)
+        progress_diag.setWindowTitle("Finding non-physical structures")
+        thread.progressSignal.connect(progress_diag.setValue)
+        thread.finished.connect(progress_diag.accept)
+        progress_diag.canceled.connect(thread.stop_work)  # 用户取消时终止线程
+        thread.start_work(self.__find_non_physical_structures)
+        progress_diag.exec()
 
     def find_max_error_point(self):
         dataset = self.canvas.get_axes_dataset(self.canvas.current_axes)

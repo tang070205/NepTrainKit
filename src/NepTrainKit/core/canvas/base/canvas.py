@@ -3,7 +3,9 @@
 # @Time    : 2024/12/31 20:24
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-
+"""
+实现canvas的一些基本函数功能 pyqtgraph vispy 均继承此类
+"""
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -30,9 +32,7 @@ class CanvasBase(ABC):
 
     @abstractmethod
     def auto_range(self):
-        """
-        实现对坐标轴的区间自动适应
-        """
+        """手动调整轴的显示范围 过滤掉无效数据 比如nep 1e6"""
         pass
 
     @abstractmethod
@@ -40,6 +40,9 @@ class CanvasBase(ABC):
         pass
 
     def select_point_from_polygon(self,*args,**kwargs):
+        """
+        根据鼠标绘制的多边形 选择结构
+        """
         pass
 
 

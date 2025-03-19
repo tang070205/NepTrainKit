@@ -18,6 +18,7 @@ class NepDisplayGraphicsToolBar(QToolBar):
     sparseSignal=Signal()
     penSignal=Signal(bool)
     undoSignal=Signal()
+    discoverySignal=Signal()
     deleteSignal=Signal()
     revokeSignal=Signal()
     exportSignal=Signal()
@@ -57,6 +58,9 @@ class NepDisplayGraphicsToolBar(QToolBar):
         self.action_group.addAction(pan_action)
         self.action_group.addAction(pen_action)
         self.action_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
+
+        discovery_action=self.add_action("Finding non-physical structures",QIcon(":/images/src/images/discovery.svg"),self.discoverySignal)
+
 
         revoke_action=self.add_action("Undo",QIcon(":/images/src/images/revoke.svg"),self.revokeSignal)
 

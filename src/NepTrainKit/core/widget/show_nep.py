@@ -317,11 +317,11 @@ class ShowNepWidget(QWidget):
         self.struct_info_edit.setPlainText(comm)
         text_io.close()
     def update_structure_bond_info(self,atoms):
-        bond_length = atoms.get_mini_distance_info()
+        distance_info = atoms.get_mini_distance_info()
         bond_text = ""
         radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.9)
         unreasonable = False
-        for elems,bond_length in bond_length.items():
+        for elems,bond_length in distance_info.items():
             elem0_info = table_info[str(atomic_numbers[elems[0]])]
             elem1_info = table_info[str(atomic_numbers[elems[1]])]
             bond_text += f"{elems[0]}-{elems[1]}:"

@@ -16,7 +16,7 @@ from loguru import logger
 
 from NepTrainKit.core import MessageManager, Structure, Config
 from .base import NepPlotData, StructureData
-from .utils import read_nep_out_file, read_atom_num_from_xyz, check_fullbatch, read_nep_in, parse_array_by_atomnum
+from .utils import read_nep_out_file,  check_fullbatch, read_nep_in, parse_array_by_atomnum
 from ..calculator import run_nep3_calculator_process
 
 
@@ -73,6 +73,10 @@ class ResultData(QObject):
         return i in self.select_index
 
     def select(self,_list):
+        """
+        传入一个索引列表，将索引对应的结构标记为选中状态
+        这个下标是结构在train.xyz中的索引
+        """
         if isinstance(_list,(int,np.int_,np.int64)):
             _list=[_list]
 
@@ -80,6 +84,10 @@ class ResultData(QObject):
             self.select_index.add(i)
 
     def uncheck(self,_list):
+        """
+        check_list 传入一个索引列表，将索引对应的结构标记为未选中状态
+        这个下标是结构在train.xyz中的索引
+        """
         if isinstance(_list,int):
             _list=[_list]
         for i in _list:
@@ -89,12 +97,14 @@ class ResultData(QObject):
 
 
     def export_model_xyz(self,save_path):
+        """
+        导出当前结构
+        :param save_path: 保存路径
+        被删除的导出到export_remove_model.xyz
+        被保留的导出到export_good_model.xyz
+        """
         try:
-            # row_model=  ase_read(self.data_xyz_path,index=":",format="extxyz")
 
-
-            # result=[row_model[i] for i in self._atoms_dataset.now_data ]
-            # remove=[row_model[i] for i in self._atoms_dataset.remove_data ]
             with open(Path(save_path).joinpath("export_good_model.xyz"),"w",encoding="utf8") as f:
                 for structure in self._atoms_dataset.now_data:
                     structure.write(f)
@@ -103,8 +113,7 @@ class ResultData(QObject):
                 for structure in self._atoms_dataset.remove_data:
                     structure.write(f)
 
-            # ase_write(Path(save_path).joinpath("export_good_model.xyz") ,result,append=True)
-            # ase_write(Path(save_path).joinpath("export_remove_model.xyz") ,remove,append=True)
+
             MessageManager.send_info_message(f"File exported to: {save_path}")
         except:
             MessageManager.send_info_message(f"An unknown error occurred while saving. The error message has been output to the log!")
@@ -112,7 +121,7 @@ class ResultData(QObject):
 
 
     def get_atoms(self,index ):
-
+        """根据原始索引获取原子结构对象"""
         index=self._atoms_dataset.convert_index(index)
         return self._atoms_dataset.now_data[index][0]
 
@@ -120,20 +129,30 @@ class ResultData(QObject):
 
     def remove(self,i):
 
-
+        """
+        在所有的dataset中删除某个索引对应的结构
+        """
         self._atoms_dataset.remove(i)
         for dataset in self.dataset:
             dataset.remove(i)
     @property
     def is_revoke(self):
+        """
+        判断是否有被删除的结构
+        """
         return self._atoms_dataset.remove_data.size!=0
     def revoke(self):
+        """
+        撤销到上一次的删除
+        """
         self._atoms_dataset.revoke()
         for dataset in self.dataset:
             dataset.revoke( )
 
     def delete_selected(self ):
-
+        """
+        删除所有selected的结构
+        """
         self.remove(list(self.select_index))
         self.select_index.clear()
 

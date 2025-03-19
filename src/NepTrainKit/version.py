@@ -4,7 +4,7 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import sys
-__version__="2.0.0b4"
+__version__="2.0.0"
 
 OWNER="aboys-cb"
 REPO="NepTrainKit"

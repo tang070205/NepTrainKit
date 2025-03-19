@@ -7,8 +7,8 @@ import os
 import subprocess
 import threading
 import time
-
-from PySide6.QtCore import QThread
+from collections.abc import Iterable
+from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QApplication
 from loguru import logger
@@ -100,15 +100,17 @@ def unzip( ):
 
 
 class LoadingThread(QThread):
-
+    progressSignal = Signal(int)
     def __init__(self,parent=None,show_tip=True,title='running'):
         super(LoadingThread,self).__init__(parent)
         self.show_tip=show_tip
         self.title=title
         self._parent=parent
     def run(self ):
-        self.func()
-
+        result = self.func()
+        if isinstance(result, Iterable):
+            for i,_ in enumerate(result):
+                self.progressSignal.emit(i)
     def start_work(self,func,*args,**kwargs):
         if self.show_tip:
             self.tip = StateToolTip(self.title, 'Please wait patiently~~', self._parent)
@@ -123,3 +125,5 @@ class LoadingThread(QThread):
         if self.tip:
             self.tip.setContent('任务完成啦 😆')
             self.tip.setState(True)
+    def stop_work(self ):
+        self.terminate()

@@ -35,10 +35,11 @@ class DataBase:
     def num(self):
         return self.now_data.shape[0]
     def remove(self,i):
+        """
+        根据index删除数据 并且将删除的数据记录到remove_data中
+        """
         if self.now_data.size==0:
             return
-
-
         if isinstance(i,int):
             data=self.now_data[i]
             self.now_data = np.delete(self.now_data,i,0)
@@ -54,6 +55,9 @@ class DataBase:
         return self.now_data[item]
 
     def revoke(self):
+        """
+        恢复上一次删除的数据
+        """
         if self.remove_num:
             last_remove_num=self.remove_num.pop(-1)
             self.now_data = np.append(self.now_data, self.remove_data[-last_remove_num: ],axis=0)
@@ -61,6 +65,12 @@ class DataBase:
 
 
 class NepData:
+    """
+    structure_data 结构性质数据点
+    group_array 结构的组号 标记数据点对应结构在train.xyz中的下标
+    title 能量 力 等 用于画图axes的标题
+
+    """
     def __init__(self,data_list,group_list=1, **kwargs ):
         if isinstance(data_list,(list )):
             data_list=np.array(data_list)
@@ -83,6 +93,9 @@ class NepData:
         return self.data.num
     @cached_property
     def cols(self):
+        """
+        将列数除以2 前面是nep 后面是dft
+        """
         if self.now_data.shape[0]==0:
             #数据为0
             return 0
@@ -90,10 +103,15 @@ class NepData:
         return index
     @property
     def now_data(self):
+        """
+        返回当前数据
+        """
         return self.data.now_data
 
     @property
     def remove_data(self):
+        """返回删除的数据"""
+
         return self.data.remove_data
 
     def convert_index(self,index_list):
@@ -108,9 +126,8 @@ class NepData:
 
     def remove(self,remove_index):
         """
-         计算下实际删除的索引坐标
-        :param i:
-        :return:
+        根据index删除
+        remove_index 结构的原始下标
         """
         remove_indices=self.convert_index(remove_index)
 
@@ -118,6 +135,7 @@ class NepData:
         self.group_array.remove(remove_indices)
 
     def revoke(self):
+        """将上一次删除的数据恢复"""
         self.data.revoke()
         self.group_array.revoke()
 
@@ -151,6 +169,10 @@ class NepData:
         return f"{rmse:.2f}{unit}"
 
     def get_max_error_index(self,nmax):
+        """
+        返回nmax个最大误差的下标
+        这个下标是结构的原始下标
+        """
         error = np.sum(np.abs(self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]), axis=1)
         rmse_max_ids = np.argsort(-error)
         structure_index =self.group_array.now_data[rmse_max_ids]
@@ -169,15 +191,6 @@ class NepPlotData(NepData):
 
 
 
-    # @property
-    # def colors(self):
-    #     structure_index=self.structure_index
-    #     colors = np.full(structure_index.shape[0], self.normal_color)  # 初始颜色为蓝色
-    #     # print(colors)
-    #     return colors
-    # @property
-    # def selected_color(self):
-    #     return Brushes.RedBrush
     @property
     def normal_color(self):
         return Brushes.TransparentBrush
