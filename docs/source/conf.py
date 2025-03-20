@@ -9,8 +9,7 @@
 
 project = 'NepTrainKit'
 copyright = '2024, NepTrain Team'
-author = ",".join(['ChengBing Chen','YuTong Li'])
-
+author="NepTrain Team"
 release = '1.4.9'
 
 # -- General configuration ---------------------------------------------------
