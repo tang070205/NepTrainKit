@@ -6,7 +6,7 @@
  
 </h4>
 
-[中文](README_zh.md)
+
 
 
 #  About NepTrainKit
@@ -17,7 +17,41 @@ NepTrainKit is a toolkit focused on the operation and visualization of neuroevol
 - Raise issues and engage in discussions via GitHub issues
 
 
+
 # Installation
-**It is strongly recommended to use pip to install, which will compile the OpenMP version and significantly speed up the acquisition of descriptors.**
-- Install directly using the pip install command: `pip install NepTrainKit`. After installation, you can call the program using `NepTrainKit` or `nepkit`.
-- Go to the **release** page of this project to download the executable **NepTrainKit.win32.zip**. Currently, this program only supports Windows systems.
+
+**It is strongly recommended to use pip for installation, as it will compile the OpenMP version and significantly speed up the acquisition of descriptors.**
+
+## Installation Methods
+### 1. Install via pip
+
+If you are using Python 3.10 or a later version, you can install NepTrainKit using an environment manager like `conda`:
+1. Create a new environment:
+   ```bash
+   conda create -n nepkit python=3.10
+   ```
+2. Activate the environment:
+   ```bash
+   conda activate nepkit
+   ```
+3. For CentOS users, install PySide6 (required for GUI functionality):
+   ```bash
+   conda install -c conda-forge pyside6
+- Install directly using the `pip install` command:
+  ```bash
+  pip install NepTrainKit
+  ```
+  After installation, you can call the program using either `NepTrainKit` or `nepkit`.
+
+- For the **latest version** (from GitHub):
+  ```bash
+  pip install git+https://github.com/aboys-cb/NepTrainKit.git
+  ```
+
+### 2. Download Executable (Windows Only)
+- Visit the **release** page of this project to download the executable **NepTrainKit.win32.zip**. Note that this executable currently only supports Windows systems.
+
+ 
+ ## Documentation and Examples
+For detailed usage documentation and examples, please refer to the official documentation:  
+[https://neptrainkit.readthedocs.io/en/latest/index.html](https://neptrainkit.readthedocs.io/en/latest/index.html)
