@@ -1,4 +1,4 @@
-# 绘制描述符分布图
+# Plot descriptor
 本节将演示如何使用NepTrainKit分割描述符并绘制结构分布图。
 
 ## 数据导入
