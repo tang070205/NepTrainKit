@@ -10,7 +10,7 @@
 
 
 #  About NepTrainKit
-NepTrainKit is a toolkit focused on the operation and visualization of neuroevolution potential(NEP) training datasets. It is mainly used to simplify and optimize the NEP model training process, providing an intuitive graphical interface and analysis tools to help users adjust hyperparameters and evaluate model performance more efficiently.
+NepTrainKit is a toolkit focused on the operation and visualization of neuroevolution potential(NEP) training datasets. It is mainly used to simplify and optimize the NEP model training process, providing an intuitive graphical interface and analysis tools to help users adjust  train dataset.
 # Community Support
 
 - Join the community chat (https://qm.qq.com/q/wPDQYHMhyg)
