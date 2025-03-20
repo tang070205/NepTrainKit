@@ -3,7 +3,7 @@
 # @Time    : 2025/3/12 12:23
 # @Author  : 兵 + Grok
 # @email    : 1747193328@qq.com
-
+# @File    : https://github.com/aboys-cb/NepTrainKit/blob/master/tools/plot_descriptor.py
 from matplotlib import pyplot as plt
 import numpy as np
 from scipy.interpolate import splprep, splev
@@ -19,6 +19,7 @@ else:
     from scipy.spatial import ConvexHull
 start_time = time.time()
 config = [
+    #(描述符路径, 图例标签, 标记符号)
     ("./cubic_descriptor.out", "cubic", "*"),
     ("./tetragonal_descriptor.out", "tetragonal", "s"),
     ("./orthorhombic_descriptor.out", "orthorhombic", "o")
