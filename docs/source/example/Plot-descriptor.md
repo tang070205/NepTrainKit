@@ -1,27 +1,27 @@
-# Plot descriptor
-本节将演示如何使用NepTrainKit分割描述符并绘制结构分布图。
+# Plot Descriptor
+This section demonstrates how to use NepTrainKit to segment descriptors and plot the structural distribution.
 
-## 数据导入
-我们以CsPbI3为例进行演示。`train.xyz`文件中包含了正交相、四方相和立方相三种结构。通过PCA降维后，可以清晰地区分出这三个相的结构分布，如下图所示。
+## Data Import
+We use CsPbI3 as an example for demonstration. The `train.xyz` file contains three structures: orthorhombic, tetragonal, and cubic phases. After dimensionality reduction using PCA, the structural distribution of these three phases can be clearly distinguished, as shown in the figure below.
 
 ![Image](../_static/image/example/plot_descriptor/main_ui.png)
 
-## 导出描述符
-1. 首先，使用鼠标框选工具<img src="../_static/image/pen.svg" alt="pen" width='30' height='30' />选中需要导出的结构。
+## Export Descriptors
+1. First, use the mouse selection tool <img src="../_static/image/pen.svg" alt="pen" width='30' height='30' /> to select the structures you want to export.
 ![Image](../_static/image/example/plot_descriptor/select_structure.png)
 
-2. 然后，点击导出描述符按钮<img src="../_static/image/export.svg" alt="pen" width='30' height='30' />。
+2. Then, click the export descriptor button <img src="../_static/image/export.svg" alt="pen" width='30' height='30' />.
 ![Image](../_static/image/example/plot_descriptor/click_export.png)
 
-3. 最后，选择导出文件的路径即可完成导出。
+3. Finally, select the export file path to complete the export.
 ![Image](../_static/image/example/plot_descriptor/select_path.png)
 
-重复上述步骤1-3，最终会得到`cubic_descriptor.out`、`orthorhombic_descriptor.out`和`tetragonal_descriptor.out`三个文件。
+Repeat steps 1-3 to obtain three files: `cubic_descriptor.out`, `orthorhombic_descriptor.out`, and `tetragonal_descriptor.out`.
 
-## 绘制分布图
-我们使用[plot_descriptor.py](https://github.com/aboys-cb/NepTrainKit/blob/master/tools/plot_descriptor.py)脚本来绘制分布图。以下是脚本的部分代码，我们需要修改`config`变量中的路径和`method`变量。
+## Plotting the Distribution
+We use the [plot_descriptor.py](https://github.com/aboys-cb/NepTrainKit/blob/master/tools/plot_descriptor.py) script to plot the distribution. Below is a portion of the script where we need to modify the `config` variable paths and the `method` variable.
 
-`config`中的文件路径应与导出的文件路径一致。`method`变量用于选择算法，可以选择`'alphashape'`或`'dbscan'`，该算法仅涉及外边框的计算。
+The file paths in `config` should match the exported file paths. The `method` variable is used to select the algorithm, which can be either `'alphashape'` or `'dbscan'`. This algorithm only involves the calculation of the outer boundary.
 
 ```python
 method = 'alphashape'
@@ -35,13 +35,13 @@ else:
 start_time = time.time()
 
 config = [
-    # (描述符路径, 图例标签, 标记符号)
+    # (Descriptor path, Legend label, Marker symbol)
     ("./cubic_descriptor.out", "cubic", "*"),
     ("./tetragonal_descriptor.out", "tetragonal", "s"),
     ("./orthorhombic_descriptor.out", "orthorhombic", "o")
 ]
 ```
 
-修改完成后，执行`python plot_descriptor.py`命令，即可生成结构分布图`descriptor_scatter_plot.png`。
+After making the modifications, execute the command `python plot_descriptor.py` to generate the structural distribution plot `descriptor_scatter_plot.png`.
 
 ![Image](../_static/image/example/plot_descriptor/descriptor_scatter_plot.png)
