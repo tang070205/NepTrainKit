@@ -17,9 +17,13 @@ Users can import files in the following two ways:
 - Click the import button located at the top left of the menu <img src="../_static/image/open.svg" alt="open" width='20' height='20' /> to import the file path.
 - Drag and drop the file directly into the software interface for import.
 :::{important}
-- Please ensure that the working path of NepTrainkit does not contain any Chinese characters, as this may prevent the program from displaying correctly.
-- To ensure proper use of NepTrainkit, at least two files, **nep.txt** and **train.xyz**, must be provided.
+software will automatically detect the `nep.txt` file type and import it, including the `norm`、`dipole` and `polarizability`.
+Currently, the software only supports two import methods:
+- `train.xyz` and `*.out` combination.
+- or `nep.txt` and `train.xyz` combination.
 :::
+
+ 
 ### Data Export
 
 After completing the operation, the user can click the save button <img alt="save" height="20" src="../_static/image/save.svg" width="20"/>
@@ -44,9 +48,14 @@ In the drawing toolbar, we have integrated function buttons such as reset, zoom,
 
 <img src="../_static/image/pen.svg" alt="pen" width='30' height='30' /> **Selection and Editing Tool:** Use the left mouse button to draw a selection box or directly select a structure; right-click to deselect.
 
+<img src="../_static/image/discovery.svg" alt="discovery" width='30' height='30' /> **Find non-physical structures Tool:** This tool can automatically identify non-physical structures based on the bond length threshold.
+
 <img src="../_static/image/revoke.svg" alt="revoke" width='30' height='30' /> **Undo Tool:** If a structure is accidentally deleted or modified, the undo function can restore the previous state. It supports multiple consecutive undo actions.
 
 <img src="../_static/image/delete.svg" alt="delete" width='30' height='30' /> **Delete Tool:** Removes the structure corresponding to the selected point.
+
+<img src="../_static/image/export.svg" alt="export" width='30' height='30' /> **Export structure descriptor:** Exports the selected structure descriptor to a file.
+
 
 <img alt="search" height="30" src="../_static/image/search.svg" width="30"/> **Search Tool:** Allows you to select a single **Config_type** and search for specific prefixes, suffixes, or strings.
 
