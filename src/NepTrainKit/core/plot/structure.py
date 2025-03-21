@@ -87,7 +87,7 @@ class StructurePlotWidget(gl.GLViewWidget):
             # 存储原子的信息和对应的GLMeshItem
             self.atom_items.append({"mesh": m, "position": p, "original_color": color, "size": size, "halo": None})
 
-        radius_coefficient_config = Config.getfloat("widget", "radius_coefficient", 0.9)
+        radius_coefficient_config = Config.getfloat("widget", "radius_coefficient", 0.7)
         bond_pairs = structure.get_bad_bond_pairs( radius_coefficient_config)
         for pair in bond_pairs:
 

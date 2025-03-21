@@ -266,6 +266,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if self.nep_result_data is None:
             return None
         current_axes=self._get_clicked_axes(pos)
+        if current_axes is None:
+            return None
         # adjust the event position for hidpi screens
         render_size = tuple(d * self.pixel_scale for d in self.size)
         x_pos = pos[0] * self.pixel_scale

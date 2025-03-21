@@ -71,7 +71,7 @@ class SettingsWidget(QWidget):
             parent=self.personal_group
         )
         self.auto_load_card.setValue(auto_load_config)
-        radius_coefficient_config=Config.getfloat("widget","radius_coefficient",0.9)
+        radius_coefficient_config=Config.getfloat("widget","radius_coefficient",0.7)
 
         self.radius_coefficient_Card = DoubleSpinBoxSettingCard(
 

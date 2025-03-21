@@ -66,7 +66,7 @@ class NepResultPlotWidget(QWidget):
     def __find_non_physical_structures(self):
         structure_list = self.canvas.nep_result_data.structure.now_data
         group_array = self.canvas.nep_result_data.structure.group_array.now_data
-        radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.9)
+        radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.7)
         unreasonable_index=[]
         for structure,index in zip(structure_list,group_array):
 
