@@ -176,7 +176,8 @@ def run_nep3_calculator_process(nep_txt,structures,calculator_type="calculate"):
     result = queue.get( )
 
     p.join()
-
+    queue.close()
+    p.close()
 
     return result
 

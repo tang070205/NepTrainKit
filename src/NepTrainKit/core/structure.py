@@ -52,7 +52,7 @@ class Structure():
     def __init__(self, lattice, structure_info, properties, additional_fields):
         super().__init__()
         self.properties = properties
-        self.lattice = np.array(lattice).reshape((3,3))  # Optional: Lattice vectors
+        self.lattice = np.array(lattice,dtype=np.float32).reshape((3,3))  # Optional: Lattice vectors
         self.structure_info = structure_info
         self.additional_fields = additional_fields
         if "Config_type" not in self.additional_fields.keys():
@@ -92,18 +92,18 @@ class Structure():
     @property
     def nep_virial(self):
 
-        vir=np.array(self.virial.split(" "),dtype=float)
+        vir=np.array(self.virial.split(" "),dtype=np.float32)
 
         return vir[[0,4,8,1,5,6]]/self.num_atoms
     @property
     def nep_dipole(self):
 
-        dipole=np.array(self.dipole.split(" "),dtype=float)
+        dipole=np.array(self.dipole.split(" "),dtype=np.float32)
 
         return dipole/self.num_atoms
     @property
     def nep_polarizability(self):
-        vir = np.array(self.pol.split(" "), dtype=float)
+        vir = np.array(self.pol.split(" "), dtype=np.float32)
 
         return vir[[0,4,8,1,5,6]] / self.num_atoms
 

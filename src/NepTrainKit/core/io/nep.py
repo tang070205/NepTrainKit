@@ -266,6 +266,7 @@ class NepTrainResultData(ResultData):
     def _load_dataset(self ):
         nep_in = read_nep_in(self.nep_txt_path.with_name("nep.in"))
         atoms_num_list=[len(structure) for structure in self.structure.now_data]
+
         if (not check_fullbatch(nep_in, len(atoms_num_list))
                 or all([
                     not self.energy_out_path.exists(),
@@ -276,20 +277,25 @@ class NepTrainResultData(ResultData):
                 ])):
             nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
                                                                                           self.structure.now_data,"calculate")
+
+
             try:
                 energy_array = np.column_stack(
-                    [nep_potentials_array / atoms_num_list, [structure.per_atom_energy for structure in self.structure.now_data]] )
+                    [nep_potentials_array / atoms_num_list, np.array([structure.per_atom_energy for structure in self.structure.now_data],dtype=np.float32)] )
+
+                energy_array = energy_array.astype(np.float32)
                 np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
 
             except:
                 pass
+
                 energy_array = np.column_stack(
                     [nep_potentials_array / atoms_num_list, nep_potentials_array / atoms_num_list])
 
             try:
 
                 forces_array = np.column_stack([nep_forces_array,
-                                                np.vstack([structure.forces for structure in self.structure.now_data]),
+                                                np.vstack([structure.forces for structure in self.structure.now_data],dtype=np.float32),
 
                                                 ])
                 np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
@@ -310,6 +316,8 @@ class NepTrainResultData(ResultData):
                                                  ])
 
                 stress_array = virials_array * coefficient * 160.21766208
+                stress_array=stress_array.astype(np.float32)
+
                 np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
                 np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
 
@@ -322,7 +330,7 @@ class NepTrainResultData(ResultData):
                                                  ])
 
                 stress_array = virials_array * coefficient * 160.21766208
-
+                stress_array=stress_array.astype(np.float32)
             # MessageManager.send_message_box("Detected that the current mode is not full batch. Please make predictions first, then load!")
             # raise ValueError("Detected that the current mode is not full batch. Please make predictions first, then load!")
         else:
@@ -330,6 +338,7 @@ class NepTrainResultData(ResultData):
             forces_array = read_nep_out_file(self.force_out_path,dtype=np.float32)
             virials_array = read_nep_out_file(self.virial_out_path,dtype=np.float32)
             stress_array = read_nep_out_file(self.stress_out_path,dtype=np.float32)
+        # print(energy_array.dtype,forces_array.dtype,virials_array.dtype,stress_array.dtype)
         default_forces = Config.get("widget", "forces_data", "Row")
         if forces_array.size != 0 and default_forces == "Norm":
 
