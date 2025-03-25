@@ -172,11 +172,11 @@ class Structure():
             # _info =[row[index:index + prop["count"]] for row in array]
 
             if prop["type"] == "S":
-                pass
-                # _info=_info.astype(np.str_)
+                # pass
+                _info=_info.astype(np.str_)
                 # _info = np.array(_info,dtype=str)
             elif prop["type"] == "R":
-                _info=_info.astype(float)
+                _info=_info.astype( np.float32)
                  # _info = np.array(_info,dtype=float)
             else:
                 pass

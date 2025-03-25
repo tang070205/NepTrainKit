@@ -6,6 +6,8 @@
 
 
 import numpy as np
+
+
 from NepTrainKit import utils
 from PySide6.QtCore import Signal, Qt
 from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem, PlotItem, GraphicsView, ViewBox, TextItem
@@ -91,6 +93,7 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
         self.nep_result_data=None
     def set_nep_result_data(self,dataset):
         self.nep_result_data:NepTrainResultData=dataset
+
 
     def clear_axes(self):
         self.clear()

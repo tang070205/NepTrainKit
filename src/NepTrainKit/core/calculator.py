@@ -82,16 +82,16 @@ class Nep3Calculator( ):
         #
         potentials=np.hstack(potentials)
         split_potential_arrays = np.split(potentials, split_indices)
-        potentials_array = np.array(list(map(np.sum, split_potential_arrays)))
+        potentials_array = np.array(list(map(np.sum, split_potential_arrays)), dtype=np.float32)
         # print(potentials_array)
 
         # 处理每个force数组：reshape (3, -1) 和 transpose(1, 0)
         reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
 
-        forces_array = np.vstack(reshaped_forces)
+        forces_array = np.vstack(reshaped_forces,dtype=np.float32)
         # print(forces_array)
 
-        reshaped_virials = np.vstack([np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials])
+        reshaped_virials = np.vstack([np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials],dtype=np.float32)
 
         virials_array = reshaped_virials[:,[0,4,8,1,5,6]]
 
@@ -109,7 +109,7 @@ class Nep3Calculator( ):
 
         descriptor = self.nep3.get_descriptor(_type, _box, _position)
 
-        descriptors_per_atom = np.array(descriptor).reshape(-1, len(structure)).T
+        descriptors_per_atom = np.array(descriptor,dtype=np.float32).reshape(-1, len(structure)).T
 
         return descriptors_per_atom
     @utils.timeit
@@ -120,7 +120,7 @@ class Nep3Calculator( ):
 
         descriptor = self.nep3.get_structures_descriptor(_types, _boxs, _positions)
 
-        return np.array(descriptor)
+        return np.array(descriptor,dtype=np.float32)
 
     @utils.timeit
     def get_structures_polarizability(self,structures:list[Structure]):
@@ -130,7 +130,7 @@ class Nep3Calculator( ):
 
         polarizability = self.nep3.get_structures_polarizability(_types, _boxs, _positions)
 
-        return np.array(polarizability)
+        return np.array(polarizability,dtype=np.float32)
 
     def get_structures_dipole(self,structures:list[Structure]):
         if not self.initialized:
@@ -139,7 +139,7 @@ class Nep3Calculator( ):
 
         dipole = self.nep3.get_structures_dipole(_types, _boxs, _positions)
 
-        return np.array(dipole)
+        return np.array(dipole,dtype=np.float32)
 
 
 

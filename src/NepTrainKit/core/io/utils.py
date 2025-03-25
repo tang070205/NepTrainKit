@@ -38,11 +38,11 @@ def check_fullbatch(run_in,structure_num):
 
 
 
-def read_nep_out_file(file_path):
+def read_nep_out_file(file_path,**kwargs):
 
     logger.info("Reading file: {}".format(file_path))
     if os.path.exists(file_path):
-        data = np.loadtxt(file_path)
+        data = np.loadtxt(file_path,**kwargs)
 
         return data
     else:

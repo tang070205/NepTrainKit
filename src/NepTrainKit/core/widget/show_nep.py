@@ -228,6 +228,8 @@ class ShowNepWidget(QWidget):
     def set_dataset(self):
         if self.nep_result_data is None:
             return
+
+
         self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
 
         self.graph_widget.set_dataset(self.nep_result_data)

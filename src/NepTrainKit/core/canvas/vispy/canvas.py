@@ -34,9 +34,11 @@ from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.types import Brushes, Pens
 
 
+
 vispy.use("PySide6", "gl2")
 
 class ViewBoxWidget(scene.Widget):
+
     def __init__(self, title, *args, **kwargs):
         super(ViewBoxWidget, self).__init__(*args, **kwargs)
 
@@ -163,6 +165,7 @@ class ViewBoxWidget(scene.Widget):
         self.current_point.set_data(np.vstack([x, y,z]).T,face_color=self.convert_color(Brushes.Current) ,edge_color=self.convert_color(Pens.Current),
                                       symbol='star',size=20 )
 
+
     def scatter(self,x,y,data,brush=None,pen=None ,**kwargs):
         if self._scatter is None:
             self._scatter = scene.visuals.Markers()
@@ -262,6 +265,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
     def set_nep_result_data(self,dataset):
         self.nep_result_data:NepTrainResultData=dataset
+
+
     def point_at(self,pos):
         if self.nep_result_data is None:
             return None
@@ -385,6 +390,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if self.current_axes != axes:
             self.set_current_axes(axes)
             self.set_view_layout()
+
     def init_axes(self,axes_num   ):
         self.clear_axes()
         for r in range(axes_num):
@@ -438,7 +444,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             self.draw_mode = False
             pass
 
-
     @utils.timeit
     def plot_nep_result(self):
         self.nep_result_data.select_index.clear()
@@ -447,6 +452,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             plot=self.axes_list[index]
             # if _dataset.x.size==0:
             #
+
             #     continue
             plot.title= _dataset.title
             plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,

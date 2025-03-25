@@ -20,9 +20,11 @@ class DataBase:
         2.支持回退（记录删除的data）
 
     """
+
     def __init__(self,data_list ):
-        self.raw_data = np.array(data_list)
-        self.now_data=np.array(data_list)
+        # self.raw_data = np.array(data_list)
+        self.now_data= data_list
+
         shape=list(self.now_data.shape)
         shape[0]=0
         self.remove_data = np.empty( tuple(shape), dtype=self.now_data.dtype)
@@ -78,11 +80,12 @@ class NepData:
         self.data = DataBase(data_list )
         if isinstance(group_list,int):
 
-            group = np.arange(data_list.shape[0])
+            group = np.arange(data_list.shape[0],dtype=np.uint32)
 
             self.group_array=DataBase(group)
         else:
-            group = np.arange(len(group_list))
+            pass
+            group = np.arange(len(group_list),dtype=np.uint32 )
 
             self.group_array=DataBase(group.repeat(group_list))
 

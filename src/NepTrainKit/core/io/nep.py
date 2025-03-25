@@ -44,9 +44,11 @@ def pca(X, k):
 
 
 class ResultData(QObject):
+
     def __init__(self,nep_txt_path,data_xyz_path,descriptor_path):
         super().__init__()
         structures = Structure.read_multiple(data_xyz_path)
+
         self.descriptor_path=descriptor_path
         self.data_xyz_path=data_xyz_path
         self.nep_txt_path=nep_txt_path
@@ -156,11 +158,12 @@ class ResultData(QObject):
         self.remove(list(self.select_index))
         self.select_index.clear()
 
+
     def _load_descriptors(self):
         atoms_num_list=[len(structure) for structure in self.structure.now_data]
 
         if os.path.exists(self.descriptor_path):
-            desc_array = read_nep_out_file(self.descriptor_path)
+            desc_array = read_nep_out_file(self.descriptor_path,dtype=np.float32)
 
         else:
             desc_array = np.array([])
@@ -237,9 +240,8 @@ class NepTrainResultData(ResultData):
     def virial(self):
         return self._virial_dataset
 
-
-
     @classmethod
+
     def from_path(cls, path,model="train"):
         path = Path(path)
         dataset_path = path.joinpath(f"{model}.xyz")
@@ -260,6 +262,7 @@ class NepTrainResultData(ResultData):
         return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,stress_out_path,virial_out_path,descriptor_path)
 
 
+
     def _load_dataset(self ):
         nep_in = read_nep_in(self.nep_txt_path.with_name("nep.in"))
         atoms_num_list=[len(structure) for structure in self.structure.now_data]
@@ -275,7 +278,7 @@ class NepTrainResultData(ResultData):
                                                                                           self.structure.now_data,"calculate")
             try:
                 energy_array = np.column_stack(
-                    [nep_potentials_array / atoms_num_list, [structure.per_atom_energy for structure in self.structure.now_data]])
+                    [nep_potentials_array / atoms_num_list, [structure.per_atom_energy for structure in self.structure.now_data]] )
                 np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
 
             except:
@@ -302,7 +305,7 @@ class NepTrainResultData(ResultData):
 
             try:
                 virials_array = np.column_stack([nep_virials_array,
-                                                 np.vstack([structure.nep_virial for structure in self.structure.now_data]),
+                                                 np.vstack([structure.nep_virial for structure in self.structure.now_data],dtype=np.float32),
 
                                                  ])
 
@@ -323,10 +326,10 @@ class NepTrainResultData(ResultData):
             # MessageManager.send_message_box("Detected that the current mode is not full batch. Please make predictions first, then load!")
             # raise ValueError("Detected that the current mode is not full batch. Please make predictions first, then load!")
         else:
-            energy_array = read_nep_out_file(self.energy_out_path)
-            forces_array = read_nep_out_file(self.force_out_path)
-            virials_array = read_nep_out_file(self.virial_out_path)
-            stress_array = read_nep_out_file(self.stress_out_path)
+            energy_array = read_nep_out_file(self.energy_out_path,dtype=np.float32)
+            forces_array = read_nep_out_file(self.force_out_path,dtype=np.float32)
+            virials_array = read_nep_out_file(self.virial_out_path,dtype=np.float32)
+            stress_array = read_nep_out_file(self.stress_out_path,dtype=np.float32)
         default_forces = Config.get("widget", "forces_data", "Row")
         if forces_array.size != 0 and default_forces == "Norm":
 
