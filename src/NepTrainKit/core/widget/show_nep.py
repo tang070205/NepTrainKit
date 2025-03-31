@@ -333,7 +333,7 @@ class ShowNepWidget(QWidget):
                 unreasonable = True
             else:
                 bond_text+=f'<font color="green">{bond_length:.2f}</font> Å | '
-        self.bond_label.setText(bond_text )
+        self.bond_label.setText( bond_text )
         if unreasonable:
             MessageManager.send_info_message("The distance between atoms is too small, and the structure may be unreasonable.")
     def search_config_type(self,config):

@@ -202,12 +202,12 @@ class NepPlotData(NepData):
         if self.cols==0:
             return self.now_data
 
-        return self.now_data[ : ,self.cols:].flatten()
+        return self.now_data[ : ,self.cols:].ravel()
     @property
     def y(self):
         if self.cols==0:
             return self.now_data
-        return self.now_data[ : , :self.cols].flatten()
+        return self.now_data[ : , :self.cols].ravel()
     @property
     def structure_index(self):
         return self.group_array[ : ].repeat(self.cols)

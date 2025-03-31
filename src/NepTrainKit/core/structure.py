@@ -4,19 +4,15 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import json
-import multiprocessing
+
 import os
 import re
-import threading
-import time
-from concurrent.futures import ProcessPoolExecutor,ThreadPoolExecutor
 
 import numpy as np
-from PySide6.QtCore import QThread, QObject
-from PySide6.QtWidgets import QApplication
+
 
 from NepTrainKit import utils, module_path
-from NepTrainKit.utils import timeit
+
 
 atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
                  'B': 5, 'C': 6, 'N': 7, 'O': 8,
@@ -119,6 +115,30 @@ class Structure():
     @property
     def num_atoms(self):
         return len(self.elements)
+
+    def adjust_reasonable(self,coeff=0.7):
+        """
+        根据传入系数 对比共价半径和实际键长，
+        如果实际键长小于coeff*共价半径之和，判定为不合理结构 返回False
+        否则返回 True
+        :param coeff: 系数
+        :return:
+
+        """
+        distance_info = self.get_mini_distance_info()
+        for elems, bond_length in distance_info.items():
+            elem0_info = table_info[str(atomic_numbers[elems[0]])]
+            elem1_info = table_info[str(atomic_numbers[elems[1]])]
+
+            # 相邻原子距离小于共价半径之和×系数就选中
+            if (elem0_info["radii"] + elem1_info["radii"]) * coeff > bond_length * 100:
+                return False
+        return True
+
+
+
+
+
     # 在序列化时使用 __getstate__ 进行处理
     def __getstate__(self):
         # 返回对象的状态字典，这里可以控制哪些属性需要序列化
@@ -250,7 +270,7 @@ class Structure():
         return parsed_properties
 
     @staticmethod
-    # @utils.timeit
+    @utils.timeit
     def read_multiple(filename ):
         """
         Read a multi-structure XYZ file and return a list of Structure objects.

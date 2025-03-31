@@ -35,6 +35,7 @@ from NepTrainKit.core.types import Brushes, Pens
 
 
 
+
 vispy.use("PySide6", "gl2")
 
 class ViewBoxWidget(scene.Widget):
@@ -164,7 +165,6 @@ class ViewBoxWidget(scene.Widget):
         z=np.full(x.shape,2)
         self.current_point.set_data(np.vstack([x, y,z]).T,face_color=self.convert_color(Brushes.Current) ,edge_color=self.convert_color(Pens.Current),
                                       symbol='star',size=20 )
-
 
     def scatter(self,x,y,data,brush=None,pen=None ,**kwargs):
         if self._scatter is None:
@@ -445,6 +445,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             pass
 
     @utils.timeit
+
     def plot_nep_result(self):
         self.nep_result_data.select_index.clear()
 
@@ -455,6 +456,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             #     continue
             plot.title= _dataset.title
+
             plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=Brushes.get(_dataset.title.upper()) ,pen=Pens.get(_dataset.title.upper()),
                                       symbol='o',size=7,

@@ -47,6 +47,7 @@ class ResultData(QObject):
 
     def __init__(self,nep_txt_path,data_xyz_path,descriptor_path):
         super().__init__()
+
         structures = Structure.read_multiple(data_xyz_path)
 
         self.descriptor_path=descriptor_path
@@ -79,7 +80,7 @@ class ResultData(QObject):
         传入一个索引列表，将索引对应的结构标记为选中状态
         这个下标是结构在train.xyz中的索引
         """
-        if isinstance(_list,(int,np.int_,np.int64)):
+        if isinstance(_list,(int,np.int_,np.int64, np.int32)):
             _list=[_list]
 
         for i in _list:

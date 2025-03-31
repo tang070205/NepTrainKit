@@ -63,6 +63,10 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.discoverySignal.connect(self.find_non_physical_structures)
         self.tool_bar.sparseSignal.connect(self.sparse_point)
         self.canvas.tool_bar=self.tool_bar
+
+
+
+
     def __find_non_physical_structures(self):
         structure_list = self.canvas.nep_result_data.structure.now_data
         group_array = self.canvas.nep_result_data.structure.group_array.now_data
@@ -70,17 +74,9 @@ class NepResultPlotWidget(QWidget):
         unreasonable_index=[]
         for structure,index in zip(structure_list,group_array):
 
-            distance_info=structure.get_mini_distance_info()
-            for elems, bond_length in distance_info.items():
-                elem0_info = table_info[str(atomic_numbers[elems[0]])]
-                elem1_info = table_info[str(atomic_numbers[elems[1]])]
+            if not structure.adjust_reasonable(radius_coefficient_config):
 
-                # 相邻原子距离小于共价半径之和×系数就选中
-                if (elem0_info["radii"] + elem1_info["radii"]) * radius_coefficient_config > bond_length * 100:
-                    unreasonable_index.append(index)
-                    break
-
-
+                unreasonable_index.append(index)
             yield 1
         self.canvas.select_index(unreasonable_index,False)
 
