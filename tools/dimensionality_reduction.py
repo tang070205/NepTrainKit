@@ -3,6 +3,7 @@
 # @Time    : 2025/3/31 21:08
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+# @File    : https://github.com/aboys-cb/NepTrainKit/blob/master/tools/dimensionality_reduction.py
 import numpy as np
 
 from sklearn.decomposition import PCA
