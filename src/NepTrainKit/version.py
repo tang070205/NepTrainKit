@@ -4,7 +4,10 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import sys
-__version__="2.0.1b"
+from importlib.metadata import version
+
+__version__ = version("NepTrainKit")
+print(__version__)
 
 OWNER="aboys-cb"
 REPO="NepTrainKit"
