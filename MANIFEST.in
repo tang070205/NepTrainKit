@@ -1,9 +1,11 @@
 # MANIFEST.in 文件
 include requirements.txt
 include README.md
-global-exclude docs/*
+
 recursive-include src *
 prune **/__pycache__
+prune docs
+
 global-exclude *.log
 global-exclude *upx.exe
 global-exclude *nep_cpu.pyd
