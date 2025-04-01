@@ -29,7 +29,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build   pybind11 setuptools -U
+        pip install build   pybind11 setuptools setuptools-scm -U
  
     - name: clear
       run: |
