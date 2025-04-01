@@ -7,7 +7,7 @@ import sys
 from importlib.metadata import version
 
 __version__ = version("NepTrainKit")
-print(__version__)
+
 
 OWNER="aboys-cb"
 REPO="NepTrainKit"
