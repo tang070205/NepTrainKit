@@ -63,7 +63,7 @@ include-package-data = false
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["NepTrainKit", "NepTrainKit.*" ]
-
+exclude = ["tests", "tests.*", "docs", "docs.*"]
 
 [tool.setuptools.package-data]
 "NepTrainKit.Config" = ["config.sqlite","ptable.json" ]
