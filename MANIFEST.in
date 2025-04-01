@@ -5,6 +5,7 @@ include README.md
 recursive-include src *
 prune **/__pycache__
 prune docs
+prune tools
 
 global-exclude *.log
 global-exclude *upx.exe
