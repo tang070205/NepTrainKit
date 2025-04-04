@@ -51,9 +51,9 @@ jobs:
       - name: Copy additional files
         shell: pwsh
         run: |
-          cp -r ${{ github.workspace }}/src/NepTrainKit/Config ${{ github.workspace }}/src/build/main.dist/
-          cp -r ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
-          mkdir -p ${{ github.workspace }}/src/build/main.dist/Log
+          Copy-Item -Recurse ${{ github.workspace }}/src/NepTrainKit/Config ${{ github.workspace }}/src/build/main.dist/
+          Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
+          New-Item -ItemType Directory -Force ${{ github.workspace }}/src/build/main.dist/Log
 
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'
@@ -104,18 +104,18 @@ jobs:
             } catch (error) {
               core.setFailed(`Error: No release found for tag ${process.env.TAG_NAME}. Please create it first.`);
             }
-      # 使用现有 body 创建/更新 Release
-      - name: Create and Upload Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ inputs.tag_name }}
-          name: Release ${{ inputs.tag_name }}
-          body: ${{ steps.get_release.outputs.body }}  # 使用获取到的现有 body
-          files: ${{ github.workspace }}/NepTrainKit.win32.zip
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      # 使用现有 body 创建/更新 Release
+#      - name: Create and Upload Release
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: ${{ inputs.tag_name }}
+#          name: Release ${{ inputs.tag_name }}
+#          body: ${{ steps.get_release.outputs.body }}  # 使用获取到的现有 body
+#          files: ${{ github.workspace }}/NepTrainKit.win32.zip
+#          draft: false
+#          prerelease: false
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Artifact (backup)
         uses: actions/upload-artifact@v4
