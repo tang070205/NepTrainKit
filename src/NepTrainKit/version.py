@@ -5,8 +5,12 @@
 # @email    : 1747193328@qq.com
 import sys
 from importlib.metadata import version
+try:
+    from NepTrainKit._version import version as __version__
 
-__version__ = version("NepTrainKit")
+except:
+
+    __version__ = version("NepTrainKit")
 
 
 OWNER="aboys-cb"
