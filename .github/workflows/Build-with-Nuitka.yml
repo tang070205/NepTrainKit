@@ -43,7 +43,7 @@ jobs:
           include-package: NepTrainKit
           output-file: NepTrainKit.exe
           mode: standalone
-          windows-console-mode: disable
+#          windows-console-mode: disable
           include-qt-plugins: sqldrivers
           include-package-data: vispy
           upx-binary: ${{ github.workspace }}/src/NepTrainKit/upx${{ runner.os == 'Windows' && '.exe' || '' }}
@@ -56,6 +56,8 @@ jobs:
         run: |
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/Config -Destination ${{ github.workspace }}/src/build/main.dist/Config -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
+          Copy-Item ${{ github.workspace }}/src/NepTrainKit/nep_cpu.pyd ${{ github.workspace }}/src/build/main.dist/nep_cpu.pyd
+
           New-Item -ItemType Directory -Force ${{ github.workspace }}/src/build/main.dist/Log
           New-Item -ItemType File -Path ${{ github.workspace }}/src/build/main.dist/Log/.placeholder -Force
       - name: Package artifacts (Windows)
