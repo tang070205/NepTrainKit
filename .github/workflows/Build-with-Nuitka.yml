@@ -94,7 +94,7 @@ jobs:
             }
       - name: Debug Upload URL
         run:
-          echo "Upload URL: ${{ steps.get_release.outputs.upload_url }}"
+          echo  ${{ steps.get_release.outputs.upload_url }}
       - name: Upload to Release
         #if: steps.get_release.outputs.upload_url != ''
         uses: actions/upload-release-asset@v1
