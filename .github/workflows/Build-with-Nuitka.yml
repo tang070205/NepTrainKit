@@ -57,9 +57,15 @@ jobs:
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          cd ${{ github.workspace }}/src/build/main.dist/
-          zip -r NepTrainKit-${{ inputs.tag_name }}-windows.zip .
-          mv NepTrainKit-${{ inputs.tag_name }}-windows.zip ${{ github.workspace }}/
+            cd ${{ github.workspace }}/src/build/main.dist/
+            # 使用 PowerShell 的 Compress-Archive 命令
+            $compress = @{
+              Path = "*"
+              CompressionLevel = "Fastest"
+              DestinationPath = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
+            }
+            Compress-Archive @compress
+            Write-Host "Package created at ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
 
       # Add similar packaging steps for other OSes if needed
 
