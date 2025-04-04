@@ -30,28 +30,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install imageio
+          mkdir -p  ${{ github.workspace }}/src/build/main.dist/
 
-      - name: Build with Nuitka
-        uses: Nuitka/Nuitka-Action@main
-        with:
-          nuitka-version: main
-          script-name: NepTrainKit/main.py
-          include-package: NepTrainKit
-          output-file: NepTrainKit.exe
-          mode: standalone
-          windows-console-mode: disable
-          include-qt-plugins: sqldrivers
-          include-package-data: vispy
-          upx-binary: ${{ github.workspace }}/src/NepTrainKit/upx${{ runner.os == 'Windows' && '.exe' || '' }}
-          enable-plugins: pyside6,upx
-          windows-icon-from-ico: NepTrainKit/src/images/logo.png
-          working-directory: ${{ github.workspace }}/src/
+#      - name: Build with Nuitka
+#        uses: Nuitka/Nuitka-Action@main
+#        with:
+#          nuitka-version: main
+#          script-name: NepTrainKit/main.py
+#          include-package: NepTrainKit
+#          output-file: NepTrainKit.exe
+#          mode: standalone
+#          windows-console-mode: disable
+#          include-qt-plugins: sqldrivers
+#          include-package-data: vispy
+#          upx-binary: ${{ github.workspace }}/src/NepTrainKit/upx${{ runner.os == 'Windows' && '.exe' || '' }}
+#          enable-plugins: pyside6,upx
+#          windows-icon-from-ico: NepTrainKit/src/images/logo.png
+#          working-directory: ${{ github.workspace }}/src/
 
       - name: Copy additional files
         run: |
           cp -r ${{ github.workspace }}/src/NepTrainKit/Config ${{ github.workspace }}/src/build/main.dist/
           cp -r ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
-          mkdir ${{ github.workspace }}/src/build/main.dist/Log
+          mkdir   ${{ github.workspace }}/src/build/main.dist/Log
 
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'
