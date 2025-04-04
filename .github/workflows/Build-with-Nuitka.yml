@@ -92,7 +92,9 @@ jobs:
               core.setFailed(`Error: No release found for tag ${process.env.TAG_NAME}. Please create it first.`);
               return { upload_url: '' };
             }
-
+      - name: Debug Upload URL
+        run:
+          echo "Upload URL: ${{ steps.get_release.outputs.upload_url }}"
       - name: Upload to Release
         #if: steps.get_release.outputs.upload_url != ''
         uses: actions/upload-release-asset@v1
@@ -102,7 +104,7 @@ jobs:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip
           asset_name: NepTrainKit.win32.zip
-
+          asset_content_type: application/zip
       - name: Upload Artifact (backup)
         uses: actions/upload-artifact@v4
         with:
