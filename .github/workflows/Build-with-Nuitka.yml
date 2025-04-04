@@ -51,9 +51,9 @@ jobs:
       - name: Copy additional files
         shell: pwsh
         run: |
-          Copy-Item -Recurse ${{ github.workspace }}/src/NepTrainKit/Config ${{ github.workspace }}/src/build/main.dist/
-          Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
-          New-Item -ItemType Directory -Force ${{ github.workspace }}/src/build/main.dist/Log
+          cp -r ${{ github.workspace }}/src/NepTrainKit/Config ${{ github.workspace }}/src/build/main.dist/
+          cp -r ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
+          mkdir -p ${{ github.workspace }}/src/build/main.dist/Log
 
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'
