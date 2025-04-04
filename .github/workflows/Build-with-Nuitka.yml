@@ -30,23 +30,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install imageio
-          mkdir -p  ${{ github.workspace }}/src/build/main.dist/
 
-#      - name: Build with Nuitka
-#        uses: Nuitka/Nuitka-Action@main
-#        with:
-#          nuitka-version: main
-#          script-name: NepTrainKit/main.py
-#          include-package: NepTrainKit
-#          output-file: NepTrainKit.exe
-#          mode: standalone
-#          windows-console-mode: disable
-#          include-qt-plugins: sqldrivers
-#          include-package-data: vispy
-#          upx-binary: ${{ github.workspace }}/src/NepTrainKit/upx${{ runner.os == 'Windows' && '.exe' || '' }}
-#          enable-plugins: pyside6,upx
-#          windows-icon-from-ico: NepTrainKit/src/images/logo.png
-#          working-directory: ${{ github.workspace }}/src/
+
+      - name: Build with Nuitka
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          script-name: NepTrainKit/main.py
+          include-package: NepTrainKit
+          output-file: NepTrainKit.exe
+          mode: standalone
+          windows-console-mode: disable
+          include-qt-plugins: sqldrivers
+          include-package-data: vispy
+          upx-binary: ${{ github.workspace }}/src/NepTrainKit/upx${{ runner.os == 'Windows' && '.exe' || '' }}
+          enable-plugins: pyside6,upx
+          windows-icon-from-ico: NepTrainKit/src/images/logo.png
+          working-directory: ${{ github.workspace }}/src/
 
       - name: Copy additional files
         shell: pwsh
@@ -104,21 +104,21 @@ jobs:
             } catch (error) {
               core.setFailed(`Error: No release found for tag ${process.env.TAG_NAME}. Please create it first.`);
             }
-#      # 使用现有 body 创建/更新 Release
-#      - name: Create and Upload Release
-#        uses: softprops/action-gh-release@v2
-#        with:
-#          tag_name: ${{ inputs.tag_name }}
-#          name: Release ${{ inputs.tag_name }}
-#          body: ${{ steps.get_release.outputs.body }}  # 使用获取到的现有 body
-#          files: ${{ github.workspace }}/NepTrainKit.win32.zip
-#          draft: false
-#          prerelease: false
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # 使用现有 body 创建/更新 Release
+      - name: Create and Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          name: Release ${{ inputs.tag_name }}
+          body: ${{ steps.get_release.outputs.body }}  # 使用获取到的现有 body
+          files: ${{ github.workspace }}/NepTrainKit.win32.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Artifact (backup)
         uses: actions/upload-artifact@v4
         with:
           name: NepTrainKit-${{ matrix.os }}-${{ inputs.tag_name }}
-          path: ${{ github.workspace }}/NepTrainKit.win32.zip
+          path: ${{ github.workspace }}/src/build/main.dist/
