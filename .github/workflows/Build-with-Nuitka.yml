@@ -82,6 +82,7 @@ jobs:
                 repo: context.repo.repo,
                 tag: process.env.TAG_NAME
               });
+            console.log(`Release upload URL: ${release.upload_url}`);
               console.log(`Found release for tag ${process.env.TAG_NAME}`);
               return { 
                 upload_url: release.upload_url,
