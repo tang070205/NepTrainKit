@@ -82,19 +82,18 @@ jobs:
                 repo: context.repo.repo,
                 tag: process.env.TAG_NAME
               });
-            console.log(`Release upload URL: ${release.upload_url}`);
+              console.log(`Release upload URL: ${release.upload_url}`);
               console.log(`Found release for tag ${process.env.TAG_NAME}`);
-              return { 
-                upload_url: release.upload_url.replace('{?name,label}', ''), // 移除模板参数
-                release_id: release.id
-              };
+              core.setOutput('upload_url', release.upload_url.replace('{?name,label}', ''));  // 关键修复
+              core.setOutput('release_id', release.id);
             } catch (error) {
               core.setFailed(`Error: No release found for tag ${process.env.TAG_NAME}. Please create it first.`);
               return { upload_url: '' };
             }
       - name: Debug Upload URL
         run: |
-          echo "Upload URL: ${{ steps.get_release.outputs.upload_url }}"
+          echo "Upload URL (raw): ${{ steps.get_release.outputs.upload_url }}"
+          echo "Release ID: ${{ steps.get_release.outputs.release_id }}"
       - name: Upload to Release
         #if: steps.get_release.outputs.upload_url != ''
         uses: actions/upload-release-asset@v1
