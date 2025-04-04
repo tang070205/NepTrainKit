@@ -61,13 +61,12 @@ jobs:
         run: |
           Set-Location ${{ github.workspace }}/src/build/main.dist/
           $compress = @{
-            Path = "*"
+            Path = @(Get-ChildItem -Path "*" -Recurse; "Log")  # 显式包含 Log 文件夹
             CompressionLevel = "Fastest"
             DestinationPath = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
           }
           Compress-Archive @compress
           Write-Host "Package created at ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
-
       # 新增：重命名文件
       - name: Rename Release Asset
         shell: pwsh
