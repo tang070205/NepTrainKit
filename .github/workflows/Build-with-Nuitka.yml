@@ -86,17 +86,33 @@ jobs:
             exit 1
           }
           Write-Host "File exists: $filePath"
-
+# 获取现有 Release 的 body
+      - name: Get Existing Release Body
+        id: get_release
+        uses: actions/github-script@v6
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+        with:
+          script: |
+            try {
+              const { data: release } = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: process.env.TAG_NAME
+              });
+              core.setOutput('body', release.body || 'No release notes available.');
+              console.log(`Fetched release body for tag ${process.env.TAG_NAME}`);
+            } catch (error) {
+              core.setFailed(`Error: No release found for tag ${process.env.TAG_NAME}. Please create it first.`);
+            }
+      # 使用现有 body 创建/更新 Release
       - name: Create and Upload Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag_name }}
           name: Release ${{ inputs.tag_name }}
-          body: |
-            Release for NepTrainKit ${{ inputs.tag_name }} (Windows)
-            - Built with Nuitka
-            - Includes latest updates
-          files: ${{ github.workspace }}/NepTrainKit.win32.zip  # 使用重命名后的文件
+          body: ${{ steps.get_release.outputs.body }}  # 使用获取到的现有 body
+          files: ${{ github.workspace }}/NepTrainKit.win32.zip
           draft: false
           prerelease: false
         env:
