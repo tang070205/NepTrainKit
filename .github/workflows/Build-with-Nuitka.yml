@@ -1,15 +1,19 @@
-name: Build with Nuitka
- 
+name: Build with Nuitka and Upload to Release
+
 on:
   workflow_dispatch:
- 
+    inputs:
+      tag_name:
+        description: 'Existing Tag (e.g., v1.0)'
+        required: true
+
 jobs:
   build:
     strategy:
       matrix:
-        #macos-latest,ubuntu-latest , windows-latest
-        os: [  windows-latest  ]
+        os: [windows-latest]  # You can add other OSes here if needed
     runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,12 +22,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+          architecture: 'x64'
           cache: 'pip'
-      - run: |
+
+      - name: Install dependencies
+        run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install imageio
+
       - name: Build with Nuitka
         uses: Nuitka/Nuitka-Action@main
         with:
@@ -39,8 +46,57 @@ jobs:
           enable-plugins: pyside6,upx
           windows-icon-from-ico: NepTrainKit/src/images/logo.png
           working-directory: ${{ github.workspace }}/src/
-      - name: Upload Artifact
+
+      - name: Copy additional files
+        run: |
+          cp -r ${{ github.workspace }}/src/NepTrainKit/Config ${{ github.workspace }}/src/build/main.dist/
+          cp -r ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
+          mkdir ${{ github.workspace }}/src/build/main.dist/Log
+
+      - name: Package artifacts (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd ${{ github.workspace }}/src/build/main.dist/
+          zip -r NepTrainKit-${{ inputs.tag_name }}-windows.zip .
+          mv NepTrainKit-${{ inputs.tag_name }}-windows.zip ${{ github.workspace }}/
+
+      # Add similar packaging steps for other OSes if needed
+
+      - name: Get Release by Tag
+        id: get_release
+        uses: actions/github-script@v6
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+        with:
+          script: |
+            try {
+              const { data: release } = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: process.env.TAG_NAME
+              });
+              console.log(`Found release for tag ${process.env.TAG_NAME}`);
+              return { 
+                upload_url: release.upload_url,
+                release_id: release.id
+              };
+            } catch (error) {
+              core.setFailed(`Error: No release found for tag ${process.env.TAG_NAME}. Please create it first.`);
+              return { upload_url: '' };
+            }
+
+      - name: Upload to Release
+        if: steps.get_release.outputs.upload_url != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip
+          asset_name: NepTrainKit.win32.zip
+
+      - name: Upload Artifact (backup)
         uses: actions/upload-artifact@v4
         with:
-          name: NepTrainKit-${{ matrix.os }}
-          path: ${{ github.workspace }}/src/build/main.dist/*
+          name: NepTrainKit-${{ matrix.os }}-${{ inputs.tag_name }}
+          path: ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip
