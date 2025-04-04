@@ -93,7 +93,7 @@ jobs:
             }
 
       - name: Upload to Release
-        if: steps.get_release.outputs.upload_url != ''
+        #if: steps.get_release.outputs.upload_url != ''
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
