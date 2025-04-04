@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest]  # You can add other OSes here if needed
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -49,74 +49,61 @@ jobs:
 #          working-directory: ${{ github.workspace }}/src/
 
       - name: Copy additional files
+        shell: pwsh
         run: |
-          cp -r ${{ github.workspace }}/src/NepTrainKit/Config ${{ github.workspace }}/src/build/main.dist/
-          cp -r ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
-          mkdir   ${{ github.workspace }}/src/build/main.dist/Log
+          Copy-Item -Recurse ${{ github.workspace }}/src/NepTrainKit/Config ${{ github.workspace }}/src/build/main.dist/
+          Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
+          New-Item -ItemType Directory -Force ${{ github.workspace }}/src/build/main.dist/Log
 
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'
-        run: |
-            cd ${{ github.workspace }}/src/build/main.dist/
-            # 使用 PowerShell 的 Compress-Archive 命令
-            $compress = @{
-              Path = "*"
-              CompressionLevel = "Fastest"
-              DestinationPath = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
-            }
-            Compress-Archive @compress
-            Write-Host "Package created at ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
-
-      # Add similar packaging steps for other OSes if needed
-
-      - name: Get Release by Tag
-        id: get_release
-        uses: actions/github-script@v6
-        env:
-          TAG_NAME: ${{ inputs.tag_name }}
-        with:
-          script: |
-            try {
-              const { data: release } = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag: process.env.TAG_NAME
-              });
-              console.log(`Release upload URL: ${release.upload_url}`);
-              console.log(`Found release for tag ${process.env.TAG_NAME}`);
-              core.setOutput('upload_url', release.upload_url.replace('{?name,label}', ''));  // 关键修复
-              core.setOutput('release_id', release.id);
-            } catch (error) {
-              core.setFailed(`Error: No release found for tag ${process.env.TAG_NAME}. Please create it first.`);
-              return { upload_url: '' };
-            }
-      - name: Debug Upload URL
-        run: |
-          echo "Upload URL (raw): ${{ steps.get_release.outputs.upload_url }}"
-          echo "Release ID: ${{ steps.get_release.outputs.release_id }}"
-      - name: Verify File Exists (Windows)
         shell: pwsh
         run: |
-          $filePath = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
-          Write-Host "Checking file: $filePath"
-          Get-ChildItem -Path "${{ github.workspace }}" -Recurse | Format-Table FullName
-          if (-not (Test-Path -Path $filePath -PathType Leaf)) {
+          Set-Location ${{ github.workspace }}/src/build/main.dist/
+          $compress = @{
+            Path = "*"
+            CompressionLevel = "Fastest"
+            DestinationPath = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
+          }
+          Compress-Archive @compress
+          Write-Host "Package created at ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
+
+      # 新增：重命名文件
+      - name: Rename Release Asset
+        shell: pwsh
+        run: |
+          $originalFile = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
+          $newFile = "${{ github.workspace }}/NepTrainKit.win32.zip"  # 修改为你想要的名称
+          Move-Item -Path $originalFile -Destination $newFile -Force
+          Write-Host "Renamed file to $newFile"
+
+      - name: Verify File Exists
+        shell: pwsh
+        run: |
+          $filePath = "${{ github.workspace }}/NepTrainKit.win32.zip"
+          if (-not (Test-Path -Path $filePath)) {
             Write-Error "File not found: $filePath"
             exit 1
           }
-          Write-Host "File exists. Size: $((Get-Item $filePath).Length) bytes"
-      - name: Upload to Release
-        #if: steps.get_release.outputs.upload_url != ''
-        uses: actions/upload-release-asset@v1.0.2
+          Write-Host "File exists: $filePath"
+
+      - name: Create and Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          name: Release ${{ inputs.tag_name }}
+          body: |
+            Release for NepTrainKit ${{ inputs.tag_name }} (Windows)
+            - Built with Nuitka
+            - Includes latest updates
+          files: ${{ github.workspace }}/NepTrainKit.win32.zip  # 使用重命名后的文件
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip
-          asset_name: NepTrainKit.win32.zip
-          asset_content_type: application/zip
+
       - name: Upload Artifact (backup)
         uses: actions/upload-artifact@v4
         with:
           name: NepTrainKit-${{ matrix.os }}-${{ inputs.tag_name }}
-          path: ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip
+          path: ${{ github.workspace }}/NepTrainKit.win32.zip
