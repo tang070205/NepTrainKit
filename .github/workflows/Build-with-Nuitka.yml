@@ -94,11 +94,17 @@ jobs:
         run: |
           echo "Upload URL (raw): ${{ steps.get_release.outputs.upload_url }}"
           echo "Release ID: ${{ steps.get_release.outputs.release_id }}"
-      - name: Verify File Path
+      - name: Verify File Exists (Windows)
+        shell: pwsh
         run: |
-          echo "Checking file: ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
-          ls -la "${{ github.workspace }}/"
-          [ -f "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip" ] || exit 1
+          $filePath = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
+          Write-Host "Checking file: $filePath"
+          Get-ChildItem -Path "${{ github.workspace }}" -Recurse | Format-Table FullName
+          if (-not (Test-Path -Path $filePath -PathType Leaf)) {
+            Write-Error "File not found: $filePath"
+            exit 1
+          }
+          Write-Host "File exists. Size: $((Get-Item $filePath).Length) bytes"
       - name: Upload to Release
         #if: steps.get_release.outputs.upload_url != ''
         uses: actions/upload-release-asset@v1
