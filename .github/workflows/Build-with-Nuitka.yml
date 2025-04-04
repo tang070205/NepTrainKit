@@ -94,14 +94,11 @@ jobs:
         run: |
           echo "Upload URL (raw): ${{ steps.get_release.outputs.upload_url }}"
           echo "Release ID: ${{ steps.get_release.outputs.release_id }}"
-      - name: Validate Artifact
+      - name: Verify File Path
         run: |
-          echo "Checking file at: ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
+          echo "Checking file: ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
           ls -la "${{ github.workspace }}/"
-          if [ ! -f "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip" ]; then
-            echo "::error::File not found!"
-            exit 1
-          fi
+          [ -f "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip" ] || exit 1
       - name: Upload to Release
         #if: steps.get_release.outputs.upload_url != ''
         uses: actions/upload-release-asset@v1
