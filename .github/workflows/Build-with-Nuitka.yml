@@ -51,17 +51,17 @@ jobs:
       - name: Copy additional files
         shell: pwsh
         run: |
-          Copy-Item -Recurse ${{ github.workspace }}/src/NepTrainKit/Config ${{ github.workspace }}/src/build/main.dist/
+          Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/Config -Destination ${{ github.workspace }}/src/build/main.dist/Config -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
           New-Item -ItemType Directory -Force ${{ github.workspace }}/src/build/main.dist/Log
-
+          New-Item -ItemType File -Path ${{ github.workspace }}/src/build/main.dist/Log/.placeholder -Force
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
           Set-Location ${{ github.workspace }}/src/build/main.dist/
           $compress = @{
-            Path = @(Get-ChildItem -Path "*" -Recurse; "Log")  # 显式包含 Log 文件夹
+            Path = "*"
             CompressionLevel = "Fastest"
             DestinationPath = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
           }
