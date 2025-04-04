@@ -85,7 +85,7 @@ jobs:
             console.log(`Release upload URL: ${release.upload_url}`);
               console.log(`Found release for tag ${process.env.TAG_NAME}`);
               return { 
-                upload_url: release.upload_url,
+                upload_url: release.upload_url.replace('{?name,label}', ''), // 移除模板参数
                 release_id: release.id
               };
             } catch (error) {
