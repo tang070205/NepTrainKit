@@ -80,7 +80,7 @@ class ResultData(QObject):
         传入一个索引列表，将索引对应的结构标记为选中状态
         这个下标是结构在train.xyz中的索引
         """
-        if isinstance(_list,(int,np.int_,np.int64, np.int32)):
+        if isinstance(_list,(int,np.int_,np.int64, np.int32,np.uint32,np.uint64)):
             _list=[_list]
 
         for i in _list:
