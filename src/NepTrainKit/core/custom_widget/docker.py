@@ -29,7 +29,9 @@ class MakeWorkflowArea(QScrollArea):
         self.setAcceptDrops(True)
 
         self.init_ui()
-
+    @property
+    def cards(self):
+        return [item.widget() for item in self.flow_layout.itemList]
     def dragEnterEvent(self, event):
 
 
@@ -75,39 +77,10 @@ class MakeWorkflowArea(QScrollArea):
         self.container.setLayout(self.flow_layout)
         self.setWidget(self.container)
 
-        self.super_cell_card_widget = SuperCellCard(self)
-
-        self.super_cell_card_widget.setTitle("超胞制作1")
-        self.flow_layout.addWidget(self.super_cell_card_widget)
-
-        self.super_cell_card_widget2 = SuperCellCard(self)
-
-        self.super_cell_card_widget2.setTitle("超胞制作2")
-
-        self.flow_layout.addWidget(self.super_cell_card_widget2)
-
-        card_group = CardGroup(self)
-        card_group.setTitle("卡片组")
-        self.flow_layout.addWidget(card_group)
 
 
-
-
-
-
-        self.super_cell_card_widget3 = SuperCellCard(self)
-        self.super_cell_card_widget3.setTitle("超胞制作3")
-
-        self.flow_layout.addWidget(self.super_cell_card_widget3)
-
-        self.super_cell_card_widget4 = SuperCellCard(self)
-        self.super_cell_card_widget4.setTitle("超胞制作4")
-
-        self.flow_layout.addWidget(self.super_cell_card_widget4)
-
-        # self.setLayout(self.gridLayout)
-
-
+    def add_card(self, card):
+        self.flow_layout.addWidget(card)
 
 
 

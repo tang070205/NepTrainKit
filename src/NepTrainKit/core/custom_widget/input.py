@@ -13,7 +13,7 @@ class SpinBoxUnitInputFrame(QFrame):
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self.object_dict = []
-    def set_input(self, unit_str,object_num,isVisible=False):
+    def set_input(self, unit_str,object_num ):
         if  isinstance(unit_str,str):
             unit_str = [unit_str]*object_num
         elif isinstance(unit_str,list):
@@ -25,13 +25,15 @@ class SpinBoxUnitInputFrame(QFrame):
 
             input_object = QSpinBox(self)
             input_object.setButtonSymbols(QSpinBox.NoButtons)
-            input_object.setRange(0,100)
-            input_object.setFixedHeight(35)
+
+            input_object.setFixedHeight(25)
             self._layout.addWidget(input_object)
             self._layout.addWidget(BodyLabel(unit_str[i%len(unit_str)],self))
             self.object_dict.append(input_object)
 
-
+    def setRange(self, min_value, max_value):
+        for input_object in self.object_dict:
+            input_object.setRange(min_value, max_value)
 
     def get_input(self):
 

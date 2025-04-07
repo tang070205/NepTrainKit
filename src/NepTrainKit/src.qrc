@@ -27,6 +27,12 @@
     <file>src/images/play.svg</file>
     <file>src/images/pause.svg</file>
     <file>src/images/make.svg</file>
+    <file>src/images/supercell.svg</file>
+    <file>src/images/scaling.svg</file>
+    <file>src/images/perturb.svg</file>
+    <file>src/images/defect.svg</file>
+    <file>src/images/run.svg</file>
+    <file>src/images/stop.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

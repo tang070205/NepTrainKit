@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 import subprocess
 import time
+import traceback
 from collections.abc import Iterable
 
 from PySide6.QtCore import QThread, Signal
@@ -105,7 +106,7 @@ class LoadingThread(QThread):
         self.title=title
         self._parent=parent
     def run(self ):
-        result = self.func()
+        result =self._func(*self._args, **self._kwargs)
         if isinstance(result, Iterable):
             for i,_ in enumerate(result):
                 self.progressSignal.emit(i)
@@ -117,7 +118,9 @@ class LoadingThread(QThread):
             self.tip.closedSignal.connect(self.quit)
         else:
             self.tip=None
-        self.func=lambda : func(*args,**kwargs)
+        self._func = func
+        self._args = args
+        self._kwargs = kwargs
         self.start()
     def __finished_work(self ):
         if self.tip:
@@ -125,3 +128,38 @@ class LoadingThread(QThread):
             self.tip.setState(True)
     def stop_work(self ):
         self.terminate()
+
+
+
+
+class DataProcessingThread(QThread):
+    # 定义信号用于通信
+    progressSignal = Signal(int)  # 进度更新信号
+    finishSignal = Signal()  # 处理完成信号
+    errorSignal = Signal(str)  # 错误信号
+
+    def __init__(self, dataset, process_func):
+        super().__init__()
+        self.dataset = dataset
+        self.process_func = process_func
+        self.result_dataset = []
+
+    def run(self):
+        """线程主逻辑"""
+        try:
+            total = len(self.dataset)
+            self.progressSignal.emit(0)
+            for index, structure in enumerate(self.dataset):
+                # 处理每个结构
+                processed = self.process_func(structure)
+
+                self.result_dataset.extend(processed)
+
+                # 发射进度信号 (百分比)
+                self.progressSignal.emit(int((index + 1) / total * 100))
+
+            # 处理完成
+            self.finishSignal.emit( )
+        except Exception as e:
+            logger.debug(traceback.format_exc())
+            self.errorSignal.emit(str(e))

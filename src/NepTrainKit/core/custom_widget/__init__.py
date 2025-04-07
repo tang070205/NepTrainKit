@@ -4,6 +4,7 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 from .layout import *
+from .label import *
 from .completer import *
 from .dialog import *
 from .input import *
