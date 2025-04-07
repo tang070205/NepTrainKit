@@ -30,6 +30,7 @@ class MakeDataWidget(QWidget):
         self.setAcceptDrops(True)
         self.nep_result_data=None
         self.init_ui()
+        self.dataset=None
 
     def dragEnterEvent(self, event):
 
@@ -60,9 +61,6 @@ class MakeDataWidget(QWidget):
             structures=Structure.read_multiple(path)
             structures_list.extend(structures)
 
-
-
-            # self.super_cell_card_widget.dataset=dataset
         else:
             for file in path.iterdir():
                 if file.is_file():
@@ -71,10 +69,7 @@ class MakeDataWidget(QWidget):
                         structures=Structure.read_multiple(file)
                         structures_list.extend(structures)
 
-        self.datset=structures_list
-
-            # self.super_cell_card_widget.dataset=dataset
-
+        self.dataset=structures_list
 
     def init_ui(self):
 
@@ -110,10 +105,10 @@ class MakeDataWidget(QWidget):
             thread = utils.LoadingThread(self, show_tip=True, title="Exporting data")
             thread.start_work(self._export_file, path)
     def run_card(self):
-        if not  self.datset  :
+        if not  self.dataset  :
             MessageManager.send_info_message("Please import the structure file first. You can drag it in directly or import it from the upper left corner!")
         first_card=self.workspace_card_widget.cards[0]
-        first_card.dataset = self.datset
+        first_card.dataset = self.dataset
         first_card.index=0
         first_card.runFinishedSignal.connect(self._run_next_card)
         first_card.run()
