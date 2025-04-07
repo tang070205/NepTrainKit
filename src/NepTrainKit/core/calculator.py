@@ -6,15 +6,14 @@
 import contextlib
 import multiprocessing
 import os
-import sys
 import traceback
 
 import numpy as np
-from PySide6.QtCore import QObject
 from loguru import logger
 
 from NepTrainKit import utils
-from NepTrainKit.core import Structure,MessageManager
+from NepTrainKit.core import Structure, MessageManager
+
 try:
     from NepTrainKit.nep_cpu import CpuNep
 except ImportError:

@@ -4,15 +4,12 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import json
-
 import os
 import re
 
 import numpy as np
 
-
 from NepTrainKit import utils, module_path
-
 
 atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
                  'B': 5, 'C': 6, 'N': 7, 'O': 8,
@@ -64,7 +61,7 @@ class Structure():
     @classmethod
     def read_xyz(cls, filename):
         with open(filename, 'r') as f:
-            return cls.read(f.read())
+            return cls.parse_xyz(f.read())
     @property
     def cell(self):
         return self.lattice
@@ -162,7 +159,7 @@ class Structure():
 
 
     @classmethod
-    def read(cls, lines):
+    def parse_xyz(cls, lines):
         """
         Parse a single structure from a list of lines.
         """
@@ -293,7 +290,7 @@ class Structure():
             end = i + 2 + num_atoms
             structure_lines = lines[i:end]
             # data_to_process.append(structure_lines)
-            structure = Structure.read(structure_lines)
+            structure = Structure.parse_xyz(structure_lines)
             structures.append(structure)
             i = end
         # with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:

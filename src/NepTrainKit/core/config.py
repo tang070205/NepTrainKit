@@ -1,10 +1,12 @@
 import os
-
-from PySide6.QtSql import QSqlDatabase, QSqlDriver, QSqlQuery,QSql
 import platform
+import shutil
+
+from PySide6.QtSql import QSqlDatabase, QSqlQuery
+
 from NepTrainKit import module_path
 
-import shutil
+
 class Config:
     """
 使用数据库保存软件配置

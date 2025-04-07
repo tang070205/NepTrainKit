@@ -3,19 +3,17 @@
 # @Time    : 2024/10/17 13:14
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import os
 import subprocess
-import threading
 import time
 from collections.abc import Iterable
+
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QApplication
 from loguru import logger
 from qfluentwidgets import StateToolTip
-from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
 
-from NepTrainKit.core import   Config
+from NepTrainKit.core import Config
+from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
 
 
 def timeit(func):

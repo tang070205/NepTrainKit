@@ -3,9 +3,9 @@
 # @Time    : 2024/12/2 20:02
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-from PySide6.QtGui import QBrush, QColor
 from enum import Enum
 
+from PySide6.QtGui import QBrush, QColor
 from pyqtgraph import mkPen
 
 

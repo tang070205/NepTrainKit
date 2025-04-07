@@ -14,28 +14,19 @@
 
 import numpy as np
 import vispy
-from PySide6.QtGui import QBrush, QColor, QPen, Qt
-from select import select
+from PySide6.QtGui import QBrush, QColor, QPen
+from vispy import scene
+# 不要去掉
+from vispy.app.backends import _pyside6
 from vispy.color import ColorArray
 from vispy.visuals.filters import MarkerPickingFilter
 
 from NepTrainKit import utils
-from PySide6.QtCore import Signal, QObject
-#不要去掉
-from vispy.app.backends import _pyside6
-from vispy import scene
-
-from vispy.app import use_app
-
-
-from NepTrainKit.core import MessageManager
-from NepTrainKit.core.canvas.base.canvas import CanvasLayoutBase, VispyCanvasLayoutBase
+from NepTrainKit.core.canvas.base.canvas import VispyCanvasLayoutBase
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.types import Brushes, Pens
 
-
-
-
+_pyside6
 vispy.use("PySide6", "gl2")
 
 class ViewBoxWidget(scene.Widget):

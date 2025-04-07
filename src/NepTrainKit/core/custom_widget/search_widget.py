@@ -3,12 +3,12 @@
 # @Time    : 2024/12/2 19:58
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-from PySide6.QtCore import Qt, QStringListModel, Signal, QSize
-from PySide6.QtWidgets import QWidget, QGridLayout, QCompleter, QLineEdit
+from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtWidgets import QCompleter
 from qfluentwidgets import SearchLineEdit
 from qfluentwidgets.components.widgets.line_edit import CompleterMenu, LineEditButton
 
-from .completer import CompleterModel,  ConfigCompleter, JoinDelegate
+from .completer import CompleterModel, JoinDelegate
 
 
 class ConfigTypeSearchLineEdit(SearchLineEdit):

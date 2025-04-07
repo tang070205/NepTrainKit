@@ -6,22 +6,20 @@
 import os
 import sys
 import traceback
-import time
-from PySide6.QtCore import Qt, QFile, QTextStream
+
+from PySide6.QtCore import Qt, QFile
 from PySide6.QtGui import QIcon, QFont, QPixmap, QPalette, QColor
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from PySide6.QtWidgets import QApplication, QMenuBar, QWidget, QGridLayout, QMainWindow, QSplashScreen
-from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge,
-                            ToolButton, TransparentToolButton, SearchLineEdit)
+from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QSplashScreen
+from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, TransparentToolButton)
 from qfluentwidgets import FluentIcon as FIF
 from loguru import logger
 
 from NepTrainKit.core import MessageManager, Config
-from NepTrainKit.core.widget import *
+from NepTrainKit.core.pages import *
 
 from NepTrainKit import utils,src_rc
-
 
 
 class NepTrainKitMainWindow(FluentWindow):
@@ -89,9 +87,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self.navigationInterface.setReturnButtonVisible(False)
         self.navigationInterface.setExpandWidth(200)
         self.navigationInterface.addSeparator()
-        # self.addSubInterface(self.make_data_widget, QIcon(':/images/src/images/make.svg'), 'Make Data' )
 
         self.addSubInterface(self.show_nep_interface, QIcon(':/images/src/images/show_nep.svg'), 'NEP Dataset Display')
+        self.addSubInterface(self.make_data_widget, QIcon(':/images/src/images/make.svg'), 'Make Data' )
 
         self.addSubInterface(self.setting_interface, FIF.SETTING, 'Settings', NavigationItemPosition.BOTTOM)
 
@@ -101,7 +99,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def init_widget(self):
         self.show_nep_interface=ShowNepWidget(self)
-        # self.make_data_widget = MakeDataWidget(self)
+        self.make_data_widget = MakeDataWidget(self)
 
         self.setting_interface=SettingsWidget(self)
 

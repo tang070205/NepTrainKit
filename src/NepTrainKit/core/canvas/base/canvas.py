@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from PySide6.QtCore import Signal, QObject
+
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.types import Brushes
 

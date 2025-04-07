@@ -3,23 +3,15 @@
 # @Time    : 2024/10/20 22:22
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import time
 
 import numpy as np
-from PySide6.QtCore import QTimer
-
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
-from pyqtgraph import ProgressDialog
 
-from .toolbar import NepDisplayGraphicsToolBar
-
-from .. import MessageManager, Config
-from ..custom_widget.dialog import GetIntMessageBox, SparseMessageBox
-from ..io import NepTrainResultData
-from ..io.select import farthest_point_sampling
-from ..structure import table_info, atomic_numbers
-from ..types import Brushes, Pens
 from NepTrainKit import utils
+from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.core.custom_widget import GetIntMessageBox, SparseMessageBox
+from NepTrainKit.core.io.select import farthest_point_sampling
+from NepTrainKit.core.views.toolbar import NepDisplayGraphicsToolBar
 
 
 class NepResultPlotWidget(QWidget):
