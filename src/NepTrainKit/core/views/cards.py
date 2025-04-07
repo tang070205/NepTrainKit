@@ -38,6 +38,8 @@ class ConsoleWidget(QWidget):
         self.new_card_button.setMaximumWidth(200 )
         self.new_card_button.setObjectName("new_card_button")
         self.menu = RoundMenu(parent=self)
+        self.menu.addAction(QAction(QIcon(r":/images/src/images/group.svg"), '卡片组'))
+
         self.menu.addAction(QAction(QIcon(r":/images/src/images/supercell.svg"), '晶格扩包'))
         self.menu.addAction(QAction(QIcon(r":/images/src/images/perturb.svg"), '原子微扰'))
         self.menu.addAction(QAction(QIcon(r":/images/src/images/scaling.svg"), '晶格缩放'))
@@ -55,6 +57,7 @@ class ConsoleWidget(QWidget):
         self.gridLayout.addWidget(self.setting_command, 0, 0, 1, 1)
 
     def menu_clicked(self,action):
+
 
         self.newCardSignal.emit(action.text())
 
@@ -221,22 +224,20 @@ class SuperCellCard(MakeDataCard):
         return structure_list
     def process_structure(self,structure):
         # time.sleep(0.2)
-        if self.check_state:
 
-            super_cell_type = self.super_cell_type_combo.currentIndex()
 
-            # 根据选择的扩包方式获取扩包参数
-            if self.super_scale_radio_button.isChecked():
-                expansion_factors = self._get_scale_factors()
-            elif self.super_cell_radio_button.isChecked():
-                expansion_factors = self._get_max_cell_factors(structure)
-            elif self.max_atoms_radio_button.isChecked():
-                expansion_factors = self._get_max_atoms_factors(structure)
-            else:
-                expansion_factors = [(1, 1, 1)]  # 默认情况
+        super_cell_type = self.super_cell_type_combo.currentIndex()
 
-            # 根据超胞类型生成结构
-            structure_list = self._generate_structures(structure, expansion_factors, super_cell_type)
-            return structure_list
+        # 根据选择的扩包方式获取扩包参数
+        if self.super_scale_radio_button.isChecked():
+            expansion_factors = self._get_scale_factors()
+        elif self.super_cell_radio_button.isChecked():
+            expansion_factors = self._get_max_cell_factors(structure)
+        elif self.max_atoms_radio_button.isChecked():
+            expansion_factors = self._get_max_atoms_factors(structure)
         else:
-            return [structure]
+            expansion_factors = [(1, 1, 1)]  # 默认情况
+
+        # 根据超胞类型生成结构
+        structure_list = self._generate_structures(structure, expansion_factors, super_cell_type)
+        return structure_list

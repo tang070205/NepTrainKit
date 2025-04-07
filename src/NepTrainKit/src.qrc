@@ -33,6 +33,7 @@
     <file>src/images/defect.svg</file>
     <file>src/images/run.svg</file>
     <file>src/images/stop.svg</file>
+    <file>src/images/group.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

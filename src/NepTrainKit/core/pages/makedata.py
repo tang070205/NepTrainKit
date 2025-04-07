@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
 from qfluentwidgets import CommandBar
 
 from NepTrainKit.core import MessageManager
-from NepTrainKit.core.custom_widget import MakeWorkflowArea
+from NepTrainKit.core.custom_widget import MakeWorkflowArea, CardGroup
 from NepTrainKit.core.io.base import StructureData
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.views.cards import *
@@ -98,14 +98,14 @@ class MakeDataWidget(QWidget):
 
 
     def _run_next_card(self,current_card_index):
-
+        print("_run_next_card",current_card_index)
         cards=self.workspace_card_widget.cards
         current_card=cards[current_card_index]
         current_card.runFinishedSignal.disconnect(self._run_next_card)
         if current_card_index+1<len(cards):
             next_card=cards[current_card_index+1]
             if current_card.result_dataset:
-                next_card.dataset=current_card.result_dataset
+                next_card.set_dataset(current_card.result_dataset)
                 next_card.index=current_card_index+1
                 next_card.runFinishedSignal.connect(self._run_next_card)
                 next_card.run()
@@ -115,8 +115,12 @@ class MakeDataWidget(QWidget):
         for card in self.workspace_card_widget.cards:
             card.stop()
     def add_card(self,card_name):
-        self.card=SuperCellCard()
-        self.workspace_card_widget.add_card(self.card)
+        if card_name =="卡片组":
+            card=CardGroup()
+        else:
+            card=SuperCellCard()
+
+        self.workspace_card_widget.add_card(card)
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)

@@ -133,18 +133,24 @@ class MakeDataCard(MakeDataCardWidget):
                 del self.worker_thread
     def run(self):
         # 创建并启动线程
-        self.worker_thread = utils.DataProcessingThread(
-            self.dataset,
-            self.process_structure
-        )
-        self.status_label.set_colors(["#59745A" ])
+        print("run",self.index)
+        if self.check_state:
+            self.worker_thread = utils.DataProcessingThread(
+                self.dataset,
+                self.process_structure
+            )
+            self.status_label.set_colors(["#59745A" ])
 
-        # 连接信号
-        self.worker_thread.progressSignal.connect(self.update_progress)
-        self.worker_thread.finishSignal.connect(self.on_processing_finished)
-        self.worker_thread.errorSignal.connect(self.on_processing_error)
+            # 连接信号
+            self.worker_thread.progressSignal.connect(self.update_progress)
+            self.worker_thread.finishSignal.connect(self.on_processing_finished)
+            self.worker_thread.errorSignal.connect(self.on_processing_error)
 
-        self.worker_thread.start()
+            self.worker_thread.start()
+        else:
+            self.result_dataset = self.dataset
+            self.update_dataset_info()
+            self.runFinishedSignal.emit(self.index)
         # self.worker_thread.wait()
     def update_progress(self, progress):
         self.status_label.setText(f"Processing {progress}%")
@@ -173,15 +179,23 @@ class MakeDataCard(MakeDataCardWidget):
 
 
 class CardGroup(MakeDataCardWidget):
+    #通知下一个card执行
+    runFinishedSignal=Signal(int)
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Card Group")
         self.setAcceptDrops(True)
+        self.index=0
         self.group_widget = QWidget(self)
         self.viewLayout.addWidget(self.group_widget)
         self.group_layout = QVBoxLayout(self.group_widget)
+
         self.card_list = []
         self.resize(400, 200)
+    def set_dataset(self,dataset):
+        self.dataset =dataset
+        self.result_dataset=[]
+
     def add_card(self, card):
         self.card_list.append(card)
         self.group_layout.addWidget(card)
@@ -195,15 +209,52 @@ class CardGroup(MakeDataCardWidget):
 
     def get_card_list(self):
         return self.card_list
+    def closeEvent(self, event):
+
+        for card in self.card_list:
+            card.close()
+        self.deleteLater()
+        super().closeEvent(event)
+
+
+
+
     def dragEnterEvent(self, event):
+
         if isinstance(event.source(), MakeDataCard):
             event.acceptProposedAction()
         else:
             event.ignore()  # 忽略其他类型的拖拽
     def dropEvent(self, event):
+
         widget = event.source()
         if isinstance(widget, MakeDataCard):
             self.add_card(widget)
-
-
         event.acceptProposedAction()
+    def on_card_finished(self, index):
+        self.run_card_num-=1
+        self.card_list[index].runFinishedSignal.disconnect(self.on_card_finished)
+        self.result_dataset.extend(self.card_list[index].result_dataset)
+
+        if self.run_card_num==0:
+
+            self.runFinishedSignal.emit(self.index)
+
+    def stop(self):
+        for card in self.card_list:
+            card.stop()
+    def run(self):
+        # 创建并启动线程
+        if len(self.card_list) !=self.group_layout.count():
+            self.card_list.clear()
+            for i in range(self.group_layout.count()):
+                self.card_list.append(self.group_layout.itemAt(i).widget())
+        self.result_dataset =[]
+        self.run_card_num=len(self.card_list)
+        for index,card in enumerate(self.card_list):
+            card.set_dataset(self.dataset)
+            card.index=index
+            card.runFinishedSignal.connect(self.on_card_finished)
+            card.run()
+
+
