@@ -34,16 +34,16 @@ class ConsoleWidget(QWidget):
 
 
         self.new_card_button = PrimaryDropDownPushButton(QIcon(":/images/src/images/copy_figure.svg"),
-                                                         "新增卡片",self)
+                                                         "Add new card",self)
         self.new_card_button.setMaximumWidth(200 )
         self.new_card_button.setObjectName("new_card_button")
         self.menu = RoundMenu(parent=self)
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/group.svg"), '卡片组'))
-
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/supercell.svg"), '晶格扩包'))
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/perturb.svg"), '原子微扰'))
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/scaling.svg"), '晶格缩放'))
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/defect.svg"), '缺陷'))
+        self.menu.addAction(QAction(QIcon(r":/images/src/images/group.svg"), 'Card Group'))
+        self.menu.addSeparator()
+        self.menu.addAction(QAction(QIcon(r":/images/src/images/supercell.svg"), 'Super Cell'))
+        self.menu.addAction(QAction(QIcon(r":/images/src/images/perturb.svg"), 'Atomic perturb'))
+        self.menu.addAction(QAction(QIcon(r":/images/src/images/scaling.svg"), 'Lattice scaling'))
+        self.menu.addAction(QAction(QIcon(r":/images/src/images/defect.svg"), 'Defect Generation'))
         self.menu.triggered.connect(self.menu_clicked)
         self.new_card_button.setMenu(self.menu)
         self.setting_command.addWidget(self.new_card_button)
@@ -68,7 +68,7 @@ class ConsoleWidget(QWidget):
 class SuperCellCard(MakeDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("超胞制作")
+        self.setTitle("Make Supercell")
 
         self.init_ui()
 
@@ -79,9 +79,9 @@ class SuperCellCard(MakeDataCard):
         self.super_cell_frame_layout = QGridLayout(self.super_cell_frame)
 
         self.super_cell_type_combo=ComboBox(self.setting_widget)
-        self.super_cell_type_combo.addItem("最大扩包")
-        self.super_cell_type_combo.addItem("随机组合")
-        self.combo_label=BodyLabel("扩包行为：",self.setting_widget)
+        self.super_cell_type_combo.addItem("Maximum")
+        self.super_cell_type_combo.addItem("Random")
+        self.combo_label=BodyLabel("behavior:",self.setting_widget)
 
         self.super_scale_radio_button = RadioButton("super scale",self.setting_widget)
         self.super_scale_radio_button.setChecked(True)
@@ -151,8 +151,7 @@ class SuperCellCard(MakeDataCard):
         max_atoms = self.max_atoms_condition_frame.get_input()[0]
         num_atoms_orig = structure.num_atoms
 
-        if num_atoms_orig <= 0:
-            raise ValueError("原始结构中没有原子")
+
 
         # 估算最大可能倍数
         max_n = int(max_atoms / num_atoms_orig)

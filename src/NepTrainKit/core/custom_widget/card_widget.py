@@ -94,10 +94,17 @@ class MakeDataCard(MakeDataCardWidget):
         self.result_dataset=[]
 
         self.update_dataset_info()
-    def write_result_dataset(self, path):
-        with open(path, "w", encoding="utf8") as f:
-            for structure in self.result_dataset:
-                structure.write(f)
+    def write_result_dataset(self, file):
+        if isinstance(file, str):
+            file=open(file, "w", encoding="utf8")
+            io_action=False
+        else:
+            io_action=True
+
+        for structure in self.result_dataset:
+            structure.write(file)
+        if not io_action:
+            file.close()
     def export_data(self):
 
         if self.dataset is not None:
@@ -116,7 +123,7 @@ class MakeDataCard(MakeDataCardWidget):
     def closeEvent(self, event):
 
         if hasattr(self, "worker_thread"):
-            print("worker_thread.terminate")
+
             if self.worker_thread.isRunning():
 
                 self.worker_thread.terminate()
@@ -133,7 +140,7 @@ class MakeDataCard(MakeDataCardWidget):
                 del self.worker_thread
     def run(self):
         # 创建并启动线程
-        print("run",self.index)
+
         if self.check_state:
             self.worker_thread = utils.DataProcessingThread(
                 self.dataset,
@@ -206,7 +213,14 @@ class CardGroup(MakeDataCardWidget):
         for card in self.card_list:
             self.group_layout.removeWidget(card)
         self.card_list.clear()
+    def check_card_state(self):
+        """
+        将卡片拖出后 不会将list更新  这里使用之前手动更新list
+        """
 
+        self.card_list.clear()
+        for i in range(self.group_layout.count()):
+            self.card_list.append(self.group_layout.itemAt(i).widget())
     def get_card_list(self):
         return self.card_list
     def closeEvent(self, event):
@@ -245,10 +259,7 @@ class CardGroup(MakeDataCardWidget):
             card.stop()
     def run(self):
         # 创建并启动线程
-        if len(self.card_list) !=self.group_layout.count():
-            self.card_list.clear()
-            for i in range(self.group_layout.count()):
-                self.card_list.append(self.group_layout.itemAt(i).widget())
+        self.check_card_state()
         self.result_dataset =[]
         self.run_card_num=len(self.card_list)
         for index,card in enumerate(self.card_list):
@@ -258,3 +269,18 @@ class CardGroup(MakeDataCardWidget):
             card.run()
 
 
+    def write_result_dataset(self, file):
+        self.check_card_state()
+
+        for card in self.card_list:
+            if card.check_state:
+                card.write_result_dataset(file)
+    def export_data(self):
+
+        if self.dataset is not None:
+
+            path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle()}_structure.xyz")
+            if not path:
+                return
+            thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
+            thread.start_work(self.write_result_dataset, path)

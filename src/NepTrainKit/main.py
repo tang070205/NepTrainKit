@@ -12,7 +12,9 @@ from PySide6.QtGui import QIcon, QFont, QPixmap, QPalette, QColor
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QSplashScreen
-from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, TransparentToolButton)
+from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition,
+                            TransparentToolButton, TransparentDropDownToolButton, PrimaryDropDownToolButton,
+                            PrimarySplitToolButton, SplitToolButton)
 from qfluentwidgets import FluentIcon as FIF
 from loguru import logger
 
@@ -63,11 +65,11 @@ class NepTrainKitMainWindow(FluentWindow):
         self.menu_gridLayout = QGridLayout(self.menu_widget)
         self.menu_gridLayout.setContentsMargins(3,0,3,0)
         self.menu_gridLayout.setSpacing(1)
-        self.open_dir_button = TransparentToolButton(QIcon(':/images/src/images/open.svg') ,self.menu_widget)
+        self.open_dir_button = SplitToolButton(QIcon(':/images/src/images/open.svg') ,self.menu_widget)
         self.open_dir_button.clicked.connect(self.open_file_dialog)
 
 
-        self.save_dir_button = TransparentToolButton(QIcon(':/images/src/images/save.svg') ,self.menu_widget)
+        self.save_dir_button = SplitToolButton(QIcon(':/images/src/images/save.svg') ,self.menu_widget)
         self.save_dir_button.clicked.connect(self.export_file_dialog)
 
 

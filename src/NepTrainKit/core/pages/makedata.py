@@ -89,7 +89,29 @@ class MakeDataWidget(QWidget):
         self.gridLayout.addWidget(self.setting_group, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.workspace_card_widget, 1, 0, 1, 1)
         self.setLayout(self.gridLayout)
+
+    def open_file(self):
+        path = utils.call_path_dialog(self,"Please choose the structure files",
+                                      "select",file_filter="XYZ Files (*.xyz)")
+        if path:
+            self.load_base_structure(path)
+    def _export_file(self,path):
+        with open(path, "w") as file:
+            for card in self.workspace_card_widget.cards:
+                if card.check_state:
+
+                    card.write_result_dataset(file)
+
+    def export_file(self):
+
+
+        path = utils.call_path_dialog(self, "Choose a file save location", "file",default_filename="make_dataset.xyz")
+        if path:
+            thread = utils.LoadingThread(self, show_tip=True, title="Exporting data")
+            thread.start_work(self._export_file, path)
     def run_card(self):
+        if not  self.datset  :
+            MessageManager.send_info_message("Please import the structure file first. You can drag it in directly or import it from the upper left corner!")
         first_card=self.workspace_card_widget.cards[0]
         first_card.dataset = self.datset
         first_card.index=0
@@ -98,7 +120,7 @@ class MakeDataWidget(QWidget):
 
 
     def _run_next_card(self,current_card_index):
-        print("_run_next_card",current_card_index)
+
         cards=self.workspace_card_widget.cards
         current_card=cards[current_card_index]
         current_card.runFinishedSignal.disconnect(self._run_next_card)
@@ -110,12 +132,12 @@ class MakeDataWidget(QWidget):
                 next_card.runFinishedSignal.connect(self._run_next_card)
                 next_card.run()
         else:
-            MessageManager.send_success_message("微扰训练集制作完成")
+            MessageManager.send_success_message("Perturbation training set created successfully.")
     def stop_run_card(self):
         for card in self.workspace_card_widget.cards:
             card.stop()
     def add_card(self,card_name):
-        if card_name =="卡片组":
+        if card_name =="Card Group":
             card=CardGroup()
         else:
             card=SuperCellCard()
