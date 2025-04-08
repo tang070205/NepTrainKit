@@ -3,17 +3,16 @@
 # @Time    : 2025/3/15 13:44
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import json
-import os.path
 import numpy as np
-from PySide6 import QtOpenGL
-from PySide6.QtGui import QColor
-from OpenGL.GL import *  # noqa
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
-from NepTrainKit.core import MessageManager, Config
+from OpenGL.GL import *  # noqa
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QApplication
+
+from NepTrainKit.core import Config
 from NepTrainKit.core.structure import table_info, Structure
+
 
 class StructurePlotWidget(gl.GLViewWidget):
     def __init__(self, *args, **kwargs):

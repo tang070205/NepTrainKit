@@ -3,22 +3,17 @@
 # @Time    : 2024/11/14 17:17
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import os
-import subprocess
 import sys
 import traceback
 
 import requests
-from PySide6.QtCore import QThread, Signal, QObject
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Signal, QObject
 from loguru import logger
-
 from qfluentwidgets import MessageBox
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager
-from NepTrainKit.version import RELEASES_URL, RELEASES_API_URL, __version__,UPDATE_FILE
-
+from NepTrainKit.version import RELEASES_API_URL, __version__, UPDATE_FILE
 
 
 class UpdateWoker( QObject):

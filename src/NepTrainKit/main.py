@@ -6,22 +6,22 @@
 import os
 import sys
 import traceback
-import time
-from PySide6.QtCore import Qt, QFile, QTextStream
-from PySide6.QtGui import QIcon, QFont, QPixmap, QPalette, QColor
+
+from PySide6.QtCore import Qt, QFile
+from PySide6.QtGui import QIcon, QFont, QPixmap, QPalette, QColor, QAction
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from PySide6.QtWidgets import QApplication, QMenuBar, QWidget, QGridLayout, QMainWindow, QSplashScreen
-from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition, InfoBadgePosition, InfoBadge,
-                            ToolButton, TransparentToolButton, SearchLineEdit)
+from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QSplashScreen
+from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition,
+                            TransparentToolButton, TransparentDropDownToolButton, PrimaryDropDownToolButton,
+                            PrimarySplitToolButton, SplitToolButton, RoundMenu)
 from qfluentwidgets import FluentIcon as FIF
 from loguru import logger
 
 from NepTrainKit.core import MessageManager, Config
-from NepTrainKit.core.widget import *
+from NepTrainKit.core.pages import *
 
 from NepTrainKit import utils,src_rc
-
 
 
 class NepTrainKitMainWindow(FluentWindow):
@@ -65,12 +65,27 @@ class NepTrainKitMainWindow(FluentWindow):
         self.menu_gridLayout = QGridLayout(self.menu_widget)
         self.menu_gridLayout.setContentsMargins(3,0,3,0)
         self.menu_gridLayout.setSpacing(1)
-        self.open_dir_button = TransparentToolButton(QIcon(':/images/src/images/open.svg') ,self.menu_widget)
+        self.open_dir_button = SplitToolButton(QIcon(':/images/src/images/open.svg') ,self.menu_widget)
         self.open_dir_button.clicked.connect(self.open_file_dialog)
 
+        self.load_card_config_action = QAction(QIcon(r":/images/src/images/open.svg"), "Import Card Config")
+        self.load_card_config_action.triggered.connect(self.make_data_widget.load_card_config)
+        self.load_menu = RoundMenu(parent=self)
+        self.load_menu.addAction(self.load_card_config_action)
+        self.open_dir_button.setFlyout(self.load_menu)
 
-        self.save_dir_button = TransparentToolButton(QIcon(':/images/src/images/save.svg') ,self.menu_widget)
+
+
+        self.save_dir_button = SplitToolButton(QIcon(':/images/src/images/save.svg') ,self.menu_widget)
         self.save_dir_button.clicked.connect(self.export_file_dialog)
+
+        self.save_menu = RoundMenu(parent=self)
+        self.export_card_config_action = QAction(QIcon(r":/images/src/images/save.svg"), "Export Card Config")
+        self.export_card_config_action.triggered.connect(self.make_data_widget.export_card_config)
+
+        self.save_menu.addAction(self.export_card_config_action)
+        self.save_dir_button.setFlyout(self.save_menu)
+
 
 
 
@@ -89,9 +104,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self.navigationInterface.setReturnButtonVisible(False)
         self.navigationInterface.setExpandWidth(200)
         self.navigationInterface.addSeparator()
-        # self.addSubInterface(self.make_data_widget, QIcon(':/images/src/images/make.svg'), 'Make Data' )
 
         self.addSubInterface(self.show_nep_interface, QIcon(':/images/src/images/show_nep.svg'), 'NEP Dataset Display')
+        self.addSubInterface(self.make_data_widget, QIcon(':/images/src/images/make.svg'), 'Make Data' )
 
         self.addSubInterface(self.setting_interface, FIF.SETTING, 'Settings', NavigationItemPosition.BOTTOM)
 
@@ -101,7 +116,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def init_widget(self):
         self.show_nep_interface=ShowNepWidget(self)
-        # self.make_data_widget = MakeDataWidget(self)
+        self.make_data_widget = MakeDataWidget(self)
 
         self.setting_interface=SettingsWidget(self)
 

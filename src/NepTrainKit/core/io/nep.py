@@ -6,8 +6,6 @@
 
 import os
 import traceback
-
-
 from pathlib import Path
 
 import numpy as np
@@ -15,9 +13,9 @@ from PySide6.QtCore import QObject
 from loguru import logger
 
 from NepTrainKit.core import MessageManager, Structure, Config
-from .base import NepPlotData, StructureData
-from .utils import read_nep_out_file,  check_fullbatch, read_nep_in, parse_array_by_atomnum
-from ..calculator import run_nep3_calculator_process
+from NepTrainKit.core.calculator import run_nep3_calculator_process
+from NepTrainKit.core.io.base import NepPlotData, StructureData
+from NepTrainKit.core.io.utils import read_nep_out_file, check_fullbatch, read_nep_in, parse_array_by_atomnum
 
 
 def pca(X, k):

@@ -5,29 +5,25 @@
 # @email    : 1747193328@qq.com
 import os.path
 import sys
-import threading
-import time
 from io import StringIO
 from venv import logger
 
 import numpy as np
-from PySide6.QtCore import QUrl, QThread, QTimer
+from PySide6.QtCore import QUrl, QTimer
 from PySide6.QtGui import QIcon, QFont
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSizePolicy
-
-from qfluentwidgets import HyperlinkLabel, MessageBox, SubtitleLabel, PlainTextEdit, CaptionLabel, SpinBox, \
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout
+from qfluentwidgets import HyperlinkLabel, MessageBox, PlainTextEdit, CaptionLabel, SpinBox, \
     TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
-from NepTrainKit.core.custom_widget.search_widget import   ConfigTypeSearchLineEdit
+from NepTrainKit.core.custom_widget import ConfigTypeSearchLineEdit
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.io.nep import NepPolarizabilityResultData, NepDipoleResultData
 from NepTrainKit.core.io.utils import get_nep_type
-
-from NepTrainKit.core.plot import NepResultPlotWidget,NepDisplayGraphicsToolBar,StructurePlotWidget
-from NepTrainKit.core.types import Brushes
 from NepTrainKit.core.structure import table_info, atomic_numbers
+from NepTrainKit.core.types import Brushes
+from NepTrainKit.core.views import NepResultPlotWidget, NepDisplayGraphicsToolBar, StructurePlotWidget
 
 
 class ShowNepWidget(QWidget):

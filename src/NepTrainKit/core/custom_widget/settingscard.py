@@ -7,8 +7,7 @@ from typing import Union
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QIcon, Qt
-
-from qfluentwidgets import SettingCard, OptionsConfigItem, FluentIconBase, ComboBox,SettingCard,DoubleSpinBox
+from qfluentwidgets import OptionsConfigItem, FluentIconBase, ComboBox, SettingCard, DoubleSpinBox
 
 
 class MyComboBoxSettingCard(SettingCard):

@@ -5,20 +5,17 @@
 # @email    : 1747193328@qq.com
 
 
-import numpy as np
-
-
-from NepTrainKit import utils
-from PySide6.QtCore import Signal, Qt
-from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem, PlotItem, GraphicsView, ViewBox, TextItem
-from ..base.canvas import CanvasBase,CanvasLayoutBase
-from NepTrainKit.core.types import Brushes, Pens
-
 from functools import partial
 
-from ... import MessageManager
-from ...io import NepTrainResultData
+import numpy as np
 import pyqtgraph as pg
+from PySide6.QtCore import Qt
+from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem, PlotItem, ViewBox, TextItem
+
+from NepTrainKit import utils
+from NepTrainKit.core.types import Brushes, Pens
+from ..base.canvas import CanvasLayoutBase
+from ...io import NepTrainResultData
 
 pg.setConfigOption('background', 'w')  # 设置背景为白色
 pg.setConfigOption('foreground', 'k')  # 设置前景元素为黑色（如坐标轴）

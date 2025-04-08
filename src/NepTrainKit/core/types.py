@@ -3,9 +3,9 @@
 # @Time    : 2024/12/2 20:02
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-from PySide6.QtGui import QBrush, QColor
 from enum import Enum
 
+from PySide6.QtGui import QBrush, QColor
 from pyqtgraph import mkPen
 
 
@@ -16,6 +16,13 @@ class ForcesMode(Enum):
 class CanvasMode(Enum):
     vispy="vispy"
     pyqtgraph="pyqtgraph"
+class CardName:
+    group="Card Group"
+
+    superCell="Super Cell"
+    perturb="Atomic perturb"
+    scaling="Lattice scaling"
+    vacancy_defect="Vacancy Defect Generation"
 
 
 class Base:

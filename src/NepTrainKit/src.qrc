@@ -12,6 +12,8 @@
     <file>src/images/pen.svg</file>
     <file>src/images/revoke.svg</file>
     <file>src/images/export.svg</file>
+    <file>src/images/export1.svg</file>
+
     <file>src/images/auto_load.svg</file>
     <file>src/images/discovery.svg</file>
 
@@ -25,6 +27,13 @@
     <file>src/images/play.svg</file>
     <file>src/images/pause.svg</file>
     <file>src/images/make.svg</file>
+    <file>src/images/supercell.svg</file>
+    <file>src/images/scaling.svg</file>
+    <file>src/images/perturb.svg</file>
+    <file>src/images/defect.svg</file>
+    <file>src/images/run.svg</file>
+    <file>src/images/stop.svg</file>
+    <file>src/images/group.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

@@ -3,23 +3,22 @@
 # @Time    : 2024/10/21 19:44
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import traceback
 
 
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QWidget
-from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, MessageBox, \
-    OptionsSettingCard, OptionsConfigItem, OptionsValidator, EnumSerializer, SwitchSettingCard, RangeSettingCard, \
-    RangeConfigItem, RangeValidator
 from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, OptionsConfigItem, \
+    OptionsValidator, EnumSerializer, SwitchSettingCard
 
-from NepTrainKit import utils
-from NepTrainKit.core import MessageManager, Config
-from NepTrainKit.core.custom_widget.settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
+from NepTrainKit.core import Config
+from NepTrainKit.core.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
+from NepTrainKit.core.types import ForcesMode, CanvasMode
 from NepTrainKit.core.update import UpdateWoker
-from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR, RELEASES_URL
-from NepTrainKit.core.types import ForcesMode,CanvasMode
+from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
+
+
 class SettingsWidget(QWidget):
     def __init__(self,parent):
 

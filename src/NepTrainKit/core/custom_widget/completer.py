@@ -5,10 +5,8 @@
 # @email    : 1747193328@qq.com
 from collections import defaultdict
 
-from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QStringListModel,QAbstractTableModel
-from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter, QVBoxLayout, QWidget, \
-    QStyleOptionViewItem, QStyledItemDelegate, QStyle
+from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PySide6.QtWidgets import QApplication, QCompleter, QStyleOptionViewItem, QStyledItemDelegate, QStyle
 
 CountRole = Qt.UserRole +1
 
