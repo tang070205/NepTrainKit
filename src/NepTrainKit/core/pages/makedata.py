@@ -50,12 +50,14 @@ class MakeDataWidget(QWidget):
         if urls:
             # 获取第一个文件路径
             file_path = urls[0].toLocalFile()
-            if file_path.endswith(".xyz"):
+            if file_path.endswith(".xyz")  :
 
 
                 self.load_base_structure(file_path)
+            elif file_path.endswith(".json"):
+                self.parse_card_config(file_path)
             else:
-                MessageManager.send_info_message("Only XYZ files are supported for import.")
+                MessageManager.send_info_message("Only XYZ or json files are supported for import.")
         # event.accept()
     def load_base_structure(self,path):
         path=Path(path)
@@ -73,6 +75,7 @@ class MakeDataWidget(QWidget):
                     if file.suffix==".xyz":
                         structures=Structure.read_multiple(file)
                         structures_list.extend(structures)
+
 
         self.dataset=structures_list
 
@@ -175,6 +178,9 @@ class MakeDataWidget(QWidget):
     def load_card_config(self):
         path = utils.call_path_dialog(self, "Choose a card configuration file", "select" )
         if path:
+
+            self.parse_card_config(path)
+    def parse_card_config(self,path):
             try:
                 with open(path, "r") as file:
                     config = json.load(file)
