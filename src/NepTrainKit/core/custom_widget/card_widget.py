@@ -197,7 +197,7 @@ class CardGroup(MakeDataCardWidget):
         self.group_widget = QWidget(self)
         self.viewLayout.addWidget(self.group_widget)
         self.group_layout = QVBoxLayout(self.group_widget)
-
+        self.exportSignal.connect(self.export_data)
         self.card_list = []
         self.resize(400, 200)
     def set_dataset(self,dataset):
@@ -272,10 +272,12 @@ class CardGroup(MakeDataCardWidget):
 
     def write_result_dataset(self, file):
         self.check_card_state()
-
+        if isinstance(file,str):
+            file=open(file, "w", encoding="utf8")
         for card in self.card_list:
             if card.check_state:
                 card.write_result_dataset(file)
+        file.close()
     def export_data(self):
 
         if self.dataset is not None:
