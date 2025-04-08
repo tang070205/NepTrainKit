@@ -13,6 +13,7 @@ from NepTrainKit.core import MessageManager
 from qfluentwidgets import FluentIcon as FIF
 from NepTrainKit.core.custom_widget import ProcessLabel
 from NepTrainKit import utils
+from NepTrainKit.core.types import CardName
 
 
 class CheckableHeaderCardWidget(HeaderCardWidget):
@@ -83,7 +84,7 @@ class MakeDataCard(MakeDataCardWidget):
         self.viewLayout.setContentsMargins(3, 6, 3, 6)
         self.viewLayout.addWidget(self.setting_widget)
         self.settingLayout = QGridLayout(self.setting_widget)
-        self.settingLayout.setContentsMargins(0, 0, 0,0)
+        self.settingLayout.setContentsMargins(5, 0, 5,0)
         self.settingLayout.setSpacing(3)
         self.status_label = ProcessLabel(self)
         self.vBoxLayout.addWidget(self.status_label)
@@ -109,7 +110,7 @@ class MakeDataCard(MakeDataCardWidget):
 
         if self.dataset is not None:
 
-            path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle()}_structure.xyz")
+            path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle().replace(' ', '_')}_structure.xyz")
             if not path:
                 return
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
@@ -284,3 +285,19 @@ class CardGroup(MakeDataCardWidget):
                 return
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
             thread.start_work(self.write_result_dataset, path)
+    def to_dict(self):
+        data_dict={}
+        data_dict['class']="CardGroup"
+        data_dict['name']=CardName.group
+
+        data_dict["check_state"]=self.check_state
+
+        data_dict["card_list"]=[]
+        self.check_card_state()
+        for card in self.card_list:
+            data_dict["card_list"].append(card.to_dict())
+        return data_dict
+    def from_dict(self,data_dict):
+
+        self.state_checkbox.setChecked(data_dict['check_state'])
+

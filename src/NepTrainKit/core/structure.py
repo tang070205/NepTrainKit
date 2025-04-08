@@ -130,7 +130,29 @@ class Structure():
     def num_atoms(self):
         return len(self.elements)
 
+    def copy(self):
+        return deepcopy(self)
+    def set_lattice(self, new_lattice: np.ndarray,in_place=False):
+        """
+        根据新晶格缩放原子位置，支持原地修改或返回新对象。
 
+        :param new_lattice: 新晶格矩阵（3x3 numpy 数组）
+        :param in_place: 是否修改当前对象（默认 False，返回新对象）
+        :return: 更新后的 Structure 对象（若 in_place=True，则返回 self）
+        """
+        target = self if in_place else self.copy()
+        old_lattice = target.lattice
+        old_positions = target.positions
+
+        # 计算变换矩阵（参考 ASE）
+        M = np.linalg.solve(old_lattice, new_lattice)
+        new_positions = old_positions @ M
+
+        # 更新晶格和坐标
+        target.lattice = new_lattice
+        target.structure_info['pos'] = new_positions
+
+        return target
 
     def supercell(self, scale_factor, order="cell-major", tol=1e-5):
         """
@@ -215,6 +237,7 @@ class Structure():
         # 设置周期性边界条件（假设与原始一致）
         additional_fields={}
         additional_fields['pbc'] = self.additional_fields.get('pbc', "T T T")
+        additional_fields["Config_type"] =self.additional_fields.get('Config_type', "")+" super cell"
 
         return Structure(new_structure_lattice, structure_info, properties, additional_fields)
     def adjust_reasonable(self, coeff=0.7):

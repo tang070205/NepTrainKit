@@ -3,6 +3,7 @@
 # @Time    : 2024/12/20 17:18
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import json
 from pathlib import Path
 
 from PySide6.QtCore import Signal
@@ -14,7 +15,7 @@ from NepTrainKit.core.custom_widget import MakeWorkflowArea, CardGroup
 from NepTrainKit.core.io.base import StructureData
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.views.cards import *
-
+from NepTrainKit.version import __version__
 
 
 
@@ -49,8 +50,12 @@ class MakeDataWidget(QWidget):
         if urls:
             # 获取第一个文件路径
             file_path = urls[0].toLocalFile()
-            self.load_base_structure(file_path)
-            print(urls)
+            if file_path.endswith(".xyz"):
+
+
+                self.load_base_structure(file_path)
+            else:
+                MessageManager.send_info_message("Only XYZ files are supported for import.")
         # event.accept()
     def load_base_structure(self,path):
         path=Path(path)
@@ -107,6 +112,7 @@ class MakeDataWidget(QWidget):
     def run_card(self):
         if not  self.dataset  :
             MessageManager.send_info_message("Please import the structure file first. You can drag it in directly or import it from the upper left corner!")
+            return
         first_card=self.workspace_card_widget.cards[0]
         first_card.dataset = self.dataset
         first_card.index=0
@@ -132,12 +138,62 @@ class MakeDataWidget(QWidget):
         for card in self.workspace_card_widget.cards:
             card.stop()
     def add_card(self,card_name):
-        if card_name =="Card Group":
+        if card_name ==CardName.group:
             card=CardGroup()
-        else:
+        elif card_name==CardName.superCell:
             card=SuperCellCard()
-
+        elif card_name==CardName.perturb:
+            card = PerturbCard()
+        elif card_name==CardName.scaling:
+            card=CellScalingCard()
+        elif card_name==CardName.vacancy_defect:
+            card=VacancyDefectCard()
+        else:
+            MessageManager.send_warning_message("no card")
+            return
         self.workspace_card_widget.add_card(card)
+        return card
+    def export_card_config(self):
+        cards=self.workspace_card_widget.cards
+        if not cards:
+            MessageManager.send_warning_message("No cards in workspace.")
+
+            return
+
+        path = utils.call_path_dialog(self, "Choose a file save location", "file", default_filename="card_config.json")
+        if path:
+            config={}
+            config["software_version"]=__version__
+            config["cards"]=[]
+            for card in cards:
+                config["cards"].append(card.to_dict())
+
+
+            with open(path, "w") as file:
+                json.dump(config, file, indent=4)
+            MessageManager.send_success_message("Card configuration exported successfully.")
+    def load_card_config(self):
+        path = utils.call_path_dialog(self, "Choose a card configuration file", "select" )
+        if path:
+            try:
+                with open(path, "r") as file:
+                    config = json.load(file)
+            except:
+                MessageManager.send_warning_message("Invalid card configuration file.")
+                return
+            self.workspace_card_widget.clear_cards()
+            cards=config.get("cards")
+            for card in cards:
+                name=card.get("name")
+                card_widget=self.add_card(name)
+                card_widget.from_dict(card)
+                if  name==CardName.group:
+                    for sub_card in card.get("card_list"):
+                        sub_card_widget = self.add_card(sub_card["name"])
+                        sub_card_widget.from_dict(sub_card)
+
+                        card_widget.add_card(sub_card_widget)
+
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)

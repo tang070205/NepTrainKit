@@ -8,13 +8,13 @@ import sys
 import traceback
 
 from PySide6.QtCore import Qt, QFile
-from PySide6.QtGui import QIcon, QFont, QPixmap, QPalette, QColor
+from PySide6.QtGui import QIcon, QFont, QPixmap, QPalette, QColor, QAction
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QSplashScreen
 from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition,
                             TransparentToolButton, TransparentDropDownToolButton, PrimaryDropDownToolButton,
-                            PrimarySplitToolButton, SplitToolButton)
+                            PrimarySplitToolButton, SplitToolButton, RoundMenu)
 from qfluentwidgets import FluentIcon as FIF
 from loguru import logger
 
@@ -68,9 +68,24 @@ class NepTrainKitMainWindow(FluentWindow):
         self.open_dir_button = SplitToolButton(QIcon(':/images/src/images/open.svg') ,self.menu_widget)
         self.open_dir_button.clicked.connect(self.open_file_dialog)
 
+        self.load_card_config_action = QAction(QIcon(r":/images/src/images/open.svg"), "Import Card Config")
+        self.load_card_config_action.triggered.connect(self.make_data_widget.load_card_config)
+        self.load_menu = RoundMenu(parent=self)
+        self.load_menu.addAction(self.load_card_config_action)
+        self.open_dir_button.setFlyout(self.load_menu)
+
+
 
         self.save_dir_button = SplitToolButton(QIcon(':/images/src/images/save.svg') ,self.menu_widget)
         self.save_dir_button.clicked.connect(self.export_file_dialog)
+
+        self.save_menu = RoundMenu(parent=self)
+        self.export_card_config_action = QAction(QIcon(r":/images/src/images/save.svg"), "Export Card Config")
+        self.export_card_config_action.triggered.connect(self.make_data_widget.export_card_config)
+
+        self.save_menu.addAction(self.export_card_config_action)
+        self.save_dir_button.setFlyout(self.save_menu)
+
 
 
 

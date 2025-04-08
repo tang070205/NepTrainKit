@@ -83,7 +83,9 @@ class MakeWorkflowArea(QScrollArea):
         self.flow_layout.addWidget(card)
 
 
-
+    def clear_cards(self):
+        for item in self.cards:
+            item.close()
 
 
 if __name__ == "__main__":
