@@ -200,8 +200,13 @@ class ShowNepWidget(QWidget):
     def set_work_path(self,path):
 
         if os.path.isdir(path):
-            MessageManager.send_info_message("Please choose a xyz file, not a directory!")
-            return
+            if os.path.exists(os.path.join(path,"train.xyz")):
+                path=os.path.join(path,"train.xyz")
+            else:
+                MessageManager.send_info_message("The directory does not contain a train.xyz file!")
+                return
+
+
         if not path.endswith(".xyz"):
             MessageManager.send_info_message(f"Please choose a xyz file, not {path}!")
             return
