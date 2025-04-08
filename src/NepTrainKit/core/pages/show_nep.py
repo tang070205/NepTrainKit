@@ -9,11 +9,11 @@ from io import StringIO
 from venv import logger
 
 import numpy as np
-from PySide6.QtCore import QUrl, QTimer
+from PySide6.QtCore import QUrl, QTimer, Qt
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout
 from qfluentwidgets import HyperlinkLabel, MessageBox, PlainTextEdit, CaptionLabel, SpinBox, \
-    TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition
+    TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition,TransparentToolButton
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
@@ -50,7 +50,7 @@ class ShowNepWidget(QWidget):
         if not self.first_show:
             self.first_show=True
             if os.path.exists("./train.xyz") and os.path.exists("./nep.txt"):
-                self.set_work_path(os.getcwd())
+                self.set_work_path(os.path.join(os.getcwd(),"train.xyz"))
 
     def init_ui(self):
         self.gridLayout = QGridLayout(self)
@@ -61,8 +61,12 @@ class ShowNepWidget(QWidget):
         self.struct_widget_layout = QGridLayout(self.struct_widget)
 
         self.show_struct_widget = StructurePlotWidget(self.struct_widget)
-
+        self.export_single_struct_button = TransparentToolButton(QIcon(':/images/src/images/export1.svg') ,self.struct_widget)
+        self.export_single_struct_button.clicked.connect(self.export_single_struct)
         self.struct_info_edit = PlainTextEdit(self.struct_widget)
+
+
+
         self.struct_info_edit.setReadOnly(True)
 
         self.struct_index_widget = QWidget(self)
@@ -94,13 +98,14 @@ class ShowNepWidget(QWidget):
         self.struct_index_spinbox.valueChanged.connect(self.show_current_structure)
 
         self.struct_widget_layout.addWidget(self.show_struct_widget, 0, 0, 1, 1)
-        self.struct_widget_layout.addWidget(self.struct_info_edit, 1, 0, 1, 1)
-        self.struct_widget_layout.addWidget(self.struct_index_widget, 2, 0, 1, 1)
+        self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
+        self.struct_widget_layout.addWidget(self.struct_info_edit, 2, 0, 1, 1)
+        self.struct_widget_layout.addWidget(self.struct_index_widget, 3, 0, 1, 1)
 
         self.struct_widget_layout.setRowStretch(0, 3)
         self.struct_widget_layout.setRowStretch(1, 1)
         self.struct_widget_layout.setRowStretch(2, 0)
-
+        self.struct_widget_layout.setSpacing(1)
         self.struct_widget_layout.setContentsMargins(0, 0, 0, 0)
 
         self.plot_widget = QWidget(self)
@@ -177,7 +182,7 @@ class ShowNepWidget(QWidget):
 
 
     def open_file(self):
-        path = utils.call_path_dialog(self,"Please choose the working directory","directory")
+        path = utils.call_path_dialog(self,"Please choose the XYZ file","select",file_filter="XYZ files (*.xyz)")
         if path:
             self.set_work_path(path)
 
@@ -194,8 +199,16 @@ class ShowNepWidget(QWidget):
 
     def set_work_path(self,path):
 
-        if os.path.isfile(path):
-            path = os.path.dirname(path)
+        if os.path.isdir(path):
+            MessageManager.send_info_message("Please choose a xyz file, not a directory!")
+            return
+        if not path.endswith(".xyz"):
+            MessageManager.send_info_message(f"Please choose a xyz file, not {path}!")
+            return
+        #     path = os.path.dirname(path)
+
+
+
         url=self.path_label.getUrl().toString()
 
         old_path=url.replace("file://","")
@@ -239,7 +252,8 @@ class ShowNepWidget(QWidget):
         :return:
         """
 
-        model_type=get_nep_type(os.path.join(path,"nep.txt"))
+        dir_path = os.path.dirname(path)
+        model_type=get_nep_type(os.path.join(dir_path,"nep.txt"))
         logger.info(f"NEP model type: {model_type}")
         if model_type==0:
             self.nep_result_data=NepTrainResultData.from_path(path)
@@ -254,7 +268,7 @@ class ShowNepWidget(QWidget):
             return
 
         self.path_label.setText(f"Current working directory: {path}")
-        self.path_label.setUrl(QUrl.fromLocalFile(path))
+        self.path_label.setUrl(QUrl.fromLocalFile(os.path.dirname(path)))
         # self.graph_widget.set_dataset(self.dataset)
 
     def to_last_structure(self):
@@ -293,6 +307,20 @@ class ShowNepWidget(QWidget):
         if   self.to_next_structure():
 
             self.auto_switch_button.click()
+    def export_single_struct(self):
+        if self.nep_result_data is None:
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        index=self.struct_index_spinbox.value()
+        atoms=self.nep_result_data.get_atoms(index)
+        path=utils.call_path_dialog(self,"Choose a file save location","file",
+                                    file_filter="XYZ files (*.xyz)",
+                                    default_filename=f"structure_{index}.xyz")
+        if path:
+            with open(path,"w",encoding="utf-8") as f:
+                atoms.write(f)
+
+
     # @utils.timeit
     def show_current_structure(self,current_index):
 

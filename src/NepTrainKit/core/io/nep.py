@@ -241,23 +241,28 @@ class NepTrainResultData(ResultData):
 
     @classmethod
 
-    def from_path(cls, path,model="train"):
-        path = Path(path)
-        dataset_path = path.joinpath(f"{model}.xyz")
-        if not dataset_path.exists():
-            MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
-            return None
-        nep_txt_path = path.joinpath(f"nep.txt")
-        if not nep_txt_path.exists():
-            MessageManager.send_warning_message(f"nep.txt not found in the current working directory.")
+    def from_path(cls, path ):
+        dataset_path = Path(path)
+
+        file_name=dataset_path.stem
+
+        # if not dataset_path.exists():
+        #     MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
+        #     return None
+        nep_txt_path = dataset_path.with_name(f"nep.txt")
+        # if not nep_txt_path.exists():
+        #     MessageManager.send_warning_message(f"nep.txt not found in the current working directory.")
 
 
-        energy_out_path = path.joinpath(f"energy_{model}.out")
-        force_out_path = path.joinpath(f"force_{model}.out")
-        stress_out_path = path.joinpath(f"stress_{model}.out")
-        virial_out_path = path.joinpath(f"virial_{model}.out")
-        descriptor_path = path.joinpath(f"descriptor.out")
+        energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
+        force_out_path = dataset_path.with_name(f"force_{file_name}.out")
+        stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")
+        virial_out_path = dataset_path.with_name(f"virial_{file_name}.out")
+        if file_name=="train":
 
+            descriptor_path = dataset_path.with_name(f"descriptor.out")
+        else:
+            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
         return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,stress_out_path,virial_out_path,descriptor_path)
 
 
@@ -407,20 +412,27 @@ class NepPolarizabilityResultData(ResultData):
 
 
     @classmethod
-    def from_path(cls, path,model="train"):
-        path = Path(path)
-        dataset_path = path.joinpath(f"{model}.xyz")
-        if not dataset_path.exists():
-            MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
-            return None
-        nep_txt_path = path.joinpath(f"nep.txt")
-        if not nep_txt_path.exists():
-            MessageManager.send_message_box(f"nep.txt not found in the current working directory.")
-            return None
+    def from_path(cls, path ):
+        dataset_path = Path(path)
 
-        polarizability_out_path = path.joinpath(f"polarizability_{model}.out")
+        file_name = dataset_path.stem
 
-        descriptor_path = path.joinpath(f"descriptor.out")
+
+        # dataset_path = path.joinpath(f"{model}.xyz")
+        # if not dataset_path.exists():
+        #     MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
+        #     return None
+        nep_txt_path = dataset_path.with_name(f"nep.txt")
+        # if not nep_txt_path.exists():
+        #     MessageManager.send_message_box(f"nep.txt not found in the current working directory.")
+        #     return None
+
+        polarizability_out_path = dataset_path.with_name(f"polarizability_{file_name}.out")
+        if file_name == "train":
+
+            descriptor_path = dataset_path.with_name(f"descriptor.out")
+        else:
+            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
 
         return cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
     def _load_dataset(self ):
@@ -501,19 +513,25 @@ class NepDipoleResultData(ResultData):
 
     @classmethod
     def from_path(cls, path, model="train"):
-        path = Path(path)
-        dataset_path = path.joinpath(f"{model}.xyz")
-        if not dataset_path.exists():
-            MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
-            return None
-        nep_txt_path = path.joinpath(f"nep.txt")
-        if not nep_txt_path.exists():
-            MessageManager.send_message_box(f"nep.txt not found in the current working directory.")
-            return None
+        dataset_path = Path(path)
 
-        polarizability_out_path = path.joinpath(f"dipole_{model}.out")
+        file_name = dataset_path.stem
 
-        descriptor_path = path.joinpath(f"descriptor.out")
+        # if not dataset_path.exists():
+        #     MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
+        #     return None
+        nep_txt_path = dataset_path.with_name(f"nep.txt")
+        # if not nep_txt_path.exists():
+        #     MessageManager.send_message_box(f"nep.txt not found in the current working directory.")
+        #     return None
+
+        polarizability_out_path = dataset_path.with_name(f"dipole_{file_name}.out")
+
+        if file_name == "train":
+
+            descriptor_path = dataset_path.with_name(f"descriptor.out")
+        else:
+            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
 
         return cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
 
