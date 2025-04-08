@@ -225,7 +225,7 @@ class CardGroup(MakeDataCardWidget):
     def get_card_list(self):
         return self.card_list
     def closeEvent(self, event):
-
+        self.check_card_state()
         for card in self.card_list:
             card.close()
         self.deleteLater()

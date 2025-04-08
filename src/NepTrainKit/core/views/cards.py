@@ -390,6 +390,8 @@ class VacancyDefectCard(MakeDataCard):
         data_dict["check_state"]=self.check_state
         data_dict['engine_type'] = self.engine_type_combo.currentIndex()
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
+        data_dict["num_radio_button"]=self.num_radio_button.isChecked()
+        data_dict["concentration_radio_button"]=self.concentration_radio_button.isChecked()
         data_dict['concentration_condition'] = self.concentration_condition_frame.get_input_value()
         data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
 
@@ -400,6 +402,10 @@ class VacancyDefectCard(MakeDataCard):
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
         self.concentration_condition_frame.set_input_value(data_dict['concentration_condition'])
         self.max_atoms_condition_frame.set_input_value(data_dict['max_atoms_condition'])
+        self.concentration_radio_button.setChecked(data_dict['concentration_radio_button'])
+        self.num_radio_button.setChecked(data_dict['num_radio_button'])
+
+
         pass
 
 class PerturbCard(MakeDataCard):
