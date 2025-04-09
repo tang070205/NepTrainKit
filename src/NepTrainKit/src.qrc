@@ -34,6 +34,9 @@
     <file>src/images/run.svg</file>
     <file>src/images/stop.svg</file>
     <file>src/images/group.svg</file>
+    <file>src/images/collapse.svg</file>
+      <file>src/images/expand.svg</file>
+      <file>src/images/fps.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

@@ -116,46 +116,63 @@ class MakeDataWidget(QWidget):
         if not  self.dataset  :
             MessageManager.send_info_message("Please import the structure file first. You can drag it in directly or import it from the upper left corner!")
             return
-        first_card=self.workspace_card_widget.cards[0]
-        first_card.dataset = self.dataset
-        first_card.index=0
-        first_card.runFinishedSignal.connect(self._run_next_card)
-        first_card.run()
 
+        first_card=self._next_card(-1)
+        if first_card:
+            first_card.dataset = self.dataset
 
+            first_card.runFinishedSignal.connect(self._run_next_card)
+            first_card.run()
+        else:
+            MessageManager.send_info_message("No card selected. Please select a card in the workspace.")
+    def _next_card(self,current_card_index=-1):
+
+        cards=self.workspace_card_widget.cards
+        if current_card_index+1 >=len(cards):
+            return None
+        current_card_index+=1
+        for i,card in enumerate(cards[current_card_index:]):
+
+            if card.check_state:
+                card.index=i+current_card_index
+                return card
+            else:
+                continue
+        return None
     def _run_next_card(self,current_card_index):
 
         cards=self.workspace_card_widget.cards
         current_card=cards[current_card_index]
         current_card.runFinishedSignal.disconnect(self._run_next_card)
-        if current_card_index+1<len(cards):
-            next_card=cards[current_card_index+1]
-            if current_card.result_dataset:
-                next_card.set_dataset(current_card.result_dataset)
-                next_card.index=current_card_index+1
-                next_card.runFinishedSignal.connect(self._run_next_card)
-                next_card.run()
+
+        next_card=self._next_card(current_card_index )
+        if current_card.result_dataset and next_card:
+            next_card.set_dataset(current_card.result_dataset)
+
+            next_card.runFinishedSignal.connect(self._run_next_card)
+            next_card.run()
         else:
             MessageManager.send_success_message("Perturbation training set created successfully.")
     def stop_run_card(self):
         for card in self.workspace_card_widget.cards:
             card.stop()
     def add_card(self,card_name):
-        if card_name ==CardName.group:
-            card=CardGroup()
-        elif card_name==CardName.superCell:
-            card=SuperCellCard()
-        elif card_name==CardName.perturb:
-            card = PerturbCard()
-        elif card_name==CardName.scaling:
-            card=CellScalingCard()
-        elif card_name==CardName.vacancy_defect:
-            card=VacancyDefectCard()
-        else:
+
+        card_map={
+            CardName.group:CardGroup,
+            CardName.superCell:SuperCellCard,
+            CardName.perturb:PerturbCard,
+            CardName.scaling:CellScalingCard,
+            CardName.vacancy_defect:VacancyDefectCard,
+            CardName.fps:FPSFilterDataCard
+        }
+        if card_name not in card_map:
             MessageManager.send_warning_message("no card")
             return
+        card=card_map[card_name]()
         self.workspace_card_widget.add_card(card)
         return card
+
     def export_card_config(self):
         cards=self.workspace_card_widget.cards
         if not cards:

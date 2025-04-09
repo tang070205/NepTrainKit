@@ -15,60 +15,26 @@ from PySide6.QtWidgets import QGridLayout, QFrame, QWidget
 from qfluentwidgets import ComboBox, BodyLabel, RadioButton, SplitToolButton, RoundMenu, PrimaryDropDownToolButton, \
     PrimaryDropDownPushButton, CommandBar, Action,CheckBox
 
-from NepTrainKit.core.custom_widget import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.core.custom_widget import MakeDataCard, SpinBoxUnitInputFrame,FilterDataCard
 from NepTrainKit import utils
 from NepTrainKit.core.types import CardName
 
-class ConsoleWidget(QWidget):
-    """
-控制台"""
-    newCardSignal = Signal(str)  # 定义一个信号，用于通知上层组件新增卡片
-    stopSignal = Signal()
-    runSignal = Signal( )
-    def __init__(self,parent=None):
-        super().__init__(parent)
-        self.setObjectName("ConsoleWidget")
-        self.setMinimumHeight(50)
-        self.init_ui()
-    def init_ui(self):
-        self.gridLayout = QGridLayout(self)
-        self.gridLayout.setObjectName("console_gridLayout")
-        self.setting_command =CommandBar(self)
+card_info_dict = {}
+def register_card_info(card_class  ):
+    card_info_dict[card_class.card_name] =card_class
 
-
-        self.new_card_button = PrimaryDropDownPushButton(QIcon(":/images/src/images/copy_figure.svg"),
-                                                         "Add new card",self)
-        self.new_card_button.setMaximumWidth(200 )
-        self.new_card_button.setObjectName("new_card_button")
-        self.menu = RoundMenu(parent=self)
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/group.svg"), CardName.group))
-        self.menu.addSeparator()
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/supercell.svg"),CardName.superCell))
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/perturb.svg"), CardName.perturb))
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/scaling.svg"), CardName.scaling))
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/defect.svg"), CardName.vacancy_defect))
-        self.menu.triggered.connect(self.menu_clicked)
-        self.new_card_button.setMenu(self.menu)
-        self.setting_command.addWidget(self.new_card_button)
-
-        self.setting_command.addSeparator()
-        self.setting_command.addAction(Action(QIcon(r":/images/src/images/run.svg"), 'Run', triggered=self.run ))
-        self.setting_command.addAction(Action(QIcon(r":/images/src/images/stop.svg"), 'Stop', triggered=self.stop ))
+    return card_class
 
 
 
-        self.gridLayout.addWidget(self.setting_command, 0, 0, 1, 1)
-
-    def menu_clicked(self,action):
 
 
-        self.newCardSignal.emit(action.text())
 
-    def run(self,*args,**kwargs):
-        self.runSignal.emit()
-    def stop(self,*args,**kwargs):
-        self.stopSignal.emit()
+
+@register_card_info
 class SuperCellCard(MakeDataCard):
+    card_name= "Super Cell"
+    menu_icon=r":/images/src/images/supercell.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Make Supercell")
@@ -267,8 +233,11 @@ class SuperCellCard(MakeDataCard):
         self.max_atoms_condition_frame.set_input_value(data_dict['max_atoms_condition'])
 
 
+@register_card_info
 
 class VacancyDefectCard(MakeDataCard):
+    card_name= "Vacancy Defect Generation"
+    menu_icon=r":/images/src/images/defect.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Make Vacancy Defect")
@@ -282,13 +251,13 @@ class VacancyDefectCard(MakeDataCard):
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
 
-        self.num_radio_button = RadioButton("num",self.setting_widget)
+        self.num_radio_button = RadioButton("Vacancy num",self.setting_widget)
         self.num_radio_button.setChecked(True)
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit",1)
         self.num_condition_frame.setRange(1,10000)
 
-        self.concentration_radio_button = RadioButton("concentration",self.setting_widget)
+        self.concentration_radio_button = RadioButton("Vacancy concentration",self.setting_widget)
         self.concentration_condition_frame = SpinBoxUnitInputFrame(self)
         self.concentration_condition_frame.set_input("",1,"float")
         self.concentration_condition_frame.setRange(0,1)
@@ -298,7 +267,7 @@ class VacancyDefectCard(MakeDataCard):
         self.max_atoms_condition_frame.set_input("unit",1)
         self.max_atoms_condition_frame.setRange(1,10000)
 
-        self.max_atoms_label= BodyLabel("Max atoms",self.setting_widget)
+        self.max_atoms_label= BodyLabel("Max num",self.setting_widget)
 
 
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
@@ -407,8 +376,11 @@ class VacancyDefectCard(MakeDataCard):
 
 
         pass
+@register_card_info
 
 class PerturbCard(MakeDataCard):
+    card_name= "Atomic perturb"
+    menu_icon=r":/images/src/images/perturb.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Make Perturb")
@@ -494,8 +466,11 @@ class PerturbCard(MakeDataCard):
         self.scaling_condition_frame.set_input_value(data_dict['scaling_condition'])
 
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
+@register_card_info
 
 class CellScalingCard(MakeDataCard):
+    card_name= "Lattice scaling"
+    menu_icon=r":/images/src/images/scaling.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Make Cell Scaling")
@@ -612,3 +587,75 @@ class CellScalingCard(MakeDataCard):
         self.perturb_angle_checkbox.setChecked(data_dict['perturb_angle'])
         self.scaling_condition_frame.set_input_value(data_dict['scaling_condition'])
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
+
+
+@register_card_info
+class FPSFilterDataCard(FilterDataCard):
+    card_name= "FPS Filter"
+    menu_icon=r":/images/src/images/fps.svg"
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle("Filter FPS")
+
+
+
+
+
+print(card_info_dict)
+
+class ConsoleWidget(QWidget):
+    """
+控制台"""
+    newCardSignal = Signal(str)  # 定义一个信号，用于通知上层组件新增卡片
+    stopSignal = Signal()
+    runSignal = Signal( )
+    def __init__(self,parent=None):
+        super().__init__(parent)
+        self.setObjectName("ConsoleWidget")
+        self.setMinimumHeight(50)
+        self.init_ui()
+
+    def init_ui(self):
+        self.gridLayout = QGridLayout(self)
+        self.gridLayout.setObjectName("console_gridLayout")
+        self.setting_command =CommandBar(self)
+
+
+        self.new_card_button = PrimaryDropDownPushButton(QIcon(":/images/src/images/copy_figure.svg"),
+                                                         "Add new card",self)
+        self.new_card_button.setMaximumWidth(200 )
+        self.new_card_button.setObjectName("new_card_button")
+        self.menu = RoundMenu(parent=self)
+        for card_name,card_class in card_info_dict.items():
+            self.menu.addAction(QAction(QIcon(card_class.menu_icon),card_name))
+        # self.menu.addAction(QAction(QIcon(r":/images/src/images/supercell.svg"),CardName.superCell))
+        # self.menu.addAction(QAction(QIcon(r":/images/src/images/perturb.svg"), CardName.perturb))
+        # self.menu.addAction(QAction(QIcon(r":/images/src/images/scaling.svg"), CardName.scaling))
+        # self.menu.addAction(QAction(QIcon(r":/images/src/images/defect.svg"), CardName.vacancy_defect))
+        # self.menu.addSeparator()
+        # self.menu.addAction(QAction(QIcon(r":/images/src/images/fps.svg"), CardName.fps))
+
+        self.menu.addSeparator()
+        self.menu.addAction(QAction(QIcon(r":/images/src/images/group.svg"), CardName.group))
+
+        self.menu.triggered.connect(self.menu_clicked)
+        self.new_card_button.setMenu(self.menu)
+        self.setting_command.addWidget(self.new_card_button)
+
+        self.setting_command.addSeparator()
+        self.setting_command.addAction(Action(QIcon(r":/images/src/images/run.svg"), 'Run', triggered=self.run ))
+        self.setting_command.addAction(Action(QIcon(r":/images/src/images/stop.svg"), 'Stop', triggered=self.stop ))
+
+
+
+        self.gridLayout.addWidget(self.setting_command, 0, 0, 1, 1)
+
+    def menu_clicked(self,action):
+
+
+        self.newCardSignal.emit(action.text())
+
+    def run(self,*args,**kwargs):
+        self.runSignal.emit()
+    def stop(self,*args,**kwargs):
+        self.stopSignal.emit()

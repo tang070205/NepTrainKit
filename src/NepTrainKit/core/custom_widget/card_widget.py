@@ -17,12 +17,17 @@ from NepTrainKit.core.types import CardName
 
 
 class CheckableHeaderCardWidget(HeaderCardWidget):
+
     def __init__(self, parent=None):
         super(CheckableHeaderCardWidget, self).__init__(parent)
         self.state_checkbox=CheckBox()
         self.state_checkbox.setChecked(True)
         self.state_checkbox.stateChanged.connect(self.state_changed)
+
+
         self.headerLayout.insertWidget(0, self.state_checkbox, 0,Qt.AlignmentFlag.AlignLeft)
+
+
         self.headerLayout.setStretch(1, 3)
         self.headerLayout.setContentsMargins(10, 0, 3, 0)
         self.headerLayout.setSpacing(3)
@@ -51,9 +56,15 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.headerLayout.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignRight)
 
 class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
+    windowStateChangedSignal=Signal( )
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setMouseTracking(True)
+        self.window_state="expand"
+        self.collapse_button=TransparentToolButton(QIcon(":/images/src/images/collapse.svg"),self)
+        self.collapse_button.clicked.connect(self.collapse)
+        self.headerLayout.insertWidget(0, self.collapse_button, 0,Qt.AlignmentFlag.AlignLeft)
+        self.windowStateChangedSignal.connect(self.update_window_state)
 
     def mouseMoveEvent(self, e):
         if e.buttons() != Qt.LeftButton:
@@ -69,6 +80,21 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         drag.setHotSpot(e.pos())
 
         drag.exec(Qt.MoveAction)
+    def collapse(self):
+
+        if self.window_state == "collapse":
+            self.window_state = "expand"
+        else:
+
+            self.window_state = "collapse"
+
+        self.windowStateChangedSignal.emit( )
+    def update_window_state(self):
+        if self.window_state == "expand":
+            self.collapse_button.setIcon(QIcon(":/images/src/images/collapse.svg"))
+        else:
+            self.collapse_button.setIcon(QIcon(":/images/src/images/expand.svg"))
+
 
 class MakeDataCard(MakeDataCardWidget):
     #通知下一个card执行
@@ -80,6 +106,9 @@ class MakeDataCard(MakeDataCardWidget):
         self.result_dataset=[]
         self.index=0
         # self.setFixedSize(400, 200)
+
+
+
         self.setting_widget = QWidget(self)
         self.viewLayout.setContentsMargins(3, 6, 3, 6)
         self.viewLayout.addWidget(self.setting_widget)
@@ -88,6 +117,15 @@ class MakeDataCard(MakeDataCardWidget):
         self.settingLayout.setSpacing(3)
         self.status_label = ProcessLabel(self)
         self.vBoxLayout.addWidget(self.status_label)
+        self.windowStateChangedSignal.connect(self.show_setting)
+    def show_setting(self ):
+        if self.window_state == "expand":
+            self.setting_widget.show( )
+
+        else:
+            self.setting_widget.hide( )
+
+
 
 
     def set_dataset(self,dataset):
@@ -181,11 +219,42 @@ class MakeDataCard(MakeDataCardWidget):
         self.runFinishedSignal.emit(self.index)
 
         MessageManager.send_error_message(f"Error occurred: {error}")
+
+
+
+
     def update_dataset_info(self ):
         text = f"Input structures: {len(self.dataset)} → Output: {len(self.result_dataset)}"
         self.status_label.setText(text)
 
+class FilterDataCard(MakeDataCard):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle("Filter Data")
+    def update_progress(self, progress):
+        self.status_label.setText(f"Processing {progress}%")
+        self.status_label.set_progress(progress)
+    def on_processing_finished(self):
+        # self.status_label.setText("Processing finished")
 
+        self.result_dataset = self.worker_thread.result_dataset
+        self.update_dataset_info()
+        self.status_label.set_colors(["#a5d6a7" ])
+        self.runFinishedSignal.emit(self.index)
+        del self.worker_thread
+    def on_processing_error(self, error):
+        self.close_button.setEnabled(True)
+
+        self.status_label.set_colors(["red" ])
+
+        del self.worker_thread
+        self.update_dataset_info()
+        self.runFinishedSignal.emit(self.index)
+
+        MessageManager.send_error_message(f"Error occurred: {error}")
+    def update_dataset_info(self ):
+        text = f"Input structures: {len(self.dataset)} → Selected: {len(self.result_dataset)}"
+        self.status_label.setText(text)
 class CardGroup(MakeDataCardWidget):
     #通知下一个card执行
     runFinishedSignal=Signal(int)
@@ -198,34 +267,45 @@ class CardGroup(MakeDataCardWidget):
         self.viewLayout.addWidget(self.group_widget)
         self.group_layout = QVBoxLayout(self.group_widget)
         self.exportSignal.connect(self.export_data)
-        self.card_list = []
+        self.windowStateChangedSignal.connect(self.show_card_setting)
+        self.filter_card=None
+        self.dataset:list=None
+        self.result_dataset=[]
         self.resize(400, 200)
+    def set_filter_card(self,card):
+        print("filter_card")
+        self.filter_card=card
+
+    def state_changed(self, state):
+        super().state_changed(state)
+        for card in self.card_list:
+            card.state_checkbox.setChecked(state)
+    @property
+    def card_list(self)->["MakeDataCard"]:
+
+        return [self.group_layout.itemAt(i).widget() for i in range(self.group_layout.count()) ]
+    def show_card_setting(self):
+
+        for card in self.card_list:
+            card.window_state = self.window_state
+            card.windowStateChangedSignal.emit()
     def set_dataset(self,dataset):
         self.dataset =dataset
         self.result_dataset=[]
 
     def add_card(self, card):
-        self.card_list.append(card)
+
         self.group_layout.addWidget(card)
     def remove_card(self, card):
-        self.card_list.remove(card)
+
         self.group_layout.removeWidget(card)
     def clear_cards(self):
         for card in self.card_list:
             self.group_layout.removeWidget(card)
-        self.card_list.clear()
-    def check_card_state(self):
-        """
-        将卡片拖出后 不会将list更新  这里使用之前手动更新list
-        """
 
-        self.card_list.clear()
-        for i in range(self.group_layout.count()):
-            self.card_list.append(self.group_layout.itemAt(i).widget())
-    def get_card_list(self):
-        return self.card_list
+
     def closeEvent(self, event):
-        self.check_card_state()
+
         for card in self.card_list:
             card.close()
         self.deleteLater()
@@ -236,14 +316,16 @@ class CardGroup(MakeDataCardWidget):
 
     def dragEnterEvent(self, event):
 
-        if isinstance(event.source(), MakeDataCard):
+        if isinstance(event.source(), (MakeDataCard,CardGroup)):
             event.acceptProposedAction()
         else:
             event.ignore()  # 忽略其他类型的拖拽
     def dropEvent(self, event):
 
         widget = event.source()
-        if isinstance(widget, MakeDataCard):
+        if isinstance(widget, FilterDataCard):
+            self.set_filter_card(widget)
+        elif isinstance(widget, (MakeDataCard,CardGroup)):
             self.add_card(widget)
         event.acceptProposedAction()
     def on_card_finished(self, index):
@@ -260,18 +342,24 @@ class CardGroup(MakeDataCardWidget):
             card.stop()
     def run(self):
         # 创建并启动线程
-        self.check_card_state()
-        self.result_dataset =[]
-        self.run_card_num=len(self.card_list)
-        for index,card in enumerate(self.card_list):
-            card.set_dataset(self.dataset)
-            card.index=index
-            card.runFinishedSignal.connect(self.on_card_finished)
-            card.run()
+        self.run_card_num = len(self.card_list)
 
+        if self.check_state and self.run_card_num>0:
+            self.result_dataset =[]
+            for index,card in enumerate(self.card_list):
+                if card.check_state:
+                    card.set_dataset(self.dataset)
+                    card.index=index
+                    card.runFinishedSignal.connect(self.on_card_finished)
+                    card.run()
+                else:
+                    self.run_card_num-=1
+        else:
+            self.result_dataset = self.dataset
+            self.runFinishedSignal.emit(self.index)
 
     def write_result_dataset(self, file):
-        self.check_card_state()
+
         if isinstance(file,str):
             file=open(file, "w", encoding="utf8")
         for card in self.card_list:
@@ -295,7 +383,7 @@ class CardGroup(MakeDataCardWidget):
         data_dict["check_state"]=self.check_state
 
         data_dict["card_list"]=[]
-        self.check_card_state()
+
         for card in self.card_list:
             data_dict["card_list"].append(card.to_dict())
         return data_dict
