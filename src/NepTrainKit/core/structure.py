@@ -237,7 +237,7 @@ class Structure():
         # 设置周期性边界条件（假设与原始一致）
         additional_fields={}
         additional_fields['pbc'] = self.additional_fields.get('pbc', "T T T")
-        additional_fields["Config_type"] =self.additional_fields.get('Config_type', "")+" super cell"
+        additional_fields["Config_type"] =self.additional_fields.get('Config_type', "")+f" super cell({scale_factor})"
 
         return Structure(new_structure_lattice, structure_info, properties, additional_fields)
     def adjust_reasonable(self, coeff=0.7):

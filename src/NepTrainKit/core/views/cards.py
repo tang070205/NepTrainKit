@@ -376,7 +376,7 @@ class VacancyDefectCard(MakeDataCard):
             # 更新结构
             new_struct.structure_info['pos'] = new_positions
             new_struct.structure_info['species'] = new_elements
-            new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] +f"Vacancy Defect {i} (num={n_vacancies}) "
+            new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] +f" Vacancy Defect {i} (num={n_vacancies})"
             if structure.force_label in new_struct.structure_info:
                 new_struct.structure_info[structure.force_label] = new_struct.structure_info[structure.force_label][mask]
             structure_list.append(new_struct)
@@ -469,7 +469,7 @@ class PerturbCard(MakeDataCard):
 
             # 更新坐标
             new_struct.structure_info['pos'] = new_positions
-            new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] + f"Perturb {i} (distance={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  }) "
+            new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] + f" Perturb {i} (distance={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
 
             structure_list.append(new_struct)
 
@@ -591,7 +591,7 @@ class CellScalingCard(MakeDataCard):
 
             # 缩放原子位置
             new_struct = structure.set_lattice(new_lattice,in_place=False)
-            new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] +f"Cell Scaling {i} (scaling={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  }) "
+            new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] +f" Cell Scaling {i} (scaling={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
 
             structure_list.append(new_struct)
         return structure_list
