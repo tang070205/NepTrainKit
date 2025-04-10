@@ -31,11 +31,12 @@ class Nep3Calculator( ):
         super().__init__()
         if not isinstance(model_file, str):
             model_file = str(model_file )
+        self.initialized = False
 
         if CpuNep is None:
             MessageManager.send_message_box("Failed to import nep_cpu.\n To use the display functionality normally, please prepare the *_train.out and descriptor.out files.","Error")
-            self.initialized = False
-            return None
+
+            return
 
         if os.path.exists(model_file):
 
@@ -48,7 +49,7 @@ class Nep3Calculator( ):
             self.element_list=self.nep3.get_element_list()
             self.type_dict = {e: i for i, e in enumerate(self.element_list)}
 
-        self.initialized = True
+            self.initialized = True
 
     def compose_structures(self, structures:list[Structure]):
         group_size = []

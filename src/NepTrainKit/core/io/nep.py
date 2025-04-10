@@ -53,6 +53,7 @@ class ResultData(QObject):
         self.nep_txt_path=nep_txt_path
 
         self._atoms_dataset=StructureData(structures)
+        self.atoms_num_list = np.array([len(struct) for struct in self.structure.now_data])
         self.select_index=set()
 
     @property
@@ -159,7 +160,7 @@ class ResultData(QObject):
 
 
     def _load_descriptors(self):
-        atoms_num_list=[len(structure) for structure in self.structure.now_data]
+
 
         if os.path.exists(self.descriptor_path):
             desc_array = read_nep_out_file(self.descriptor_path,dtype=np.float32)
@@ -169,13 +170,16 @@ class ResultData(QObject):
 
         if desc_array.size == 0:
 
-            desc_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(), self.structure.now_data,"descriptor")
+            desc_array = run_nep3_calculator_process(
+                self.nep_txt_path.as_posix(),
+                self.structure.now_data,
+                "descriptor")
             if desc_array.size != 0:
                 np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
         else:
-            if desc_array.shape[0] != len(atoms_num_list):
+            if desc_array.shape[0] != len(self.atoms_num_list):
                 # 原子描述符 需要计算结构描述符
-                desc_array = parse_array_by_atomnum(desc_array, atoms_num_list, map_func=np.mean, axis=0)
+                desc_array = parse_array_by_atomnum(desc_array, self.atoms_num_list, map_func=np.mean, axis=0)
 
                 pass
             else:
@@ -209,6 +213,7 @@ class NepTrainResultData(ResultData):
 
 
         self._load_dataset()
+
         self._load_descriptors()
 
 
@@ -246,13 +251,7 @@ class NepTrainResultData(ResultData):
 
         file_name=dataset_path.stem
 
-        # if not dataset_path.exists():
-        #     MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
-        #     return None
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-        # if not nep_txt_path.exists():
-        #     MessageManager.send_warning_message(f"nep.txt not found in the current working directory.")
-
 
         energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
         force_out_path = dataset_path.with_name(f"force_{file_name}.out")
@@ -265,108 +264,124 @@ class NepTrainResultData(ResultData):
             descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
         return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,stress_out_path,virial_out_path,descriptor_path)
 
-
-
-    def _load_dataset(self ):
+    def _load_dataset(self) -> None:
+        """加载或计算 NEP 数据集，并更新内部数据集属性。"""
         nep_in = read_nep_in(self.nep_txt_path.with_name("nep.in"))
-        atoms_num_list=[len(structure) for structure in self.structure.now_data]
-
-        if (not check_fullbatch(nep_in, len(atoms_num_list))
-                or all([
-                    not self.energy_out_path.exists(),
-                    not self.force_out_path.exists(),
-                    not self.stress_out_path.exists(),
-                    not self.virial_out_path.exists()
-
-                ])):
-            try:
-                nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-                                                                                              self.structure.now_data,"calculate")
-
-            except Exception as e:
-                logger.debug(traceback.format_exc())
-                self._stress_dataset = NepPlotData([], title="stress")
-                self._virial_dataset = NepPlotData([], title="virial")
-                self._energy_dataset = NepPlotData([], title="energy")
-                self._force_dataset = NepPlotData([], title="force")
-
-                MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
-                return
-            try:
-                energy_array = np.column_stack(
-                    [nep_potentials_array / atoms_num_list, np.array([structure.per_atom_energy for structure in self.structure.now_data],dtype=np.float32)] )
-
-                energy_array = energy_array.astype(np.float32)
-                np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
-
-            except:
-                pass
-
-                energy_array = np.column_stack(
-                    [nep_potentials_array / atoms_num_list, nep_potentials_array / atoms_num_list])
-
-            try:
-
-                forces_array = np.column_stack([nep_forces_array,
-                                                np.vstack([structure.forces for structure in self.structure.now_data],dtype=np.float32),
-
-                                                ])
-                np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
-
-            except:
-                logger.debug(traceback.format_exc())
-
-                forces_array = np.column_stack([nep_forces_array,
-                                                nep_forces_array
-
-                                                ])
-            coefficient = (atoms_num_list / np.array([structure.volume for structure in self.structure.now_data]))[:, np.newaxis]
-
-            try:
-                virials_array = np.column_stack([nep_virials_array,
-                                                 np.vstack([structure.nep_virial for structure in self.structure.now_data],dtype=np.float32),
-
-                                                 ])
-
-                stress_array = virials_array * coefficient * 160.21766208
-                stress_array=stress_array.astype(np.float32)
-
-                np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
-                np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
-
-            except:
-                logger.debug(traceback.format_exc())
-
-                virials_array = np.column_stack([nep_virials_array,
-                                                 nep_virials_array ])
-
-                stress_array = virials_array * coefficient * 160.21766208
-                stress_array=stress_array.astype(np.float32)
+        if self._should_recalculate(nep_in):
+            energy_array, force_array, virial_array, stress_array = self._recalculate_and_save( )
         else:
-            energy_array = read_nep_out_file(self.energy_out_path,dtype=np.float32)
-            forces_array = read_nep_out_file(self.force_out_path,dtype=np.float32)
-            virials_array = read_nep_out_file(self.virial_out_path,dtype=np.float32)
-            stress_array = read_nep_out_file(self.stress_out_path,dtype=np.float32)
-        # print(energy_array.dtype,forces_array.dtype,virials_array.dtype,stress_array.dtype)
-        default_forces = Config.get("widget", "forces_data", "Row")
-        if forces_array.size != 0 and default_forces == "Norm":
-
-            forces_array = parse_array_by_atomnum(forces_array, atoms_num_list, map_func=np.linalg.norm, axis=0)
-
-            self._force_dataset = NepPlotData(forces_array, title="force")
-        else:
-            self._force_dataset = NepPlotData(forces_array, group_list=atoms_num_list, title="force")
+            energy_array = read_nep_out_file(self.energy_out_path, dtype=np.float32)
+            force_array = read_nep_out_file(self.force_out_path, dtype=np.float32)
+            virial_array = read_nep_out_file(self.virial_out_path, dtype=np.float32)
+            stress_array = read_nep_out_file(self.stress_out_path, dtype=np.float32)
 
         self._energy_dataset = NepPlotData(energy_array, title="energy")
+        default_forces = Config.get("widget", "forces_data", "Row")
+        if force_array.size != 0 and default_forces == "Norm":
+
+            force_array = parse_array_by_atomnum(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
+
+            self._force_dataset = NepPlotData(force_array, title="force")
+        else:
+            self._force_dataset = NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
 
         if float(nep_in.get("lambda_v", 1)) != 0:
             self._stress_dataset = NepPlotData(stress_array, title="stress")
 
-            self._virial_dataset = NepPlotData(virials_array, title="virial")
+            self._virial_dataset = NepPlotData(virial_array, title="virial")
         else:
             self._stress_dataset = NepPlotData([], title="stress")
 
             self._virial_dataset = NepPlotData([], title="virial")
+    def _should_recalculate(self, nep_in: dict) -> bool:
+        """判断是否需要重新计算 NEP 数据。"""
+
+
+        output_files_exist = all([
+            self.energy_out_path.exists(),
+            self.force_out_path.exists(),
+            self.stress_out_path.exists(),
+            self.virial_out_path.exists()
+        ])
+        return not check_fullbatch(nep_in, len(self.atoms_num_list)) or not output_files_exist
+
+    def _save_energy_data(self, potentials: np.ndarray)  :
+        """保存能量数据到文件。"""
+        try:
+            ref_energies = np.array([s.per_atom_energy for s in self.structure.now_data], dtype=np.float32)
+            energy_array = np.column_stack([potentials / self.atoms_num_list, ref_energies])
+        except Exception:
+            logger.debug(traceback.format_exc())
+            energy_array = np.column_stack([potentials / self.atoms_num_list, potentials / self.atoms_num_list])
+        energy_array = energy_array.astype(np.float32)
+        np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
+        return energy_array
+
+    def _save_force_data(self, forces: np.ndarray)  :
+        """保存力数据到文件。"""
+        try:
+            ref_forces = np.vstack([s.forces for s in self.structure.now_data], dtype=np.float32)
+            forces_array = np.column_stack([forces, ref_forces])
+        except KeyError:
+            MessageManager.send_warning_message("use nep3 calculator to calculate forces replace the original forces")
+            forces_array = np.column_stack([forces, forces])
+
+        except Exception:
+            logger.debug(traceback.format_exc())
+            forces_array = np.column_stack([forces, forces])
+            MessageManager.send_error_message("an error occurred while calculating forces. Please check the input file.")
+        np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
+
+
+        return forces_array
+
+
+
+    def _save_virial_and_stress_data(self, virials: np.ndarray )    :
+        """保存维里张量和应力数据到文件。"""
+        coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
+        try:
+            ref_virials = np.vstack([s.nep_virial for s in self.structure.now_data], dtype=np.float32)
+            virials_array = np.column_stack([virials, ref_virials])
+        except AttributeError:
+            MessageManager.send_warning_message("use nep3 calculator to calculate virial replace the original virial")
+            virials_array = np.column_stack([virials, virials])
+
+        except Exception:
+            MessageManager.send_error_message(f"An error occurred while calculating virial and stress. Please check the input file.")
+            logger.debug(traceback.format_exc())
+            virials_array = np.column_stack([virials, virials])
+
+        stress_array = virials_array * coefficient * 160.21766208  # 单位转换
+        stress_array = stress_array.astype(np.float32)
+        np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
+        np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
+
+
+        return virials_array, stress_array
+
+    def _recalculate_and_save(self ):
+
+
+
+        try:
+            nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
+                self.nep_txt_path.as_posix(),
+                self.structure.now_data,"calculate")
+            energy_array = self._save_energy_data(nep_potentials_array)
+            force_array = self._save_force_data(nep_forces_array)
+            virial_array, stress_array = self._save_virial_and_stress_data(nep_virials_array)
+            return energy_array,force_array,virial_array, stress_array
+        except Exception as e:
+            logger.debug(traceback.format_exc())
+            MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+            return np.array([]), np.array([]), np.array([]), np.array([])
+
+
+
+
+
+
 
 
 
@@ -422,15 +437,7 @@ class NepPolarizabilityResultData(ResultData):
 
         file_name = dataset_path.stem
 
-
-        # dataset_path = path.joinpath(f"{model}.xyz")
-        # if not dataset_path.exists():
-        #     MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
-        #     return None
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-        # if not nep_txt_path.exists():
-        #     MessageManager.send_message_box(f"nep.txt not found in the current working directory.")
-        #     return None
 
         polarizability_out_path = dataset_path.with_name(f"polarizability_{file_name}.out")
         if file_name == "train":
@@ -440,38 +447,56 @@ class NepPolarizabilityResultData(ResultData):
             descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
 
         return cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
-    def _load_dataset(self ):
+    def _should_recalculate(self, nep_in: dict) -> bool:
+        """判断是否需要重新计算 NEP 数据。"""
+
+        output_files_exist = all([
+            self.polarizability_out_path.exists(),
+
+        ])
+        return not check_fullbatch(nep_in, len(self.atoms_num_list)) or not output_files_exist
+
+    def _recalculate_and_save(self ):
+
+        try:
+            nep_polarizability_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+                                                                   self.structure.now_data, "polarizability")
+
+
+            nep_polarizability_array = self._save_polarizability_data(  nep_polarizability_array)
+
+        except Exception as e:
+            logger.debug(traceback.format_exc())
+            MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+
+            nep_polarizability_array = np.array([])
+        return nep_polarizability_array
+    def _save_polarizability_data(self, polarizability: np.ndarray)  :
+        """保存polarizability数据到文件。"""
+        nep_polarizability_array = polarizability / (self.atoms_num_list[:, np.newaxis])
+
+        try:
+            polarizability_array = np.column_stack([nep_polarizability_array,
+                                                    np.vstack([structure.nep_polarizability for structure in
+                                                               self.structure.now_data]),
+
+                                                    ])
+
+        except Exception:
+            logger.debug(traceback.format_exc())
+            polarizability_array = np.column_stack([polarizability, polarizability])
+        polarizability_array = polarizability_array.astype(np.float32)
+        np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%10.8f')
+
+        return polarizability_array
+
+    def _load_dataset(self) -> None:
+        """加载或计算 NEP 数据集，并更新内部数据集属性。"""
         nep_in = read_nep_in(self.nep_txt_path.with_name("nep.in"))
-        atoms_num_list=np.array([len(structure) for structure in self.structure.now_data])
-        if (not check_fullbatch(nep_in, len(atoms_num_list))
-                or all([
-                    not self.polarizability_out_path.exists(),
-
-
-                ])):
-
-            try:
-                nep_polarizability_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),self.structure.now_data,"polarizability")
-
-                nep_polarizability_array=nep_polarizability_array/(atoms_num_list[:, np.newaxis])
-                polarizability_array = np.column_stack([nep_polarizability_array,
-                                                np.vstack([structure.nep_polarizability for structure in self.structure.now_data]),
-
-                                                ])
-
-
-                np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%10.8f')
-
-            except:
-                logger.debug(traceback.format_exc())
-
-                polarizability_array = np.column_stack([nep_polarizability_array,
-                                                nep_polarizability_array
-
-                                                ])
+        if self._should_recalculate(nep_in):
+            polarizability_array = self._recalculate_and_save( )
         else:
-            polarizability_array = read_nep_out_file(self.polarizability_out_path)
-
+            polarizability_array= read_nep_out_file(self.polarizability_out_path, dtype=np.float32)
         self._polarizability_diagonal_dataset = NepPlotData(polarizability_array[:, [0,1,2,6,7,8]], title="Polar Diag")
 
         self._polarizability_no_diagonal_dataset = NepPlotData(polarizability_array[:, [3,4,5,9,10,11]], title="Polar NoDiag")
@@ -522,13 +547,7 @@ class NepDipoleResultData(ResultData):
 
         file_name = dataset_path.stem
 
-        # if not dataset_path.exists():
-        #     MessageManager.send_message_box(f"{model}.xyz not found in the current working directory.")
-        #     return None
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-        # if not nep_txt_path.exists():
-        #     MessageManager.send_message_box(f"nep.txt not found in the current working directory.")
-        #     return None
 
         polarizability_out_path = dataset_path.with_name(f"dipole_{file_name}.out")
 
@@ -540,38 +559,55 @@ class NepDipoleResultData(ResultData):
 
         return cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
 
-    def _load_dataset(self):
+
+    def _should_recalculate(self, nep_in: dict) -> bool:
+        """判断是否需要重新计算 NEP 数据。"""
+
+
+        output_files_exist = all([
+            self.dipole_out_path.exists(),
+
+        ])
+        return not check_fullbatch(nep_in, len(self.atoms_num_list)) or not output_files_exist
+
+    def _recalculate_and_save(self ):
+
+        try:
+            nep_dipole_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+                                                           self.structure.now_data, "dipole")
+
+            nep_dipole_array = self._save_dipole_data(  nep_dipole_array)
+
+        except Exception as e:
+            logger.debug(traceback.format_exc())
+            MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+
+            nep_dipole_array = np.array([])
+        return nep_dipole_array
+    def _save_dipole_data(self, dipole: np.ndarray)  :
+        """保存dipole数据到文件。"""
+        nep_dipole_array = dipole / (self.atoms_num_list[:, np.newaxis])
+
+        try:
+            dipole_array = np.column_stack([nep_dipole_array,
+                                                    np.vstack([structure.nep_dipole for structure in
+                                                               self.structure.now_data]),
+
+                                                    ])
+
+        except Exception:
+            logger.debug(traceback.format_exc())
+            dipole_array = np.column_stack([nep_dipole_array, nep_dipole_array])
+        dipole_array = dipole_array.astype(np.float32)
+        np.savetxt(self.dipole_out_path, dipole_array, fmt='%10.8f')
+
+        return dipole_array
+
+    def _load_dataset(self) -> None:
+        """加载或计算 NEP 数据集，并更新内部数据集属性。"""
         nep_in = read_nep_in(self.nep_txt_path.with_name("nep.in"))
-        atoms_num_list = np.array([len(structure) for structure in self.structure.now_data])
-        if (not check_fullbatch(nep_in, len(atoms_num_list))
-                or all([
-                    not self.dipole_out_path.exists(),
-
-                ])):
-
-            try:
-                nep_dipole_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-                                                                       self.structure.now_data, "dipole")
-
-                nep_dipole_array = nep_dipole_array / (atoms_num_list[:, np.newaxis])
-                dipole_array = np.column_stack([nep_dipole_array,
-                                                        np.vstack([structure.nep_dipole for structure in
-                                                                   self.structure.now_data]),
-
-                                                        ])
-
-                np.savetxt(self.dipole_out_path, dipole_array, fmt='%10.8f')
-
-            except:
-                logger.debug(traceback.format_exc())
-
-                dipole_array = np.column_stack([nep_dipole_array,
-                                                        nep_dipole_array
-
-                                                        ])
+        if self._should_recalculate(nep_in):
+            dipole_array = self._recalculate_and_save( )
         else:
-            dipole_array = read_nep_out_file(self.dipole_out_path)
-
-        self._dipole_dataset = NepPlotData(dipole_array,
-                                                            title="dipole")
-
+            dipole_array= read_nep_out_file(self.dipole_out_path, dtype=np.float32)
+        self._dipole_dataset = NepPlotData(dipole_array, title="dipole")
