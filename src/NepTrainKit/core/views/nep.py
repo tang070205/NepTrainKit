@@ -152,7 +152,7 @@ class NepResultPlotWidget(QWidget):
             return
         select_index=self.canvas.nep_result_data.descriptor.convert_index(list(self.canvas.nep_result_data.select_index))
         descriptor_data = self.canvas.nep_result_data.descriptor.now_data[select_index,:]
-        if hasattr(self.canvas.nep_result_data,"energy"):
+        if hasattr(self.canvas.nep_result_data,"energy") and self.canvas.nep_result_data.energy.num !=0:
             select_index = self.canvas.nep_result_data.energy.convert_index(
                 list(self.canvas.nep_result_data.select_index))
 

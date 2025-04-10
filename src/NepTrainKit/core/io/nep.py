@@ -279,10 +279,19 @@ class NepTrainResultData(ResultData):
                     not self.virial_out_path.exists()
 
                 ])):
-            nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-                                                                                          self.structure.now_data,"calculate")
+            try:
+                nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+                                                                                              self.structure.now_data,"calculate")
 
+            except Exception as e:
+                logger.debug(traceback.format_exc())
+                self._stress_dataset = NepPlotData([], title="stress")
+                self._virial_dataset = NepPlotData([], title="virial")
+                self._energy_dataset = NepPlotData([], title="energy")
+                self._force_dataset = NepPlotData([], title="force")
 
+                MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+                return
             try:
                 energy_array = np.column_stack(
                     [nep_potentials_array / atoms_num_list, np.array([structure.per_atom_energy for structure in self.structure.now_data],dtype=np.float32)] )
@@ -329,14 +338,10 @@ class NepTrainResultData(ResultData):
                 logger.debug(traceback.format_exc())
 
                 virials_array = np.column_stack([nep_virials_array,
-                                                 nep_virials_array
-
-                                                 ])
+                                                 nep_virials_array ])
 
                 stress_array = virials_array * coefficient * 160.21766208
                 stress_array=stress_array.astype(np.float32)
-            # MessageManager.send_message_box("Detected that the current mode is not full batch. Please make predictions first, then load!")
-            # raise ValueError("Detected that the current mode is not full batch. Please make predictions first, then load!")
         else:
             energy_array = read_nep_out_file(self.energy_out_path,dtype=np.float32)
             forces_array = read_nep_out_file(self.force_out_path,dtype=np.float32)
