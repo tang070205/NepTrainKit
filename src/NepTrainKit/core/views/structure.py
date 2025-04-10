@@ -7,7 +7,7 @@ import numpy as np
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 from OpenGL.GL import *  # noqa
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor,QMatrix4x4
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.core import Config
@@ -16,11 +16,47 @@ from NepTrainKit.core.structure import table_info, Structure
 
 class StructurePlotWidget(gl.GLViewWidget):
     def __init__(self, *args, **kwargs):
+        self.ortho=True
+
         super().__init__(*args, **kwargs)
         self.setBackgroundColor('w')
-        self.setCameraPosition(distance=30, elevation=30, azimuth=30)
+        # self.setCameraPosition(distance=30, elevation=30, azimuth=30)
         self.atom_items = []  # 存储所有原子的信息和对应的GLMeshItem
 
+    def set_projection(self,ortho=True):
+        self.ortho=ortho
+        self.setProjection()
+    def setProjection(self, region=None ):
+        m = self.projectionMatrix(region)
+        glMatrixMode(GL_PROJECTION)
+        glLoadMatrixf(np.array(m.data(), dtype=np.float32))
+    def projectionMatrix(self, region=None ):
+        # 如果已经缓存，直接返回
+        if self.ortho:
+            # 获取视口和参数
+            x0, y0, w, h = self.getViewport()
+            aspect = w / h if h != 0 else 1.0
+            dist = max(self.opts['distance'], 1e-6)
+            fov = self.opts['fov']
+            nearClip = dist * 0.001  # 用于裁剪，不影响正交范围
+            farClip = dist * 1000.0
+            # 正交投影：基于 distance 计算视口范围
+            r = dist * np.tan(np.radians(fov / 2))  # 在 distance 处的半宽度
+            t = r * h / w  # 调整高度
+            # 假设 region 为整个视口
+            region = region or (x0, y0, w, h)
+            left = r * ((region[0] - x0) * (2.0 / w) - 1)
+            right = r * ((region[0] + region[2] - x0) * (2.0 / w) - 1)
+            bottom = t * ((region[1] - y0) * (2.0 / h) - 1)
+            top = t * ((region[1] + region[3] - y0) * (2.0 / h) - 1)
+            mat = QMatrix4x4()
+            mat.setToIdentity()
+
+            mat.ortho(left, right, bottom, top, nearClip, farClip)
+
+            return mat
+        else:
+            return super().projectionMatrix(region)
     def show_lattice(self, structure):
         origin = np.array([0.0, 0.0, 0.0])
         a1 = structure.cell[0]
