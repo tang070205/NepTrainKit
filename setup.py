@@ -32,7 +32,7 @@ if sys.platform == "win32":
     data_files = [('bin', [
             'src/nep_cpu/gcc.exe',
             'src/nep_cpu/g++.exe',
-            'src/nep_cpu/libgcc_s_dw2-1.dll',
+            'src/nep_cpu/libgcc_s_seh-1.dll',
             'src/nep_cpu/libstdc++-6.dll',
             'src/nep_cpu/libwinpthread-1.dll',
             'src/nep_cpu/libgomp-1.dll'
