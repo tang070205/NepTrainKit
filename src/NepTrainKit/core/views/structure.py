@@ -37,8 +37,8 @@ class StructurePlotWidget(gl.GLViewWidget):
             glOptions="translucent",
             antialias=True
         )
-        center = structure.cell.sum(axis=0) / 2
-        self.opts['center'] = pg.Vector(center[0], center[1], center[2])
+        # center = structure.cell.sum(axis=0) / 2
+        # self.opts['center'] = pg.Vector(center[0], center[1], center[2])
         self.addItem(lattice_lines)
 
 
@@ -92,26 +92,26 @@ class StructurePlotWidget(gl.GLViewWidget):
 
             self.highlight_atom(pair[0])
             self.highlight_atom(pair[1])
-        # bond_pairs = structure.get_bond_pairs()
-        # for pair in bond_pairs:
-        #
-        #     elem0_info = table_info[str(structure.numbers[pair[0]])]
-        #     elem1_info = table_info[str(structure.numbers[pair[1]])]
-        #     pos1 = structure.positions[pair[0]]
-        #     pos2 = structure.positions[pair[1]]
-        #     bond_length = np.linalg.norm(pos1 - pos2)
-        #     if (elem0_info["radii"] + elem1_info["radii"]) * radius_coefficient_config > bond_length * 100:
-        #         color1 = (1.0, 0.0, 0.0, 0.7)
-        #         color2 = (1.0, 0.0, 0.0, 0.7)
-        #         bond_radius = 0.3
-        #     else:
-        #         color1 = QColor(elem0_info["color"]).getRgbF()
-        #         color2 = QColor(elem1_info["color"]).getRgbF()
-        #         bond_radius = 0.15
-        #     radius1 = table_info[str(structure.numbers[pair[0]])]["radii"] / 150
-        #     radius2 = table_info[str(structure.numbers[pair[1]])]["radii"] / 150
-        #     self.show_bond(pos1, pos2, color1, color2, radius1, radius2, bond_radius=bond_radius)
+        bond_pairs = structure.get_bond_pairs()
+        for pair in bond_pairs:
 
+            elem0_info = table_info[str(structure.numbers[pair[0]])]
+            elem1_info = table_info[str(structure.numbers[pair[1]])]
+            pos1 = structure.positions[pair[0]]
+            pos2 = structure.positions[pair[1]]
+            bond_length = np.linalg.norm(pos1 - pos2)
+            if (elem0_info["radii"] + elem1_info["radii"]) * radius_coefficient_config > bond_length * 100:
+                color1 = (1.0, 0.0, 0.0, 0.7)
+                color2 = (1.0, 0.0, 0.0, 0.7)
+                bond_radius = 0.3
+            else:
+                color1 = QColor(elem0_info["color"]).getRgbF()
+                color2 = QColor(elem1_info["color"]).getRgbF()
+                bond_radius = 0.15
+            radius1 = table_info[str(structure.numbers[pair[0]])]["radii"] / 150
+            radius2 = table_info[str(structure.numbers[pair[1]])]["radii"] / 150
+            self.show_bond(pos1, pos2, color1, color2, radius1, radius2, bond_radius=bond_radius)
+    #
     def highlight_atom(self, atom_index):
         """高亮指定的原子并添加光晕"""
         if 0 <= atom_index < len(self.atom_items):
@@ -136,7 +136,7 @@ class StructurePlotWidget(gl.GLViewWidget):
             halo = gl.GLMeshItem(meshdata=halo_sphere, smooth=True, shader='shaded', color=halo_color, glOptions='translucent')
             halo.translate(atom["position"][0], atom["position"][1], atom["position"][2])
             self.addItem(halo)
-
+            self.itemsAt()
             # 更新atom_items中的mesh和halo
             # self.atom_items[atom_index]["mesh"] = new_mesh
             self.atom_items[atom_index]["halo"] = halo
@@ -169,6 +169,46 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.clear()
         self.show_lattice(structure)
         self.show_elem(structure)
+        # 计算边界框和相机参数
+        coords=structure.positions
+        min_coords = coords.min(axis=0)
+        max_coords = coords.max(axis=0)
+        center = (min_coords + max_coords) / 2
+        size = max_coords - min_coords
+        max_dimension = np.max(size)
+
+        # 设置相机参数
+        fov = 60
+        distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.1
+        self.opts['center'] = pg.Vector(center[0], center[1], center[2])
+        self.opts['distance'] = distance
+        aspect_ratio = size / np.max(size)  # 计算 x、y、z 的相对比例
+        # print("aspect_ratio", aspect_ratio)
+        flat_threshold=0.5
+        # 根据扁平方向调整视角
+        if aspect_ratio[0] < flat_threshold and aspect_ratio[1] >= flat_threshold and aspect_ratio[2] >= flat_threshold:
+            # x 方向扁平，从 x 轴法线方向（侧面）看
+            self.opts['elevation'] = 0
+            self.opts['azimuth'] = 0
+        elif aspect_ratio[1] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
+            2] >= flat_threshold:
+            # y 方向扁平，从 y 轴法线方向（侧面）看
+            self.opts['elevation'] = 0
+            self.opts['azimuth'] = 0
+        elif aspect_ratio[2] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
+            1] >= flat_threshold:
+            # z 方向扁平，从 z 轴法线方向（顶部）看
+            self.opts['elevation'] = 90
+            self.opts['azimuth'] = 0
+        else:
+            # 没有明显扁平方向，使用默认斜视角
+            self.opts['elevation'] = 30
+            self.opts['azimuth'] = 45
+
+        # 应用设置
+        self.setCameraPosition( )
+
+
         # 示例：高亮第0个原子
         # self.highlight_atom(0)
 

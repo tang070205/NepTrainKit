@@ -158,18 +158,11 @@ class MakeDataWidget(QWidget):
             card.stop()
     def add_card(self,card_name):
 
-        card_map={
-            CardName.group:CardGroup,
-            CardName.superCell:SuperCellCard,
-            CardName.perturb:PerturbCard,
-            CardName.scaling:CellScalingCard,
-            CardName.vacancy_defect:VacancyDefectCard,
-            CardName.fps:FPSFilterDataCard
-        }
-        if card_name not in card_map:
+
+        if card_name not in card_info_dict:
             MessageManager.send_warning_message("no card")
             return
-        card=card_map[card_name]()
+        card=card_info_dict[card_name](self)
         self.workspace_card_widget.add_card(card)
         return card
 
@@ -190,7 +183,7 @@ class MakeDataWidget(QWidget):
 
 
             with open(path, "w") as file:
-                json.dump(config, file, indent=4)
+                json.dump(config, file, indent=4,ensure_ascii=False)
             MessageManager.send_success_message("Card configuration exported successfully.")
     def load_card_config(self):
         path = utils.call_path_dialog(self, "Choose a card configuration file", "select" )
@@ -210,12 +203,7 @@ class MakeDataWidget(QWidget):
                 name=card.get("name")
                 card_widget=self.add_card(name)
                 card_widget.from_dict(card)
-                if  name==CardName.group:
-                    for sub_card in card.get("card_list"):
-                        sub_card_widget = self.add_card(sub_card["name"])
-                        sub_card_widget.from_dict(sub_card)
 
-                        card_widget.add_card(sub_card_widget)
 
 if __name__ == "__main__":
     import sys

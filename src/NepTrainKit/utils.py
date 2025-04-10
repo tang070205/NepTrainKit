@@ -163,3 +163,34 @@ class DataProcessingThread(QThread):
         except Exception as e:
             logger.debug(traceback.format_exc())
             self.errorSignal.emit(str(e))
+class FillterProcessingThread(QThread):
+    # 定义信号用于通信
+    progressSignal = Signal(int)  # 进度更新信号
+    finishSignal = Signal()  # 处理完成信号
+    errorSignal = Signal(str)  # 错误信号
+
+    def __init__(self,  process_func):
+        super().__init__()
+
+        self.process_func = process_func
+
+
+    def run(self):
+        """线程主逻辑"""
+        try:
+
+            self.progressSignal.emit(0)
+
+            # 处理每个结构
+            self.process_func()
+
+
+
+                # 发射进度信号 (百分比)
+            self.progressSignal.emit(100)
+
+            # 处理完成
+            self.finishSignal.emit( )
+        except Exception as e:
+            logger.debug(traceback.format_exc())
+            self.errorSignal.emit(str(e))

@@ -80,7 +80,7 @@ class SettingsWidget(QWidget):
             self.personal_group
         )
         self.radius_coefficient_Card.setValue(radius_coefficient_config)
-        self.radius_coefficient_Card.setRange(0.5, 1.5)
+        self.radius_coefficient_Card.setRange(0.0, 1.5)
 
         self.about_group = SettingCardGroup("About", self)
         self.help_card = HyperlinkCard(

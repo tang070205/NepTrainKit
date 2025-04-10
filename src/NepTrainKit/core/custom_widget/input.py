@@ -27,6 +27,7 @@ class SpinBoxUnitInputFrame(QFrame):
                 input_object.setButtonSymbols(QSpinBox.NoButtons)
             elif input_type=="float":
                 input_object = QDoubleSpinBox(self)
+                input_object.setDecimals(3)
                 input_object.setButtonSymbols(QSpinBox.NoButtons)
             else:
                 raise TypeError('input_type must be int or float')

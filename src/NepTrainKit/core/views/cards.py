@@ -3,6 +3,7 @@
 # @Time    : 2025/4/6 13:21
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import os
 import time
 from typing import List, Tuple
 import sobol
@@ -10,14 +11,16 @@ import sobol
 import numpy as np
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QIcon, QAction
-from PySide6.QtWidgets import QGridLayout, QFrame, QWidget
+from PySide6.QtWidgets import QGridLayout, QFrame, QWidget, QVBoxLayout
 
 from qfluentwidgets import ComboBox, BodyLabel, RadioButton, SplitToolButton, RoundMenu, PrimaryDropDownToolButton, \
-    PrimaryDropDownPushButton, CommandBar, Action,CheckBox
+    PrimaryDropDownPushButton, CommandBar, Action, CheckBox, LineEdit
 
-from NepTrainKit.core.custom_widget import MakeDataCard, SpinBoxUnitInputFrame,FilterDataCard
+from NepTrainKit.core import MessageManager
+from NepTrainKit.core.custom_widget import SpinBoxUnitInputFrame, MakeDataCardWidget, ProcessLabel
 from NepTrainKit import utils
-from NepTrainKit.core.types import CardName
+from NepTrainKit.core.calculator import run_nep3_calculator_process
+from NepTrainKit.core.io.select import farthest_point_sampling
 
 card_info_dict = {}
 def register_card_info(card_class  ):
@@ -26,6 +29,172 @@ def register_card_info(card_class  ):
     return card_class
 
 
+
+class MakeDataCard(MakeDataCardWidget):
+    #通知下一个card执行
+    separator=False
+    card_name= "MakeDataCard"
+    menu_icon=r":/images/src/images/logo.svg"
+    runFinishedSignal=Signal(int)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.exportSignal.connect(self.export_data)
+        self.dataset:list=None
+        self.result_dataset=[]
+        self.index=0
+        # self.setFixedSize(400, 200)
+
+
+
+        self.setting_widget = QWidget(self)
+        self.viewLayout.setContentsMargins(3, 6, 3, 6)
+        self.viewLayout.addWidget(self.setting_widget)
+        self.settingLayout = QGridLayout(self.setting_widget)
+        self.settingLayout.setContentsMargins(5, 0, 5,0)
+        self.settingLayout.setSpacing(3)
+        self.status_label = ProcessLabel(self)
+        self.vBoxLayout.addWidget(self.status_label)
+        self.windowStateChangedSignal.connect(self.show_setting)
+    def show_setting(self ):
+        if self.window_state == "expand":
+            self.setting_widget.show( )
+
+        else:
+            self.setting_widget.hide( )
+
+
+
+
+    def set_dataset(self,dataset):
+        self.dataset =dataset
+        self.result_dataset=[]
+
+        self.update_dataset_info()
+    def write_result_dataset(self, file):
+        if isinstance(file, str):
+            file=open(file, "w", encoding="utf8")
+            io_action=False
+        else:
+            io_action=True
+
+        for structure in self.result_dataset:
+            structure.write(file)
+        if not io_action:
+            file.close()
+    def export_data(self):
+
+        if self.dataset is not None:
+
+            path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle().replace(' ', '_')}_structure.xyz")
+            if not path:
+                return
+            thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
+            thread.start_work(self.write_result_dataset, path)
+
+    def process_structure(self, structure) :
+        """
+        自定义对每个结构的处理 最后返回一个处理后的结构列表
+        """
+        raise NotImplementedError
+    def closeEvent(self, event):
+
+        if hasattr(self, "worker_thread"):
+
+            if self.worker_thread.isRunning():
+
+                self.worker_thread.terminate()
+                self.runFinishedSignal.emit(self.index)
+
+        self.deleteLater()
+        super().closeEvent(event)
+    def stop(self):
+        if hasattr(self, "worker_thread"):
+            if self.worker_thread.isRunning():
+                self.worker_thread.terminate()
+                self.result_dataset = self.worker_thread.result_dataset
+                self.update_dataset_info()
+                del self.worker_thread
+    def run(self):
+        # 创建并启动线程
+
+        if self.check_state:
+            self.worker_thread = utils.DataProcessingThread(
+                self.dataset,
+                self.process_structure
+            )
+            self.status_label.set_colors(["#59745A" ])
+
+            # 连接信号
+            self.worker_thread.progressSignal.connect(self.update_progress)
+            self.worker_thread.finishSignal.connect(self.on_processing_finished)
+            self.worker_thread.errorSignal.connect(self.on_processing_error)
+
+            self.worker_thread.start()
+        else:
+            self.result_dataset = self.dataset
+            self.update_dataset_info()
+            self.runFinishedSignal.emit(self.index)
+        # self.worker_thread.wait()
+    def update_progress(self, progress):
+        self.status_label.setText(f"Processing {progress}%")
+        self.status_label.set_progress(progress)
+    def on_processing_finished(self):
+        # self.status_label.setText("Processing finished")
+
+        self.result_dataset = self.worker_thread.result_dataset
+        self.update_dataset_info()
+        self.status_label.set_colors(["#a5d6a7" ])
+        self.runFinishedSignal.emit(self.index)
+        del self.worker_thread
+    def on_processing_error(self, error):
+        self.close_button.setEnabled(True)
+
+        self.status_label.set_colors(["red" ])
+        self.result_dataset = self.worker_thread.result_dataset
+        del self.worker_thread
+        self.update_dataset_info()
+        self.runFinishedSignal.emit(self.index)
+
+        MessageManager.send_error_message(f"Error occurred: {error}")
+    def from_dict(self, data):
+        pass
+    def to_dict(self):
+        return {}
+
+
+
+    def update_dataset_info(self ):
+        text = f"Input structures: {len(self.dataset)} → Output: {len(self.result_dataset)}"
+        self.status_label.setText(text)
+
+class FilterDataCard(MakeDataCard):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle("Filter Data")
+    def update_progress(self, progress):
+        self.status_label.setText(f"Processing {progress}%")
+        self.status_label.set_progress(progress)
+    def on_processing_finished(self):
+        # self.status_label.setText("Processing finished")
+
+
+        self.update_dataset_info()
+        self.status_label.set_colors(["#a5d6a7" ])
+        self.runFinishedSignal.emit(self.index)
+        del self.worker_thread
+    def on_processing_error(self, error):
+        self.close_button.setEnabled(True)
+
+        self.status_label.set_colors(["red" ])
+
+        del self.worker_thread
+        self.update_dataset_info()
+        self.runFinishedSignal.emit(self.index)
+
+        MessageManager.send_error_message(f"Error occurred: {error}")
+    def update_dataset_info(self ):
+        text = f"Input structures: {len(self.dataset)} → Selected: {len(self.result_dataset)}"
+        self.status_label.setText(text)
 
 
 
@@ -210,7 +379,7 @@ class SuperCellCard(MakeDataCard):
     def to_dict(self):
         data_dict = {}
         data_dict['class']="SuperCellCard"
-        data_dict['name'] =  CardName.superCell
+        data_dict['name'] = self.card_name
         data_dict["check_state"]=self.check_state
 
         data_dict['super_cell_type'] = self.behavior_type_combo.currentIndex()
@@ -355,7 +524,7 @@ class VacancyDefectCard(MakeDataCard):
     def to_dict(self):
         data_dict = {}
         data_dict['class']="VacancyDefectCard"
-        data_dict['name'] =  CardName.vacancy_defect
+        data_dict['name'] =  self.card_name
         data_dict["check_state"]=self.check_state
         data_dict['engine_type'] = self.engine_type_combo.currentIndex()
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
@@ -449,7 +618,7 @@ class PerturbCard(MakeDataCard):
     def to_dict(self):
         data_dict = {}
         data_dict['class']="PerturbCard"
-        data_dict['name'] =  CardName.perturb
+        data_dict['name'] =  self.card_name
         data_dict["check_state"]=self.check_state
 
         data_dict['engine_type'] = self.engine_type_combo.currentIndex()
@@ -573,7 +742,7 @@ class CellScalingCard(MakeDataCard):
     def to_dict(self):
         data_dict = {}
         data_dict['class']="CellScalingCard"
-        data_dict['name'] =  CardName.scaling
+        data_dict['name'] =  self.card_name
         data_dict["check_state"]=self.check_state
         data_dict['engine_type'] = self.engine_type_combo.currentIndex()
         data_dict['perturb_angle'] = self.perturb_angle_checkbox.isChecked()
@@ -591,17 +760,275 @@ class CellScalingCard(MakeDataCard):
 
 @register_card_info
 class FPSFilterDataCard(FilterDataCard):
+    separator=True
     card_name= "FPS Filter"
     menu_icon=r":/images/src/images/fps.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Filter FPS")
+        self.setTitle("Filter by FPS")
+        self.init_ui()
+    def init_ui(self):
+        self.setObjectName("fps_filter_card_widget")
+        self.nep_path_label = BodyLabel("NEP file path: ", self.setting_widget)
+
+        self.nep_path_lineedit = LineEdit(self.setting_widget)
+        self.nep_path_lineedit.setPlaceholderText("nep.txt path")
+        self.num_label = BodyLabel("Max selected", self.setting_widget)
+
+        self.num_condition_frame = SpinBoxUnitInputFrame(self)
+        self.num_condition_frame.set_input("unit", 1, "int")
+        self.num_condition_frame.setRange(1, 10000)
+        self.num_condition_frame.set_input_value([100])
+
+        self.min_distance_condition_frame = SpinBoxUnitInputFrame(self)
+        self.min_distance_condition_frame.set_input("", 1,"float")
+        self.min_distance_condition_frame.setRange(0, 100)
+        self.min_distance_condition_frame.set_input_value([0.01])
+
+        self.min_distance_label = BodyLabel("Min distance", self.setting_widget)
+
+        self.settingLayout.addWidget(self.num_label, 0, 0, 1, 1)
+        self.settingLayout.addWidget(self.num_condition_frame, 0, 1, 1, 2)
+        self.settingLayout.addWidget(self.min_distance_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.min_distance_condition_frame, 1, 1, 1, 2)
+
+
+        self.settingLayout.addWidget(self.nep_path_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.nep_path_lineedit, 2, 1, 1, 2)
+    def process_structure(self,*args, **kwargs ):
+        nep_path=self.nep_path_lineedit.text()
+        n_samples=self.num_condition_frame.get_input_value()[0]
+        distance=self.min_distance_condition_frame.get_input_value()[0]
+        desc_array = run_nep3_calculator_process(nep_path, self.dataset, "descriptor")
+        remaining_indices = farthest_point_sampling(desc_array, n_samples=n_samples, min_dist=distance)
+        self.result_dataset = [self.dataset[i] for i in remaining_indices]
+
+
+
+    def run(self):
+        # 创建并启动线程
+        nep_path=self.nep_path_lineedit.text()
+
+        if not os.path.exists(nep_path):
+            MessageManager.send_warning_message(  "NEP file not exists!")
+            self.runFinishedSignal.emit(self.index)
+
+            return
+        if self.check_state:
+            self.worker_thread = utils.FillterProcessingThread(
+
+                self.process_structure
+            )
+            self.status_label.set_colors(["#59745A"])
+
+            # 连接信号
+            self.worker_thread.progressSignal.connect(self.update_progress)
+            self.worker_thread.finishSignal.connect(self.on_processing_finished)
+            self.worker_thread.errorSignal.connect(self.on_processing_error)
+
+            self.worker_thread.start()
 
 
 
 
 
-print(card_info_dict)
+        else:
+            self.result_dataset = self.dataset
+            self.update_dataset_info()
+            self.runFinishedSignal.emit(self.index)
+    def update_progress(self, progress):
+        self.status_label.setText(f"generate descriptors ...")
+        self.status_label.set_progress(progress)
+    def to_dict(self):
+        data_dict = {}
+        data_dict['class']="FPSFilterDataCard"
+        data_dict['name'] =  self.card_name
+        data_dict["check_state"]=self.check_state
+        data_dict['nep_path']=self.nep_path_lineedit.text()
+        data_dict['num_condition'] = self.num_condition_frame.get_input_value()
+        data_dict['min_distance_condition'] = self.min_distance_condition_frame.get_input_value()
+        return data_dict
+
+    def from_dict(self, data_dict):
+        try:
+            self.state_checkbox.setChecked(data_dict['check_state'])
+
+            self.nep_path_lineedit.setText(data_dict['nep_path'])
+            self.num_condition_frame.set_input_value(data_dict['num_condition'])
+            self.min_distance_condition_frame.set_input_value(data_dict['min_distance_condition'])
+        except:
+            pass
+@register_card_info
+class CardGroup(MakeDataCardWidget):
+    separator=True
+    card_name= "Card Group"
+    menu_icon=r":/images/src/images/group.svg"
+    #通知下一个card执行
+
+    runFinishedSignal=Signal(int)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle("Card Group")
+        self.setAcceptDrops(True)
+        self.index=0
+        self.group_widget = QWidget(self)
+        self.setStyleSheet("CardGroup{boder: 2px solid #C0C0C0;}")
+        self.viewLayout.addWidget(self.group_widget)
+        self.group_layout = QVBoxLayout(self.group_widget)
+        self.exportSignal.connect(self.export_data)
+        self.windowStateChangedSignal.connect(self.show_card_setting)
+        self.fillter_widget = QWidget(self)
+        self.fillter_layout = QVBoxLayout(self.fillter_widget)
+        self.vBoxLayout.addWidget(self.fillter_widget)
+
+        self.filter_card=None
+        self.dataset:list=None
+        self.result_dataset=[]
+        self.resize(400, 200)
+    def set_filter_card(self,card):
+
+        self.filter_card=card
+        self.fillter_layout.addWidget(card)
+    def state_changed(self, state):
+        super().state_changed(state)
+        for card in self.card_list:
+            card.state_checkbox.setChecked(state)
+    @property
+    def card_list(self)->["MakeDataCard"]:
+
+        return [self.group_layout.itemAt(i).widget() for i in range(self.group_layout.count()) ]
+    def show_card_setting(self):
+
+        for card in self.card_list:
+            card.window_state = self.window_state
+            card.windowStateChangedSignal.emit()
+    def set_dataset(self,dataset):
+        self.dataset =dataset
+        self.result_dataset=[]
+
+    def add_card(self, card):
+
+        self.group_layout.addWidget(card)
+    def remove_card(self, card):
+
+        self.group_layout.removeWidget(card)
+    def clear_cards(self):
+        for card in self.card_list:
+            self.group_layout.removeWidget(card)
+
+
+    def closeEvent(self, event):
+
+        for card in self.card_list:
+            card.close()
+        self.deleteLater()
+        super().closeEvent(event)
+
+
+
+
+    def dragEnterEvent(self, event):
+
+        if isinstance(event.source(), (MakeDataCard,CardGroup)):
+            event.acceptProposedAction()
+        else:
+            event.ignore()  # 忽略其他类型的拖拽
+    def dropEvent(self, event):
+
+        widget = event.source()
+        if isinstance(widget, FilterDataCard):
+            self.set_filter_card(widget)
+        elif isinstance(widget, (MakeDataCard,CardGroup)):
+            self.add_card(widget)
+        event.acceptProposedAction()
+    def on_card_finished(self, index):
+        self.run_card_num-=1
+        self.card_list[index].runFinishedSignal.disconnect(self.on_card_finished)
+        self.result_dataset.extend(self.card_list[index].result_dataset)
+
+        if self.run_card_num==0:
+
+            self.runFinishedSignal.emit(self.index)
+            if self.filter_card and self.filter_card.check_state:
+                self.filter_card.set_dataset(self.result_dataset)
+                self.filter_card.run()
+
+    def stop(self):
+        for card in self.card_list:
+            card.stop()
+    def run(self):
+        # 创建并启动线程
+        self.run_card_num = len(self.card_list)
+
+        if self.check_state and self.run_card_num>0:
+            self.result_dataset =[]
+            for index,card in enumerate(self.card_list):
+                if card.check_state:
+                    card.set_dataset(self.dataset)
+                    card.index=index
+                    card.runFinishedSignal.connect(self.on_card_finished)
+                    card.run()
+                else:
+                    self.run_card_num-=1
+        else:
+            self.result_dataset = self.dataset
+            self.runFinishedSignal.emit(self.index)
+
+    def write_result_dataset(self, file):
+
+        if isinstance(file,str):
+            file=open(file, "w", encoding="utf8")
+        if self.filter_card and self.filter_card.check_state:
+            self.filter_card.write_result_dataset(file)
+            return
+        for card in self.card_list:
+            if card.check_state:
+                card.write_result_dataset(file)
+        file.close()
+    def export_data(self):
+
+        if self.dataset is not None:
+
+            path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle()}_structure.xyz")
+            if not path:
+                return
+            thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
+            thread.start_work(self.write_result_dataset, path)
+    def to_dict(self):
+        data_dict={}
+        data_dict['class']="CardGroup"
+        data_dict['name']=self.card_name
+
+        data_dict["check_state"]=self.check_state
+
+        data_dict["card_list"]=[]
+
+        for card in self.card_list:
+            data_dict["card_list"].append(card.to_dict())
+        if self.filter_card:
+            data_dict["filter_card"]=self.filter_card.to_dict()
+        else:
+            data_dict["filter_card"]=None
+
+        return data_dict
+    def from_dict(self,data_dict):
+
+        self.state_checkbox.setChecked(data_dict['check_state'])
+
+
+        for sub_card in data_dict.get("card_list",[]):
+            card_name=sub_card["name"]
+            card  = card_info_dict[card_name](self)
+
+            self.add_card(card)
+            card.from_dict(sub_card)
+
+        if data_dict.get("filter_card"):
+            card_name=data_dict["filter_card"]["name"]
+            filter_card  = card_info_dict[card_name](self)
+
+            filter_card.from_dict(data_dict["filter_card"])
+            self.set_filter_card(filter_card)
 
 class ConsoleWidget(QWidget):
     """
@@ -627,16 +1054,10 @@ class ConsoleWidget(QWidget):
         self.new_card_button.setObjectName("new_card_button")
         self.menu = RoundMenu(parent=self)
         for card_name,card_class in card_info_dict.items():
+            if card_class.separator:
+                self.menu.addSeparator()
             self.menu.addAction(QAction(QIcon(card_class.menu_icon),card_name))
-        # self.menu.addAction(QAction(QIcon(r":/images/src/images/supercell.svg"),CardName.superCell))
-        # self.menu.addAction(QAction(QIcon(r":/images/src/images/perturb.svg"), CardName.perturb))
-        # self.menu.addAction(QAction(QIcon(r":/images/src/images/scaling.svg"), CardName.scaling))
-        # self.menu.addAction(QAction(QIcon(r":/images/src/images/defect.svg"), CardName.vacancy_defect))
-        # self.menu.addSeparator()
-        # self.menu.addAction(QAction(QIcon(r":/images/src/images/fps.svg"), CardName.fps))
 
-        self.menu.addSeparator()
-        self.menu.addAction(QAction(QIcon(r":/images/src/images/group.svg"), CardName.group))
 
         self.menu.triggered.connect(self.menu_clicked)
         self.new_card_button.setMenu(self.menu)

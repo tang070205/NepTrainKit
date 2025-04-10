@@ -113,6 +113,9 @@ class Nep3Calculator( ):
         return descriptors_per_atom
     @utils.timeit
     def get_structures_descriptor(self,structures:list[Structure]):
+        """
+        返回的已经结构的描述符了 无需平均
+        """
         if not self.initialized:
             return np.array([])
         _types, _boxs, _positions, group_size = self.compose_structures(structures)

@@ -54,6 +54,8 @@ def gcd(a, b):
         a, b = b, a % b
     return a
 
+
+
 class Structure():
     """
     extxyz格式的结构类
@@ -154,7 +156,8 @@ class Structure():
 
         return target
 
-    def supercell(self, scale_factor, order="cell-major", tol=1e-5):
+
+    def supercell(self, scale_factor, order="atom-major", tol=1e-5):
         """
         按指定比例因子扩展晶胞，参考 ASE 的高效实现。
         保持晶格角度不变，并支持按元素排序。
@@ -174,58 +177,41 @@ class Structure():
         if scale_factor.min() < 1:
             raise ValueError("scale_factor 必须大于等于 1")
 
-        # 创建新结构
+        # 输入验证（同上）
+        scale_factor = np.asarray(scale_factor, dtype=np.int64)  # 限制为整数扩展
 
-        orig_lattice = self.lattice
+        # 计算新晶格（各方向独立扩展）
+        new_lattice = self.lattice * scale_factor[:, None]
 
-        # 计算扩展后的晶格，保持角度不变
-        orig_lengths = np.linalg.norm(orig_lattice, axis=1)
-        angles = np.arccos([
-            np.dot(orig_lattice[1], orig_lattice[2]) / (orig_lengths[1] * orig_lengths[2]),
-            np.dot(orig_lattice[0], orig_lattice[2]) / (orig_lengths[0] * orig_lengths[2]),
-            np.dot(orig_lattice[0], orig_lattice[1]) / (orig_lengths[0] * orig_lengths[1])
-        ])
-        new_lengths = orig_lengths * scale_factor
+        # 转换原始坐标到分数坐标并包裹
+        inv_orig_lattice = np.linalg.inv(self.lattice)
+        frac_pos = self.positions @ inv_orig_lattice
+        frac_pos = frac_pos % 1.0  # 严格包裹
 
-        new_lattice = np.zeros((3, 3), dtype=np.float32)
-        new_lattice[0] = [new_lengths[0], 0, 0]
-        new_lattice[1] = [new_lengths[1] * np.cos(angles[2]), new_lengths[1] * np.sin(angles[2]), 0]
-        cx = new_lengths[2] * np.cos(angles[1])
-        cy = new_lengths[2] * (np.cos(angles[0]) - np.cos(angles[1]) * np.cos(angles[2])) / np.sin(angles[2])
-        cz = np.sqrt(new_lengths[2] ** 2 - cx ** 2 - cy ** 2)
-        new_lattice[2] = [cx, cy, cz]
-        new_structure_lattice = new_lattice
+        # 生成扩展网格（明确轴向顺序）
+        n_a, n_b, n_c = scale_factor
+        # 生成平移向量时确保a方向优先
+        offsets_a = np.arange(n_a)[:, None] * np.array([1, 0, 0])  # a方向偏移
+        offsets_b = np.arange(n_b)[:, None] * np.array([0, 1, 0])  # b方向偏移
+        offsets_c = np.arange(n_c)[:, None] * np.array([0, 0, 1])  # c方向偏移
 
-        # 计算扩展倍数
-        expansion_factors = np.ceil(scale_factor).astype(int)
-        n_a, n_b, n_c = expansion_factors
+        # 计算所有偏移组合（a方向最外层循环）
+        full_offsets = (offsets_a[:, None, None] +
+                        offsets_b[None, :, None] +
+                        offsets_c[None, None, :]).reshape(-1, 3)
 
-        # 获取原始数据
-        orig_positions = self.positions
-        orig_elements = self.elements
+        # 扩展分数坐标
+        expanded_frac = frac_pos[:, None, :] + full_offsets[None, :, :]
+        expanded_frac = expanded_frac.reshape(-1, 3) / scale_factor  # 归一化到新分数坐标
 
+        # 转换到新笛卡尔坐标
+        new_positions = expanded_frac @ new_lattice
 
-
-        # 生成所有平移向量的分数坐标
-        i, j, k = np.meshgrid(np.arange(n_a), np.arange(n_b), np.arange(n_c), indexing='ij')
-        lattice_points_frac = np.stack([i.ravel(), j.ravel(), k.ravel()], axis=-1)
-        lattice_points = lattice_points_frac @ orig_lattice  # 转换为笛卡尔坐标
-        n_cells = len(lattice_points)
-
-        # 生成扩展后的原子坐标和属性
+        # 元素扩展（保持a方向优先顺序）
         if order == "cell-major":
-            new_positions = (orig_positions[None, :, :] + lattice_points[:, None, :]).reshape(-1, 3)
-            new_elements = np.tile(orig_elements, n_cells)
+            new_elements = np.tile(self.elements, np.prod(scale_factor))
         elif order == "atom-major":
-            new_positions = (orig_positions[:, None, :] + lattice_points[None, :, :]).reshape(-1, 3)
-            new_elements = np.repeat(orig_elements, n_cells)
-        else:
-            raise ValueError(f"无效的排序方式: {order}")
-
-        # 按元素类型重排序（可选，保持与原逻辑一致）
-        sort_indices = np.lexsort([new_elements])
-        new_positions = new_positions[sort_indices]
-        new_elements = new_elements[sort_indices]
+            new_elements = np.repeat(self.elements, np.prod(scale_factor))
 
 
         # 更新结构信息
@@ -239,7 +225,7 @@ class Structure():
         additional_fields['pbc'] = self.additional_fields.get('pbc', "T T T")
         additional_fields["Config_type"] =self.additional_fields.get('Config_type', "")+f" super cell({scale_factor})"
 
-        return Structure(new_structure_lattice, structure_info, properties, additional_fields)
+        return Structure(new_lattice, structure_info, properties, additional_fields)
     def adjust_reasonable(self, coeff=0.7):
         """
         根据传入系数 对比共价半径和实际键长，

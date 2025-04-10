@@ -16,15 +16,6 @@ class ForcesMode(Enum):
 class CanvasMode(Enum):
     vispy="vispy"
     pyqtgraph="pyqtgraph"
-class CardName:
-    group="Card Group"
-
-    fps="FPS Filter"
-
-    superCell="Super Cell"
-    perturb="Atomic perturb"
-    scaling="Lattice scaling"
-    vacancy_defect="Vacancy Defect Generation"
 
 
 

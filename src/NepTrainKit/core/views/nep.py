@@ -127,14 +127,14 @@ class NepResultPlotWidget(QWidget):
         if dataset.now_data.size ==0:
             MessageManager.send_message_box("No descriptor data available","Error")
             return
-        indices_to_remove = farthest_point_sampling(dataset.now_data,n_samples=n_samples,min_dist=distance)
+        remaining_indices = farthest_point_sampling(dataset.now_data,n_samples=n_samples,min_dist=distance)
 
         # 获取所有索引（从 0 到 len(arr)-1）
         all_indices = np.arange(dataset.now_data.shape[0])
 
         # 使用 setdiff1d 获取不在 indices_to_remove 中的索引
-        remaining_indices = np.setdiff1d(all_indices, indices_to_remove)
-        structures = dataset.group_array[remaining_indices]
+        remove_indices = np.setdiff1d(all_indices, remaining_indices)
+        structures = dataset.group_array[remove_indices]
         self.canvas.select_index(structures.tolist(),False)
 
     def export_descriptor_data(self):
