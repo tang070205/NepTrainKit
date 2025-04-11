@@ -29,14 +29,7 @@ if sys.platform == "win32":
     mingw_bin_dir = os.path.abspath("src/nep_cpu")
     os.environ['CC'] = os.path.join(mingw_bin_dir, 'gcc.exe')
     os.environ['CXX'] = os.path.join(mingw_bin_dir, 'g++.exe')
-    data_files = [('bin', [
-            os.path.join(mingw_bin_dir, 'gcc.exe'),
-            os.path.join(mingw_bin_dir, 'g++.exe'),
-            os.path.join(mingw_bin_dir, 'libgcc_s_seh-1.dll'),
-            os.path.join(mingw_bin_dir, 'libstdc++-6.dll'),
-            os.path.join(mingw_bin_dir, 'libwinpthread-1.dll'),
-            os.path.join(mingw_bin_dir, 'libgomp-1.dll')
-        ])]
+
     # 使用 MinGW 的 GCC 编译器
     extra_compile_args.append('-fopenmp')
     extra_compile_args.append('-O3')
@@ -103,6 +96,5 @@ setup(
     author="Chen Cheng bing",
     cmdclass={'build_ext': BuildExt},
     ext_modules=ext_modules,
-    data_files=data_files,
     zip_safe=False,
 )
