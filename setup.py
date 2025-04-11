@@ -85,7 +85,7 @@ class BuildExt(build_ext):
     def build_extensions(self):
         # 设置编译器标准为 C++11
         ct = self.compiler.compiler_type
-        opts = ['-fopenmp', '-O3', '-std=c++11']
+        opts = []
         for ext in self.extensions:
             ext.extra_compile_args = opts + ext.extra_compile_args
         try:
