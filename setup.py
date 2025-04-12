@@ -1,109 +1,123 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2024/10/24 14:22
-# @Author  : 兵
-# @email    : 1747193328@qq.com
-"""Pymatgen package configuration."""
-
 from __future__ import annotations
-import tempfile
-
-import platform
-import sys
 
 import os
+import sys
+import platform
 import subprocess
 import pybind11
 from pybind11.setup_helpers import Pybind11Extension
-from setuptools import  Extension, find_packages, setup
+from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
+# 获取系统架构信息
+SYSTEM = sys.platform
+ARCH = platform.machine()
+IS_64BIT = sys.maxsize > 2 ** 32
 
-# 获取 pybind11 的 include 路径
-pybind11_include = pybind11.get_include()
-
-
-
-# 设定编译选项
-
-extra_link_args = [ ]
-extra_compile_args=[ ]
-# 检查平台并设置相应的 OpenMP 编译标志
-
-if sys.platform == "win32":
-    # 对于 Windows 使用 MSVC 编译器时，需要使用 /openmp
-    extra_compile_args.append('/openmp' )
-    extra_compile_args.append('/O2' )
-    extra_compile_args.append('/std:c++11' )
-
-    extra_link_args.append('/openmp')
-    extra_link_args.append('/O2' )
-    extra_link_args.append('/std:c++11' )
-elif sys.platform == "darwin":
-    # 对于 macOS 和 Clang 使用 -fopenmp 编译标志
-    # Clang 好像不支持openmp 先注释掉
-    # extra_compile_args.append('-fopenmp' )
-    # 
-    # extra_link_args.append('-fopenmp')
+# 静态编译配置参数
+STATIC_FLAGS = {
+    'win32': {
+        'compile': ['/MT', '/openmp', '/O2', '/std:c++17', '/Zc:__cplusplus', '/permissive-'],
+        'link': ['/NODEFAULTLIB:libcmt', '/DEBUG:NONE', 'vcomp140.lib']
+    },
+    'linux': {
+        'compile': ['-fopenmp', '-O3', '-std=c++17', '-static-libstdc++'],
+        'link': ['-fopenmp', '-static-libgcc', '-Wl,-Bstatic', '-lomp', '-Wl,-Bdynamic']
+    },
+    'darwin': {
+        'compile': ['-Xpreprocessor', '-fopenmp', '-O3', '-std=c++17'],
+        'link': ['-lomp', '-Wl,-rpath,@loader_path/']
+    }
+}
 
 
-    extra_compile_args.append('-O3')
-    extra_compile_args.append('-std=c++11')
+class UniversalBuild(build_ext):
+    """跨平台静态编译构建器"""
+
+    def _get_omp_path(self):
+        """获取OpenMP库路径"""
+        if SYSTEM == 'darwin':
+            # 自动检测Homebrew安装的libomp路径
+            brew_path = subprocess.check_output(
+                ['brew', '--prefix'], text=True).strip()
+            return f"{brew_path}/opt/libomp"
+        return None
+
+    def build_extensions(self):
+        # 设置平台特定参数
+        omp_path = self._get_omp_path()
+        config = STATIC_FLAGS.get(SYSTEM, {})
+
+        for ext in self.extensions:
+            # 添加通用编译参数
+            ext.extra_compile_args = [
+                *config.get('compile', []),
+                '-DNDEBUG',
+                '-D_FORTIFY_SOURCE=2',
+                '-march=native' if SYSTEM != 'win32' else ''
+            ]
+
+            # 添加链接参数
+            ext.extra_link_args = [
+                *config.get('link', []),
+                '-fuse-ld=lld' if SYSTEM != 'darwin' else ''
+            ]
+
+            # macOS特殊处理
+            if SYSTEM == 'darwin' and omp_path:
+                ext.include_dirs.append(f"{omp_path}/include")
+                ext.library_dirs.append(f"{omp_path}/lib")
+                ext.extra_link_args.append(f"-L{omp_path}/lib")
+
+            # Windows特殊处理
+            if SYSTEM == 'win32':
+                ext.define_macros.append(('NOMINMAX', None))
+                ext.extra_compile_args.extend([
+                    '--target=x86_64-pc-windows-msvc',
+                    '-fms-extensions',
+                    '-fms-compatibility'
+                ])
+                ext.extra_link_args.extend([
+                    '-fuse-ld=lld',
+                    '--target=x86_64-pc-windows-msvc'
+                ])
+
+        # 调用父类构建方法
+        try:
+            super().build_extensions()
+        except Exception as e:
+            print(f"⚠️ Extension build failed: {e}")
+            print("⚠️ Falling back to pure Python implementation")
+            self.extensions = []
 
 
-    extra_link_args.append('-O3')
-    extra_link_args.append('-std=c++11')
-    pass
-
-else:
-    # 对于 Linux 和 GCC 使用 -fopenmp 编译标志
-
-    extra_compile_args.append('-fopenmp' )
-    extra_compile_args.append('-O3')
-    extra_compile_args.append('-std=c++11')
-
-    extra_link_args.append('-fopenmp')
-    extra_link_args.append('-O3')
-    extra_link_args.append('-std=c++11')
-
-# 定义扩展模块
+# 扩展模块配置
 ext_modules = [
-    Extension(
-        "NepTrainKit.nep_cpu",  # 模块名
-        ["src/nep_cpu/nep_cpu.cpp"],  # 源文件
+    Pybind11Extension(
+        "NepTrainKit.nep_cpu",
+        ["src/nep_cpu/nep_cpu.cpp"],
         include_dirs=[
-            pybind11_include,
-            # "src/nep_cpu"
+            pybind11.get_include(),
+            "src/nep_cpu",
+            *([STATIC_FLAGS['darwin']['include']] if SYSTEM == 'darwin' else [])
         ],
-        extra_compile_args=extra_compile_args,  # 编译选项
-        extra_link_args=extra_link_args,
-        language="c++",  # 指定语言为 C++
-    ),
+        cxx_std=17,
+        define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
+        language='c++'
+    )
 ]
 
-# 自定义 build_ext 命令，确保兼容性
-class BuildExt(build_ext):
-    def build_extensions(self):
-        # 设置编译器标准为 C++17
-        ct = self.compiler.compiler_type
-        opts = [ ]
-        for ext in self.extensions:
-            ext.extra_compile_args = opts + ext.extra_compile_args
-        try:
-            # 尝试构建扩展模块
-            build_ext.build_extensions(self)
-        except Exception as e:
-            # 捕获编译错误并打印警告
-            print(f"WARNING: Failed to build extension module: {e}")
-            print("WARNING: Skipping nep_cpu module build. The package will be installed without it.")
-            # 清空 ext_modules，跳过扩展模块的构建
-            self.ext_modules = []
-
-
+# 设置入口
 setup(
+    name="NepTrainKit",
+    # version="0.1",
     author="Chen Cheng bing",
-cmdclass={'build_ext': BuildExt},
-    # include_dirs=[np.get_include()],
-ext_modules=ext_modules,
-zip_safe=False,
+    ext_modules=ext_modules,
+    cmdclass={'build_ext': UniversalBuild},
+    zip_safe=False,
+    python_requires='>=3.7',
+    setup_requires=['pybind11>=2.6', 'numpy>=1.18'],
+    install_requires=['numpy>=1.18', 'pybind11>=2.6']
 )
