@@ -65,12 +65,12 @@ else:
     extra_compile_args.append('-fopenmp' )
     extra_compile_args.append('-O3')
     extra_compile_args.append('-std=c++11')
-    extra_compile_args.append('-static-libgomp')
+    extra_compile_args.append('-static')
 
     extra_link_args.append('-fopenmp')
     extra_link_args.append('-O3')
     extra_link_args.append('-std=c++11')
-    extra_link_args.append('-static-libgomp')
+    extra_link_args.append('-static')
 
 # 定义扩展模块
 ext_modules = [
