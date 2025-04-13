@@ -2,9 +2,9 @@
 requires = [
 "wheel",
 "numpy",
-"setuptools>=68.0.0",
-"pybind11>=2.12.0",
-"setuptools-scm>=7"
+"setuptools",
+"pybind11",
+"setuptools-scm"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -18,7 +18,7 @@ description = """
 NepTrainKit is a Python package for visualizing and manipulating training datasets for NEP.
 """
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = "<3.13"
 license= { "text"="GPL-3.0" }
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -35,14 +35,14 @@ classifiers = [
 ]
 dependencies = [
 
-"PySide6-Fluent-Widgets>=1.7.0",
+"PySide6-Fluent-Widgets",
     "sobolsequence",
-"loguru>=0.7.2",
-"requests>=2.32.3",
-"pyqtgraph>=0.13.7",
-"PyOpenGL>=3.1.7",
-"numpy>=1.26.0",
-"vispy>=0.14.3",
+"loguru",
+"requests",
+"pyqtgraph",
+"PyOpenGL",
+"numpy",
+"vispy",
 ]
 
 
