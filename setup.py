@@ -49,7 +49,10 @@ elif sys.platform == "darwin":
     # extra_compile_args.append('-fopenmp' )
     #
     # extra_link_args.append('-fopenmp')
-
+    # 通过环境变量获取目标架构，默认为 arm64（Apple Silicon）
+    target_arch = os.environ.get('ARCHFLAGS', '-arch arm64').split()[-1]
+    extra_compile_args.append(f'-arch {target_arch}')
+    extra_link_args.append(f'-arch {target_arch}')
 
     extra_compile_args.append('-O3')
     extra_compile_args.append('-std=c++11')
