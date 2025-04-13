@@ -33,20 +33,19 @@ jobs:
         python-version:  ${{ matrix.python-version }}
 
     - name: Install GCC and OpenMP (macOS only)
-      if:  runner.os == 'macOS'
+      if:  matrix.os == 'macos-latest'
       run: |
-         brew install gcc libomp
-         echo "CC=gcc-$(brew list --versions gcc | cut -d' ' -f2 | cut -d'.' -f1)" >> $GITHUB_ENV
-         echo "CXX=g++-$(brew list --versions gcc | cut -d' ' -f2 | cut -d'.' -f1)" >> $GITHUB_ENV
-         echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
+          brew install libomp
+          echo "OMP_INCLUDE_PATH=$(brew --prefix libomp)/include" >> $GITHUB_ENV
+          echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
     - name: Install dependencies
       shell: bash -l {0}  # 确保使用 bash shell
       run: |
         python -m pip install --upgrade pip
         pip install build   pybind11 setuptools setuptools-scm -U
-          if [[ "${{ runner.os }}" == "Linux" ]]; then pip install auditwheel; fi
-          if [[ "${{ runner.os }}" == "Windows" ]]; then pip install delvewheel; fi
-          if [[ "${{ runner.os }}" == "macOS" ]]; then pip install delocate; fi
+          if [[ matrix.os == 'ubuntu-latest' ]]; then pip install auditwheel; fi
+          if [[ matrix.os == 'windows-latest' ]]; then pip install delvewheel; fi
+          if [[ matrix.os == 'macos-latest' ]]; then pip install delocate; fi
 #
 #    - name: clear
 #      run: |
@@ -56,16 +55,14 @@ jobs:
     - name: Build package
       shell: bash -l {0}  # 确保使用 bash shell
       env:
-        # 仅在 macOS 上覆盖 CC/CXX 环境变量
-        CC: ${{ matrix.os == 'macos-latest' && env.CC || 'clang' }}
-        CXX: ${{ matrix.os == 'macos-latest' && env.CXX || 'clang++' }}
-        LDFLAGS: ${{ matrix.os == 'macos-latest' && '-L$(brew --prefix libomp)/lib' || '' }}
-        CFLAGS: ${{ matrix.os == 'macos-latest' && '-I$(brew --prefix libomp)/include -fopenmp' || '' }}
+        # 仅在 macOS 上传递 OpenMP 参数
+          CFLAGS: ${{ matrix.os == 'macos-latest' && '-Xpreprocessor -fopenmp -I$OMP_INCLUDE_PATH' || '' }}
+          LDFLAGS: ${{ matrix.os == 'macos-latest' && '-L$OMP_LIB_PATH -lomp' || '' }}
       run: |
         python setup.py bdist_wheel
-          if [[ "${{ runner.os }}" == "Linux" ]]; then auditwheel repair dist/*.whl -w dist/; fi
-          if [[ "${{ runner.os }}" == "Windows" ]]; then delvewheel repair dist/*.whl -w dist/; fi
-          if [[ "${{ runner.os }}" == "macOS" ]]; then delocate-wheel dist/*.whl -w dist/; fi
+          if [[ matrix.os == 'ubuntu-latest' ]]; then auditwheel repair dist/*.whl -w dist/; fi
+          if [[ matrix.os == 'windows-latest' ]]; then delvewheel repair dist/*.whl -w dist/; fi
+          if [[ matrix.os == 'macos-latest' ]]; then delocate-wheel dist/*.whl -w dist/; fi
     - name: Upload wheels
       uses: actions/upload-artifact@v4
       with:
