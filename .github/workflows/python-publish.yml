@@ -80,8 +80,8 @@ jobs:
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
         CIBW_BEFORE_BUILD_LINUX: "yum install -y libgomp"
         CIBW_BEFORE_BUILD_MACOS: |
-            brew install libomp 
-            export  OMP_INCLUDE_PATH=$(brew --prefix libomp)/include 
+            brew install libomp &&
+            export  OMP_INCLUDE_PATH=$(brew --prefix libomp)/include &&
             export  OMP_LIB_PATH=$(brew --prefix libomp)/lib
 
         CIBW_ENVIRONMENT_MACOS: >
