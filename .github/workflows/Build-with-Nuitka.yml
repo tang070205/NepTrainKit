@@ -58,6 +58,7 @@ jobs:
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/Config -Destination ${{ github.workspace }}/src/build/main.dist/Config -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/nep_cpu.pyd ${{ github.workspace }}/src/build/main.dist/nep_cpu.pyd
+          Copy-Item ${{ github.workspace }}/src/NepTrainKit/libomp140.x86_64.dll ${{ github.workspace }}/src/build/main.dist/libomp140.x86_64.dll
 
           New-Item -ItemType Directory -Force ${{ github.workspace }}/src/build/main.dist/Log
           New-Item -ItemType File -Path ${{ github.workspace }}/src/build/main.dist/Log/.placeholder -Force

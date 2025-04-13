@@ -35,20 +35,20 @@ if sys.platform == "win32":
     extra_compile_args.append('/openmp' )
     extra_compile_args.append('/O2' )
     extra_compile_args.append('/std:c++11' )
-    extra_compile_args.append('/MT' )
+
 
 
     extra_link_args.append('/openmp')
     extra_link_args.append('/O2' )
     extra_link_args.append('/std:c++11' )
-    extra_compile_args.append('/MT' )
+
 
 elif sys.platform == "darwin":
     # 对于 macOS 和 Clang 使用 -fopenmp 编译标志
     # Clang 好像不支持openmp 先注释掉
-    # extra_compile_args.append('-fopenmp' )
-    #
-    # extra_link_args.append('-fopenmp')
+    extra_compile_args.append('-fopenmp' )
+
+    extra_link_args.append('-fopenmp')
 
 
     extra_compile_args.append('-O3')
