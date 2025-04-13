@@ -32,7 +32,7 @@ jobs:
       with:
         python-version:  ${{ matrix.python-version }}
 
-    - name: Install GCC and OpenMP (macOS only)
+    - name: Install OpenMP (macOS only)
       if:  matrix.os == 'macos-latest'
       run: |
           brew install libomp

@@ -46,9 +46,9 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     # 对于 macOS 和 Clang 使用 -fopenmp 编译标志
     # Clang 好像不支持openmp 先注释掉
-    extra_compile_args.append('-fopenmp' )
-
-    extra_link_args.append('-fopenmp')
+    # extra_compile_args.append('-fopenmp' )
+    #
+    # extra_link_args.append('-fopenmp')
 
 
     extra_compile_args.append('-O3')
@@ -57,6 +57,12 @@ elif sys.platform == "darwin":
 
     extra_link_args.append('-O3')
     extra_link_args.append('-std=c++11')
+
+    omp_include = os.getenv("OMP_INCLUDE_PATH", "/usr/local/opt/libomp/include")
+    omp_lib = os.getenv("OMP_LIB_PATH", "/usr/local/opt/libomp/lib")
+    extra_compile_args.extend(["-Xpreprocessor", "-fopenmp", f"-I{omp_include}"])
+    extra_link_args.extend(["-lomp", f"-L{omp_lib}"])
+
     pass
 
 else:
