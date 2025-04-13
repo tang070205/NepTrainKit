@@ -80,10 +80,11 @@ jobs:
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
         CIBW_BEFORE_BUILD_LINUX: "yum install -y libgomp"
         CIBW_BEFORE_BUILD_MACOS: |
-            brew install libomp &&
-            echo "OMP_INCLUDE_PATH=$(brew --prefix libomp)/include" >> $GITHUB_ENV &&
+            brew install libomp 
+            echo "OMP_INCLUDE_PATH=$(brew --prefix libomp)/include" >> $GITHUB_ENV 
             echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
-
+        CIBW_ENVIRONMENT_MACOS: >
+            MACOSX_DEPLOYMENT_TARGET=14.0
 
         CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
