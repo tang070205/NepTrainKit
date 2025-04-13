@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.10', '3.11', '3.12']
 
     steps:
@@ -60,7 +60,7 @@ jobs:
           LDFLAGS: ${{ matrix.os == 'macos-latest' && '-L$OMP_LIB_PATH -lomp' || '' }}
       run: |
         python setup.py bdist_wheel
-          if [[ "${{ runner.os }}" == "Linux" ]]; then auditwheel repair  --plat manylinux_2_27_x86_64  dist/*.whl -w dist/; fi
+          if [[ "${{ runner.os }}" == "Linux" ]]; then auditwheel repair  --plat manylinux_2_34_x86_64  dist/*.whl -w dist/; fi
           if [[ "${{ runner.os }}" == "Windows" ]]; then delvewheel repair dist/*.whl -w dist/; fi
           if [[ "${{ runner.os }}" == "macOS" ]]; then delocate-wheel dist/*.whl -w dist/; fi
     - name: Upload wheels
