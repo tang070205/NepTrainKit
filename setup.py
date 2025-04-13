@@ -63,7 +63,7 @@ elif sys.platform == "darwin":
 
     omp_include = os.getenv("OMP_INCLUDE_PATH", "/usr/local/opt/libomp/include")
     omp_lib = os.getenv("OMP_LIB_PATH", "/usr/local/opt/libomp/lib")
-    extra_compile_args.extend(["-Xpreprocessor", "-fopenmp", f"-I{omp_include}"])
+    extra_compile_args.extend(["-Xpreprocessor", "-fopenmp", f"-I{omp_include}", f"-L{omp_lib}"])
     extra_link_args.extend(["-lomp", f"-L{omp_lib}"])
 
     pass
