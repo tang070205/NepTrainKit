@@ -48,7 +48,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.x"
+        python-version: "3.10"
 
     - name: Setup MSVC (32-bit)
       if: ${{ matrix.buildplat[1] == 'win32' }}
@@ -58,15 +58,9 @@ jobs:
     - name: Setup macOS
       if: matrix.buildplat[0] == 'macos-13' || matrix.buildplat[0] == 'macos-14'
       run: |
+        CIBW="RUNNER_OS=macOS"
+        echo "CIBW_ENVIRONMENT_MACOS=$CIBW " >> "$GITHUB_ENV"
 
-        if [[ ${{ matrix.buildplat[2] }} == 'accelerate' ]]; then
-          CIBW="MACOSX_DEPLOYMENT_TARGET=14.0 INSTALL_OPENBLAS=false RUNNER_OS=macOS"
-          echo "CIBW_ENVIRONMENT_MACOS=$CIBW" >> "$GITHUB_ENV"
-          echo "CIBW_TEST_SKIP=*-macosx_x86_64" >> "$GITHUB_ENV"
-        else
-          CIBW="RUNNER_OS=macOS"
-          echo "CIBW_ENVIRONMENT_MACOS=$CIBW " >> "$GITHUB_ENV"
-        fi
     - name: Install OpenMP (macOS only)
       if:  matrix.os == 'macos-latest'
       run: |
