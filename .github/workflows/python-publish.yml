@@ -60,7 +60,7 @@ jobs:
           LDFLAGS: ${{ matrix.os == 'macos-latest' && '-L$OMP_LIB_PATH -lomp' || '' }}
       run: |
         python setup.py bdist_wheel
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then auditwheel repair  --plat manylinux_2_24_x86_64  dist/*.whl -w dist/; fi
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then auditwheel repair  --plat manylinux_2_27_x86_64  dist/*.whl -w dist/; fi
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then delvewheel repair dist/*.whl -w dist/; fi
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then delocate-wheel dist/*.whl -w dist/; fi
     - name: Upload wheels
