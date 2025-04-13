@@ -3,7 +3,7 @@
 # @Time    : 2024/10/24 14:22
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-"""Pymatgen package configuration."""
+"""NepTrainKit package configuration."""
 
 from __future__ import annotations
 import tempfile
