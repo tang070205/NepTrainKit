@@ -39,11 +39,11 @@ jobs:
           if [[ "${{ runner.os }}" == "Linux" ]]; then pip install auditwheel; fi
           if [[ "${{ runner.os }}" == "Windows" ]]; then pip install delvewheel; fi
           if [[ "${{ runner.os }}" == "macOS" ]]; then pip install delocate; fi
- 
-    - name: clear
-      run: |
-        rm -rf build/ dist/ *.egg-info
-        
+#
+#    - name: clear
+#      run: |
+#        rm -rf build/ dist/ *.egg-info
+#
 
     - name: Build package
       shell: bash -l {0}  # 确保使用 bash shell
