@@ -81,8 +81,9 @@ jobs:
         CIBW_BEFORE_BUILD_LINUX: "yum install -y libgomp"
         CIBW_BEFORE_BUILD_MACOS: |
             brew install libomp 
-            echo "OMP_INCLUDE_PATH=$(brew --prefix libomp)/include" >> $GITHUB_ENV 
-            echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
+            export  OMP_INCLUDE_PATH=$(brew --prefix libomp)/include 
+            export  OMP_LIB_PATH=$(brew --prefix libomp)/lib
+
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=11.0' }}
 
