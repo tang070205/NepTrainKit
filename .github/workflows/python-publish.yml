@@ -58,20 +58,13 @@ jobs:
     - name: Setup macOS
       if: matrix.buildplat[0] == 'macos-13' || matrix.buildplat[0] == 'macos-14'
       run: |
-        # Needed due to https://github.com/actions/runner-images/issues/3371
-        # Supported versions: https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md
-        echo "FC=gfortran-13" >> "$GITHUB_ENV"
-        echo "F77=gfortran-13" >> "$GITHUB_ENV"
-        echo "F90=gfortran-13" >> "$GITHUB_ENV"
+
         if [[ ${{ matrix.buildplat[2] }} == 'accelerate' ]]; then
- 
           CIBW="MACOSX_DEPLOYMENT_TARGET=14.0 INSTALL_OPENBLAS=false RUNNER_OS=macOS"
           echo "CIBW_ENVIRONMENT_MACOS=$CIBW" >> "$GITHUB_ENV"
-
           echo "CIBW_TEST_SKIP=*-macosx_x86_64" >> "$GITHUB_ENV"
         else
           CIBW="RUNNER_OS=macOS"
-
           echo "CIBW_ENVIRONMENT_MACOS=$CIBW " >> "$GITHUB_ENV"
         fi
     - name: Install OpenMP (macOS only)
