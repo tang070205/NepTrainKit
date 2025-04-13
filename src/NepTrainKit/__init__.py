@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 # @Time    : 2024/11/28 12:52
-# @Author  : 兵
+# @Author  :
 # @email    : 1747193328@qq.com
 import os
 
@@ -18,7 +18,7 @@ except NameError:
 
 if is_nuitka_compiled:
 
-    # 设置log日志文件
+
     logger.add("./Log/{time:%Y-%m}.log",
                level="INFO",
                 )
